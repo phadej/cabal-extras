@@ -1,9 +1,10 @@
-{-# LANGUAGE OverloadedStrings #-}
 module CabalEnv.FakePackage (
 fakePackage,
 ) where
 
-import CabalEnv.Prelude
+import Peura
+
+import Text.PrettyPrint ((<+>))
 
 import qualified Data.Map.Strict            as Map
 import qualified Distribution.Fields.Pretty as C

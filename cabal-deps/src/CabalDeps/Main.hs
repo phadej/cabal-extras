@@ -10,17 +10,14 @@ import Peura
 import Prelude ()
 
 import Control.Applicative ((<**>))
-import Data.Set            (Set)
 import Data.Version        (showVersion)
 
 import qualified Cabal.Index          as I
 import qualified Cabal.Plan           as P
 import qualified Data.Map.Strict      as Map
 import qualified Data.Set             as Set
-import qualified Data.Text            as T
 import qualified Distribution.Package as C
 import qualified Distribution.Pretty  as C
-import qualified Distribution.Version as C
 import qualified Options.Applicative  as O
 
 import Paths_cabal_deps (version)
@@ -108,24 +105,3 @@ instance Warning W where
     warningToFlag WNotOnHackage        = "not-on-hackage"
     warningToFlag WNoPreferredVersions = "no-preferred-versions" -- TODO: that's not good name
     warningToFlag WNotLatest           = "not-latest"
-
--------------------------------------------------------------------------------
--- Conversion stuff
--------------------------------------------------------------------------------
-
--- | TODO: move to peura
-class Convert p c | p -> c, c -> p where
-    toCabal   :: p -> c
-    fromCabal :: c -> p
-
-instance Convert P.Ver C.Version where
-    toCabal (P.Ver vs) = C.mkVersion vs
-    fromCabal v        = P.Ver (C.versionNumbers v)
-
-instance Convert P.PkgName C.PackageName where
-    toCabal (P.PkgName n) = C.mkPackageName (T.unpack n)
-    fromCabal pn          = P.PkgName (T.pack (C.unPackageName pn))
-
-instance Convert P.PkgId C.PackageIdentifier where
-    toCabal (P.PkgId pn v) = C.PackageIdentifier (toCabal pn) (toCabal v)
-    fromCabal (C.PackageIdentifier pn v) = P.PkgId (fromCabal pn) (fromCabal v)

@@ -43,32 +43,28 @@ library cabal-diff-internal
     , filepath    ^>=1.4.1.2
     , mtl         ^>=2.2.2
     , parsec      ^>=3.1.13.0
+    , pretty      ^>=1.1.3.3
     , process     ^>=1.6.1.0
     , text        ^>=1.2.3.0
 
   -- We use Cabal-3.0
   build-depends:    Cabal ^>=3.0
 
+  -- We also use peura
+  build-depends:    peura
+
   -- dependencies in library
   build-depends:
     , ansi-terminal
-    , async
     , cabal-install-parsers
     , cabal-plan
     , concurrent-output
     , Glob                   ^>=0.10.0
-    , peura
-    , pretty                 ^>=1.1.3.3
-    , process-extras
+    , optparse-applicative   ^>=0.15.1.0
     , semialign              ^>=1.1
     , split
     , stm
-    , temporary              ^>=1.3
     , these                  ^>=1
-    , unliftio-core
-
-  -- extra dependencies
-  build-depends:    optparse-applicative >=0.14.3.0 && <0.16
 
 executable cabal-diff
   default-language: Haskell2010

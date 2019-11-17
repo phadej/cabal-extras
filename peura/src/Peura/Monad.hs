@@ -6,7 +6,7 @@ module Peura.Monad (
     changePeu,
     -- * Output
     withSetSgrCode,
-    output,
+    Output (..),
     -- * Diagnostics
     putDebug,
     putInfo,
@@ -26,19 +26,21 @@ module Peura.Monad (
 
 import Control.Monad.IO.Class     (MonadIO (..))
 import Control.Monad.Reader.Class (MonadReader (..))
-import Peura.Exports
-import Prelude                    (Double, Fractional (..), fromIntegral)
 import System.Clock
        (Clock (Monotonic), TimeSpec (TimeSpec), diffTimeSpec, getTime)
-import System.Console.Concurrent  (errorConcurrent, outputConcurrent)
+import System.Console.Concurrent
+       (errorConcurrent, outputConcurrent, withConcurrentOutput)
 import System.Console.Regions     (displayConsoleRegions)
 import System.IO                  (stderr)
 import Text.Printf                (printf)
 
-import qualified Control.Exception   as X
-import qualified System.Console.ANSI as ANSI
-import qualified System.Environment  as X
-import qualified System.Exit         as X
+import qualified Control.Exception    as X
+import qualified Data.ByteString.Lazy as LBS
+import qualified System.Console.ANSI  as ANSI
+import qualified System.Environment   as X
+import qualified System.Exit          as X
+
+import Peura.Exports
 
 data Env r = Env
     { envSupportsAnsi :: !Bool
@@ -50,7 +52,7 @@ newtype Peu r a = Peu { unPeu :: Env r -> IO a }
   deriving stock Functor
 
 runPeu :: forall a r. r -> Peu r a -> IO a
-runPeu r m = displayConsoleRegions $ do
+runPeu r m = withConcurrentOutput $ displayConsoleRegions $ do
     supportsAnsi <- ANSI.hSupportsANSI stderr
     now <- getTime Monotonic
 
@@ -125,8 +127,21 @@ withSetSgrCode f = Peu $ \env -> unPeu (f (setSGRCode env)) env where
         | envSupportsAnsi env = ANSI.setSGRCode
         | otherwise           = const ""
 
-output :: String -> Peu r ()
-output = liftIO . outputConcurrent . (++ "\n")
+class Output str where
+    output    :: str -> Peu r ()
+    outputErr :: str -> Peu r ()
+
+instance Char ~ a => Output [a] where
+    output    = liftIO . outputConcurrent . (++ "\n")
+    outputErr = liftIO . errorConcurrent . (++ "\n")
+
+instance Output ByteString where
+    output    = output . fromUTF8BS
+    outputErr = outputErr . fromUTF8BS
+
+instance Output LazyByteString where
+    output    = output . LBS.toStrict
+    outputErr = outputErr . LBS.toStrict
 
 -------------------------------------------------------------------------------
 -- Configuration
@@ -204,7 +219,6 @@ putWarning  w msg = withTimeAndSetSgrCode $ \t setSgr -> do
         , setSgr []
         , "]: "
         , msg
-        , "\n"
         ]
 
 putError :: String -> Peu r ()
