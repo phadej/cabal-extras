@@ -15,6 +15,7 @@ module Peura.Paths (
     getAppUserDataDirectory,
     doesFileExist,
     createDirectoryIfMissing,
+    listDirectory,
     -- * Roots
     Tar,
     fromTarPath,
@@ -55,6 +56,9 @@ doesFileExist = liftIO . D.doesFileExist . toFilePath
 
 createDirectoryIfMissing :: Bool -> Path Absolute -> Peu r ()
 createDirectoryIfMissing b = liftIO . D.createDirectoryIfMissing b . toFilePath
+
+listDirectory :: Path Absolute -> Peu r [Path Unrooted]
+listDirectory = fmap (map fromUnrootedFilePath) . liftIO . D.listDirectory . toFilePath
 
 -------------------------------------------------------------------------------
 -- Tar root

@@ -20,6 +20,7 @@ language_extensions:
   - EmptyCase
   - ExplicitForAll
   - FlexibleContexts
+  - FunctionalDependencies
   - GADTs
   - GeneralizedNewtypeDeriving
   - MultiParamTypeClasses

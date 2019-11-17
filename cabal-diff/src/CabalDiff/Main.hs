@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase          #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 -- |
@@ -16,11 +15,8 @@ import Control.Applicative          ((<**>))
 import Control.Concurrent.STM
        (atomically, newTVarIO, readTVar, retry, writeTVar)
 import Distribution.Parsec          (eitherParsec)
-import Distribution.Types.PackageId (PackageIdentifier (..))
 
-import qualified Control.Concurrent.Async        as Async
 import qualified Options.Applicative             as O
-import qualified System.IO.Temp                  as Temp
 
 import CabalDiff.Diff
 import CabalDiff.Hoogle
@@ -49,8 +45,8 @@ main = do
 -- TODO: special . name for "package environment in this directory"
 data Opts = Opts
     { _optCompiler :: FilePath
-    , _optPackageA :: PackageId
-    , _optPackageB :: PackageId
+    , _optPackageA :: PackageIdentifier
+    , _optPackageB :: PackageIdentifier
     }
 
 optsP :: O.Parser Opts
@@ -126,17 +122,10 @@ doDiff (Opts withCompiler pkgA pkgB) =
 -- Async
 -------------------------------------------------------------------------------
 
-async :: Peu r a -> Peu r (Async.Async a)
-async m = withRunInIO $ \runInIO -> Async.async (runInIO m)
 
-wait :: Async.Async a -> Peu r a
-wait = liftIO . Async.wait
 
 -------------------------------------------------------------------------------
 -- temporary
 -------------------------------------------------------------------------------
 
-withSystemTempDirectory :: String -> (Path Absolute -> Peu r a) -> Peu r a
-withSystemTempDirectory tmpl f = Temp.withSystemTempDirectory tmpl $ \p -> do
-    a <- makeAbsoluteFilePath p
-    f a
+

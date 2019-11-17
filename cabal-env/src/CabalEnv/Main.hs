@@ -6,38 +6,37 @@
 -- License: GPL-3.0-or-later
 module CabalEnv.Main (main) where
 
--- TODO use Peura
-import CabalEnv.Prelude
+import Peura
 
-import Control.Exception    (handle)
-import Data.Semigroup       (Semigroup (..))
-import Data.Version         (showVersion)
-import System.Directory
-       (createDirectoryIfMissing, getAppUserDataDirectory, listDirectory)
-import System.FilePath.Glob (glob)
-import System.IO.Temp       (withSystemTempDirectory)
-import System.Process
-       (StdStream (NoStream), createProcess, cwd, proc, std_in, waitForProcess)
-
-import Cabal.Plan (SearchPlanJson (InBuildDir), findAndDecodePlanJson)
-
+import Cabal.Plan
+       (SearchPlanJson (InBuildDir), findAndDecodePlanJson)
+import Control.Applicative           ((<**>))
+import Data.Char                     (isAlphaNum)
+import Data.List
+       (intercalate, isPrefixOf, lines, lookup, sort)
+import Data.List.Split               (splitOn)
+import Data.Semigroup                (Semigroup (..))
+import Data.Version                  (showVersion)
+import Distribution.Parsec           (eitherParsec, explicitEitherParsec)
+import Distribution.Types.Dependency (Dependency (..))
 import Distribution.Version
        (anyVersion, intersectVersionRanges, nullVersion, thisVersion)
+import System.FilePath.Glob          (glob)
+import Text.Read                     (readMaybe)
 
-import qualified Data.ByteString                 as BS
+import qualified Data.ByteString.Lazy            as LBS
 import qualified Data.List.NonEmpty              as NE
 import qualified Data.Map.Strict                 as Map
 import qualified Distribution.Compat.CharParsing as P
 import qualified Options.Applicative             as O
 
 import CabalEnv.FakePackage
-import CabalEnv.Utils
 
 import Paths_cabal_env (version)
 
 main :: IO ()
-main = do
-    opts <- O.execParser optsP'
+main = runPeu () $ do
+    opts <- liftIO $ O.execParser optsP'
     ghcEnvDir <- getGhcEnvDir (optCompiler opts)
 
     case optAction opts of
@@ -58,46 +57,39 @@ main = do
 -- List
 -------------------------------------------------------------------------------
 
-listAction :: Opts -> FilePath -> IO ()
+listAction :: Opts -> Path Absolute -> Peu r ()
 listAction Opts {..} ghcEnvDir = do
-    when optVerbose $ putStrLn $ "Environments available in " ++ ghcEnvDir
+    when optVerbose $ putInfo $ "Environments available in " ++ toFilePath ghcEnvDir
     fs <- listDirectory ghcEnvDir
     for_ (sort fs) $ \f ->
-        putStrLn $ f ++ if optVerbose then " " ++ ghcEnvDir </> f else ""
+        putInfo $ toUnrootedFilePath f ++ if optVerbose then " " ++ toFilePath (ghcEnvDir </> f) else ""
 
 -------------------------------------------------------------------------------
 -- Show
 -------------------------------------------------------------------------------
 
-showAction :: Opts -> FilePath -> IO ()
+showAction :: Opts -> Path Absolute -> Peu r ()
 showAction Opts {..} ghcEnvDir = do
-    (_cmds, pkgIds) <- getEnvironmentContents $ ghcEnvDir </> optEnvName
-    when optVerbose $ putStrLn $ "Packages in " ++ optEnvName ++ " environment"
+    (_cmds, pkgIds) <- getEnvironmentContents $ ghcEnvDir </> fromUnrootedFilePath optEnvName
+    when optVerbose $ putInfo $ "Packages in " ++ optEnvName ++ " environment"
     for_ (sort pkgIds) $ \pkgId ->
-        -- TODO: when verbose mark which are installed
-        putStrLn $ prettyShow pkgId
+        output $ prettyShow pkgId
 
 -------------------------------------------------------------------------------
 -- Install
 -------------------------------------------------------------------------------
 
-installAction :: Opts -> FilePath -> IO ()
+installAction :: Opts -> Path Absolute -> Peu r ()
 installAction Opts {..} ghcEnvDir = do
     unless (null optDeps) $ do
-        when optVerbose $ do
-            putStrLn "=== ghc environment directory"
-            putStrLn ghcEnvDir
+        when optVerbose $ putDebug $ "GHC environment directory: " ++ toFilePath ghcEnvDir
 
         createDirectoryIfMissing True ghcEnvDir
-        (cmds, pkgIds) <- getEnvironmentContents $ ghcEnvDir </> optEnvName
+        (_cmds, pkgIds) <- getEnvironmentContents $ ghcEnvDir </> fromUnrootedFilePath optEnvName
 
         when optVerbose $ do
-            putStrLn "=== packages in environment"
-            traverse_ (putStrLn . prettyShow) pkgIds
-
-        when (null cmds) $ do
-            putStrLn "No cabal-fmt commands found in the environment"
-            putStrLn "Using all packages in the environment as input"
+            putDebug "packages in environment"
+            traverse_ (outputErr . prettyShow) pkgIds
 
         let cabalFile = fakePackage $ Map.fromListWith intersectVersionRanges $
                 [ (pn, if ver == nullVersion || optAnyVer then anyVersion else thisVersion ver)
@@ -109,12 +101,12 @@ installAction Opts {..} ghcEnvDir = do
                 ]
 
         when optVerbose $ do
-            putStrLn "=== Generated fake-package.cabal"
-            putStrLn cabalFile
+            putDebug "Generated fake-package.cabal"
+            outputErr cabalFile
 
         withSystemTempDirectory "cabal-env-fake-package-XXXX" $ \tmpDir -> do
-            writeFile (tmpDir </> "fake-package.cabal") cabalFile
-            writeFile (tmpDir </> "cabal.project") $ unlines
+            writeByteString (tmpDir </> fromUnrootedFilePath "fake-package.cabal") $ toUTF8BS cabalFile
+            writeByteString (tmpDir </> fromUnrootedFilePath "cabal.project") $ toUTF8BS $ unlines
                 [ "packages: ."
                 , "with-compiler: " ++ optCompiler
                 , "documentation: False"
@@ -123,35 +115,30 @@ installAction Opts {..} ghcEnvDir = do
                 , "  documentation: False"
                 ]
 
-            (_, _, _, hdl) <- createProcess $
-                    let p0 = proc "cabal" $ ["v2-build", "all", "--builddir=dist-newstyle"] ++ if optDryRun then ["--dry-run"] else []
-                        p  = p0
-                            { cwd    = Just tmpDir
-                            , std_in = NoStream
-                            }
-                        in p
-            ec <- waitForProcess hdl
+            ec <- runProcessOutput tmpDir "cabal" $
+                ["v2-build", "all", "--builddir=dist-newstyle"] ++ ["--dry-run" | optDryRun ]
 
             case ec of
                 ExitFailure _ -> do
-                    hPutStrLn stderr "ERROR: cabal v2-build failed"
-                    hPutStrLn stderr "This is might be due inconsistent dependencies (delete package env file, or try -a) or something else"
+                    putError "ERROR: cabal v2-build failed"
+                    putError "This is might be due inconsistent dependencies (delete package env file, or try -a) or something else"
                     exitFailure
 
                 ExitSuccess | optDryRun -> return ()
                 ExitSuccess -> do
                     -- TODO: use cabal-plan to read stuff, better than relying on ghc.environment files, maybe?
                     -- TODO: remove Glob dependency
-                    _plan <- findAndDecodePlanJson (InBuildDir $ tmpDir </> "dist-newstyle")
+                    _plan <- liftIO $ findAndDecodePlanJson (InBuildDir $ toFilePath $ tmpDir </> fromUnrootedFilePath "dist-newstyle")
                     -- print plan
 
-                    matches <- glob $ tmpDir </> ".ghc.environment.*-*-*"
+                    matches <- liftIO $ glob $ toFilePath $ tmpDir </> fromUnrootedFilePath ".ghc.environment.*-*-*"
                     case matches of
-                        [envFile] -> do
-                            envFileContents <- BS.readFile envFile
+                        [envFile'] -> do
+                            envFile <- makeAbsoluteFilePath envFile'
+                            envFileContents <- readByteString envFile
                             when optVerbose $ do
-                                putStrLn "=== local .ghc.environment file"
-                                BS.putStr envFileContents
+                                putDebug "local .ghc.environment file"
+                                outputErr $ fromUTF8BS envFileContents
 
                             -- strip local stuff
                             let ls :: [String]
@@ -160,24 +147,32 @@ installAction Opts {..} ghcEnvDir = do
                                    $ fromUTF8BS envFileContents
 
                             -- (over)write ghc environment file
+                            let newEnvFileContents  :: String
+                                newEnvFileContents = unlines ls
                             when optVerbose $ do
-                                putStrLn "=== writing environment file"
-                                putStr $ unlines ls
+                                putDebug "writing environment file"
+                                outputErr newEnvFileContents
 
-                            writeFile (ghcEnvDir </> optEnvName) (unlines ls)
+                            writeByteString (ghcEnvDir </> fromUnrootedFilePath optEnvName) (toUTF8BS newEnvFileContents)
 
                         _ -> die "Cannot find .ghc.environment file"
 
+-------------------------------------------------------------------------------
+-- die
+-------------------------------------------------------------------------------
+
+die :: String -> Peu r a
+die str = putError str *> exitFailure
 
 -------------------------------------------------------------------------------
 -- GHC environment directory
 -------------------------------------------------------------------------------
 
-getGhcEnvDir :: FilePath -> IO FilePath
+getGhcEnvDir :: FilePath -> Peu r (Path Absolute)
 getGhcEnvDir ghc = do
     ghcDir   <- getAppUserDataDirectory "ghc"
 
-    infoBS <- readProcessWithExitCode' ghc ["--info"]
+    infoBS <- LBS.toStrict <$> runProcessCheck ghcDir ghc ["--info"]
     info <- maybe (die "Cannot parse compilers --info output") return $
         readMaybe (fromUTF8BS infoBS)
 
@@ -195,7 +190,7 @@ getGhcEnvDir ghc = do
                 [x, _, y] -> return (x, y)
                 _         -> die "Target platform is not triple"
 
-            return $ ghcDir </> (x ++ "-" ++ y ++ "-" ++ prettyShow ver) </> "environments"
+            return $ ghcDir </> fromUnrootedFilePath (x ++ "-" ++ y ++ "-" ++ prettyShow ver) </> fromUnrootedFilePath "environments"
 
         _ -> die "Your compiler is not GHC"
 
@@ -209,7 +204,7 @@ data Command
 
 data Environment = Env
     { envCommands :: [Command]
-    , envPackages :: [PackageId]
+    , envPackages :: [PackageIdentifier]
     }
   deriving (Show)
 
@@ -217,22 +212,22 @@ data Environment = Env
 -- GHC environment file
 -------------------------------------------------------------------------------
 
-withEnvironmentFile :: forall r. r -> ([String] -> r) -> FilePath -> IO r
+withEnvironmentFile :: forall r a. a -> ([String] -> a) -> Path Absolute -> Peu r a
 withEnvironmentFile def k fp = handle onIOError $ do
-    contents <- BS.readFile fp
+    contents <- readByteString fp
     return (k (lines (fromUTF8BS contents)))
   where
-    onIOError :: IOError -> IO r
+    onIOError :: IOException -> Peu r a
     onIOError _ = return def
 
 -- TODO: use Environment
-parseEnvironmentContents :: [String] -> ([Command], [PackageId])
+parseEnvironmentContents :: [String] -> ([Command], [PackageIdentifier])
 parseEnvironmentContents ls =
     ( []
     , mapMaybe (either (const Nothing) Just . parse) ls
     )
   where
-    parse :: String -> Either String PackageId
+    parse :: String -> Either String PackageIdentifier
     parse = explicitEitherParsec $ do
         _ <- P.string "package-id"
         P.spaces
@@ -245,10 +240,10 @@ parseEnvironmentContents ls =
     isHash :: String -> Bool
     isHash s = length s == 64
 
-    parse' :: [String] -> Either String PackageId
+    parse' :: [String] -> Either String PackageIdentifier
     parse' = eitherParsec . intercalate "-"
 
-getEnvironmentContents :: FilePath -> IO ([Command], [PackageId])
+getEnvironmentContents :: Path Absolute -> Peu r ([Command], [PackageIdentifier])
 getEnvironmentContents = withEnvironmentFile mempty parseEnvironmentContents
 
 -------------------------------------------------------------------------------

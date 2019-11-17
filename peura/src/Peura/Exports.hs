@@ -29,7 +29,7 @@ module Peura.Exports (
     Map,
     NonEmpty (..),
     PackageName,
-    PackageId,
+    PackageIdentifier (..),
     Set,
     Text,
     Version,
@@ -43,6 +43,8 @@ module Peura.Exports (
     IOException,
     SomeException,
     -- * Individual functions
+    -- * Control.Applicative
+    optional,
     -- * Control.DeepSeq
     force,
     -- ** Control.Monad
@@ -90,17 +92,18 @@ module Peura.Exports (
     ) where
 
 -- to get all members of Foldable
-import Data.Foldable as A (Foldable (..))
+import Data.Foldable as A (Foldable (..), notElem)
 
 -- Basic prelude stuff
 import Prelude as A
-       (Applicative (..), Bool (..), Bounded (..), Either (..), Enum (..),
-       Eq (..), FilePath, Functor (..), IO, Maybe (..), Monad (return, (>>=)),
-       Monoid (..), Ord (..), Show (..), String, Traversable (..), all, and,
-       any, concat, concatMap, const, curry, dropWhile, either, filter, flip,
-       fst, id, map, maybe, not, or, otherwise, replicate, return, reverse,
-       snd, span, take, takeWhile, uncurry, unlines, unwords, zipWith, ($),
-       ($!), (&&), (++), (.), (<$>), (||))
+       (Applicative (..), Bool (..), Bounded (..), Char, Either (..),
+       Enum (..), Eq (..), FilePath, Functor (..), IO, Maybe (..),
+       Monad (return, (>>=)), Monoid (..), Ord (..), Show (..), String,
+       Traversable (..), all, and, any, concat, concatMap, const, curry,
+       dropWhile, either, filter, flip, fst, id, map, maybe, not, or,
+       otherwise, replicate, return, reverse, snd, span, take, takeWhile,
+       uncurry, unlines, unwords, zipWith, ($), ($!), (&&), (++), (.), (<$>),
+       (||))
 
 -- numerics
 import Prelude as A
@@ -108,7 +111,7 @@ import Prelude as A
        Rational, Real (..), RealFrac (..), Word, fromIntegral, realToFrac)
 
 import Codec.Serialise                 (Serialise)
-import Control.Applicative             (Alternative (..), Const (..))
+import Control.Applicative             (Alternative (..), Const (..), optional)
 import Control.DeepSeq                 (NFData (..), force)
 import Control.Exception
        (Exception (..), IOException, SomeException)
@@ -136,7 +139,7 @@ import Data.Text                       (Text)
 import Data.Traversable                (for)
 import Distribution.Pretty             (prettyShow)
 import Distribution.Simple.Utils       (fromUTF8BS, toUTF8BS)
-import Distribution.Types.PackageId    (PackageId)
+import Distribution.Types.PackageId    (PackageIdentifier (..))
 import Distribution.Types.PackageName  (PackageName, mkPackageName)
 import Distribution.Types.Version      (Version, mkVersion)
 import Distribution.Types.VersionRange (VersionRange)
