@@ -1,0 +1,132 @@
+Map.fromList
+  [_×_
+     (ModuleName "Data.Foldable1")
+     (Map.fromList
+        [_×_ (KeyCls "Foldable t => Foldable1 t") "",
+         _×_
+           (KeyIns
+              "(Data.Foldable1.Foldable1 f, Data.Foldable1.Foldable1 g) => Data.Foldable1.Foldable1 (Data.Functor.Compose.Compose f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Foldable1.Foldable1 f, Data.Foldable1.Foldable1 g) => Data.Foldable1.Foldable1 (Data.Functor.Product.Product f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Foldable1.Foldable1 f, Data.Foldable1.Foldable1 g) => Data.Foldable1.Foldable1 (Data.Functor.Sum.Sum f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Foldable1.Foldable1 f, Data.Foldable1.Foldable1 g) => Data.Foldable1.Foldable1 (f GHC.Generics.:*: g)")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Foldable1.Foldable1 f, Data.Foldable1.Foldable1 g) => Data.Foldable1.Foldable1 (f GHC.Generics.:+: g)")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Foldable1.Foldable1 f, Data.Foldable1.Foldable1 g) => Data.Foldable1.Foldable1 (f GHC.Generics.:.: g)")
+           "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 ((,) a)") "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 (Data.Tagged.Tagged b)") "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 Data.Complex.Complex") "",
+         _×_
+           (KeyIns "Data.Foldable1.Foldable1 Data.Functor.Identity.Identity")
+           "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 Data.Ord.Down") "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 Data.Semigroup.First") "",
+         _×_
+           (KeyIns "Data.Foldable1.Foldable1 Data.Semigroup.Internal.Dual")
+           "",
+         _×_
+           (KeyIns "Data.Foldable1.Foldable1 Data.Semigroup.Internal.Product")
+           "",
+         _×_
+           (KeyIns "Data.Foldable1.Foldable1 Data.Semigroup.Internal.Sum") "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 Data.Semigroup.Last") "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 Data.Semigroup.Max") "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 Data.Semigroup.Min") "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 Data.Tree.Tree") "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 GHC.Base.NonEmpty") "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 GHC.Generics.Par1") "",
+         _×_ (KeyIns "Data.Foldable1.Foldable1 GHC.Generics.V1") "",
+         _×_
+           (KeyIns
+              "Data.Foldable1.Foldable1 f => Data.Foldable1.Foldable1 (Control.Applicative.Backwards.Backwards f)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Foldable1.Foldable1 f => Data.Foldable1.Foldable1 (Control.Applicative.Lift.Lift f)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Foldable1.Foldable1 f => Data.Foldable1.Foldable1 (Control.Monad.Trans.Identity.IdentityT f)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Foldable1.Foldable1 f => Data.Foldable1.Foldable1 (Data.Functor.Reverse.Reverse f)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Foldable1.Foldable1 f => Data.Foldable1.Foldable1 (Data.Monoid.Ap f)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Foldable1.Foldable1 f => Data.Foldable1.Foldable1 (Data.Semigroup.Internal.Alt f)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Foldable1.Foldable1 f => Data.Foldable1.Foldable1 (GHC.Generics.M1 i c f)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Foldable1.Foldable1 f => Data.Foldable1.Foldable1 (GHC.Generics.Rec1 f)")
+           "",
+         _×_ (KeyIns "GHC.Base.Semigroup (Data.Foldable1.FromMaybe b)") "",
+         _×_
+           (KeyIns "GHC.Base.Semigroup (Data.Foldable1.NonEmptyDList a)") "",
+         _×_ (KeyFun "fold1") "(Foldable1 t, Semigroup m) => t m -> m",
+         _×_
+           (KeyFun "foldMap1")
+           "(Foldable1 t, Semigroup m) => (a -> m) -> t a -> m",
+         _×_
+           (KeyFun "foldMap1'")
+           "(Foldable1 t, Semigroup m) => (a -> m) -> t a -> m",
+         _×_ (KeyFun "foldl1") "Foldable1 t => (a -> a -> a) -> t a -> a",
+         _×_ (KeyFun "foldl1'") "Foldable1 t => (a -> a -> a) -> t a -> a",
+         _×_
+           (KeyFun "foldl1'Map")
+           "Foldable1 t => (a -> b) -> (b -> b -> b) -> t a -> b",
+         _×_
+           (KeyFun "foldl1Map")
+           "Foldable1 t => (a -> b) -> (b -> b -> b) -> t a -> b",
+         _×_
+           (KeyFun "foldlM1")
+           "(Foldable1 t, Monad m) => (a -> a -> m a) -> t a -> m a",
+         _×_ (KeyFun "foldr1") "Foldable1 t => (a -> a -> a) -> t a -> a",
+         _×_ (KeyFun "foldr1'") "Foldable1 t => (a -> a -> a) -> t a -> a",
+         _×_
+           (KeyFun "foldr1'Map")
+           "Foldable1 t => (a -> b) -> (b -> b -> b) -> t a -> b",
+         _×_
+           (KeyFun "foldr1Map")
+           "Foldable1 t => (a -> b) -> (b -> b -> b) -> t a -> b",
+         _×_
+           (KeyFun "foldrM1")
+           "(Foldable1 t, Monad m) => (a -> a -> m a) -> t a -> m a",
+         _×_ (KeyFun "head1") "Foldable1 t => t a -> a",
+         _×_
+           (KeyFun "intercalate1")
+           "(Foldable1 t, Semigroup m) => m -> t m -> m",
+         _×_ (KeyFun "last1") "Foldable1 t => t a -> a",
+         _×_
+           (KeyFun "maximum1") "forall a. (Foldable1 t, Ord a) => t a -> a",
+         _×_
+           (KeyFun "maximum1By")
+           "Foldable1 t => (a -> a -> Ordering) -> t a -> a",
+         _×_
+           (KeyFun "minimum1") "forall a. (Foldable1 t, Ord a) => t a -> a",
+         _×_
+           (KeyFun "minimum1By")
+           "Foldable1 t => (a -> a -> Ordering) -> t a -> a",
+         _×_ (KeyFun "toNonEmpty") "Foldable1 t => t a -> NonEmpty a"])]

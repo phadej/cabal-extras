@@ -1,0 +1,36 @@
+packages: cabal-bundler
+packages: cabal-deps
+packages: cabal-diff
+packages: cabal-env
+
+packages: peura
+
+package cabal-bundler
+  ghc-options: -Wall
+
+package cabal-deps
+  ghc-options: -Wall
+
+package cabal-diff
+  ghc-options: -Wall
+
+package cabal-env
+  ghc-options: -Wall
+
+package peura
+  ghc-options: -Wall
+
+source-repository-package
+  type:     git
+  location: https://github.com/phadej/zinza.git
+  tag:      37e0c2a8db3fb4e814ebffba1576fa6b4a4950fd
+
+source-repository-package
+  type:     git
+  location: https://github.com/haskell-CI/haskell-ci.git
+  tag:      752a3aa2a9d9054a3d83eea7918b139db8f134d0
+  subdir:   cabal-install-parsers
+
+constraints: directory     installed
+constraints: process       installed
+constraints: transformers  installed

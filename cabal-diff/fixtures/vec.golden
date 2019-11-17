@@ -1,0 +1,763 @@
+Map.fromList
+  [_×_
+     (ModuleName "Data.Vec.DataFamily.SpineStrict")
+     (Map.fromList
+        [_×_ (KeyDaF "Vec") "(n :: Nat) a",
+         _×_ (KeyInR "5 ++") "",
+         _×_ (KeyInR "5 :::") "",
+         _×_
+           (KeyIns
+              "(Control.DeepSeq.NFData a, Data.Type.Nat.InlineInduction n) => Control.DeepSeq.NFData (Data.Vec.DataFamily.SpineStrict.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Hashable.Class.Hashable a, Data.Type.Nat.InlineInduction n) => Data.Hashable.Class.Hashable (Data.Vec.DataFamily.SpineStrict.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Type.Nat.InlineInduction m, (n :: Data.Nat.Nat) Data.Type.Equality.~ ('Data.Nat.S m :: Data.Nat.Nat)) => Data.Semigroup.Foldable.Class.Foldable1 (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Type.Nat.InlineInduction m, (n :: Data.Nat.Nat) Data.Type.Equality.~ ('Data.Nat.S m :: Data.Nat.Nat)) => Data.Semigroup.Traversable.Class.Traversable1 (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Base.Monoid a, Data.Type.Nat.InlineInduction n) => GHC.Base.Monoid (Data.Vec.DataFamily.SpineStrict.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Base.Semigroup a, Data.Type.Nat.InlineInduction n) => GHC.Base.Semigroup (Data.Vec.DataFamily.SpineStrict.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Classes.Eq a, Data.Type.Nat.InlineInduction n) => GHC.Classes.Eq (Data.Vec.DataFamily.SpineStrict.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Classes.Ord a, Data.Type.Nat.InlineInduction n) => GHC.Classes.Ord (Data.Vec.DataFamily.SpineStrict.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Show.Show a, Data.Type.Nat.InlineInduction n) => GHC.Show.Show (Data.Vec.DataFamily.SpineStrict.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field1 (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S n) a) (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S n) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field2 (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S n)) a) (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S n)) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field3 (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))) a) (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field4 (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))) a) (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field5 (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))) a) (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field6 (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))))) a) (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field7 (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))))) a) (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field8 (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))))))) a) (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))))))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field9 (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))))))) a) (Data.Vec.DataFamily.SpineStrict.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))))))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => Control.Lens.At.Ixed (Data.Vec.DataFamily.SpineStrict.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => Control.Lens.Each.Each (Data.Vec.DataFamily.SpineStrict.Vec n a) (Data.Vec.DataFamily.SpineStrict.Vec n b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => Control.Lens.Indexed.FoldableWithIndex (Data.Fin.Fin n) (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => Control.Lens.Indexed.FunctorWithIndex (Data.Fin.Fin n) (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => Control.Lens.Indexed.TraversableWithIndex (Data.Fin.Fin n) (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => Data.Distributive.Distributive (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => Data.Foldable.Foldable (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => Data.Functor.Bind.Class.Apply (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => Data.Functor.Bind.Class.Bind (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => Data.Functor.Rep.Representable (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => Data.Traversable.Traversable (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => GHC.Base.Applicative (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => GHC.Base.Functor (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.InlineInduction n => GHC.Base.Monad (Data.Vec.DataFamily.SpineStrict.Vec n)")
+           "",
+         _×_ (KeyFun "(!)") "InlineInduction n => Vec n a -> Fin n -> a",
+         _×_
+           (KeyFun "(++)")
+           "forall n m a. InlineInduction n => Vec n a -> Vec m a -> Vec (Plus n m) a",
+         _×_
+           (KeyFun "_Cons")
+           "Iso (Vec ( 'S n) a) (Vec ( 'S n) b) (a, Vec n a) (b, Vec n b)",
+         _×_
+           (KeyFun "_Pull")
+           "InlineInduction n => Iso (Vec n a) (Vec n b) (Vec n a) (Vec n b)",
+         _×_ (KeyFun "_Vec") "InlineInduction n => Prism' [a] (Vec n a)",
+         _×_ (KeyFun "_head") "Lens' (Vec ( 'S n) a) a",
+         _×_ (KeyFun "_tail") "Lens' (Vec ( 'S n) a) (Vec n a)",
+         _×_
+           (KeyFun "bind")
+           "InlineInduction n => Vec n a -> (a -> Vec n b) -> Vec n b",
+         _×_
+           (KeyFun "chunks")
+           "(InlineInduction n, InlineInduction m) => Vec (Mult n m) a -> Vec n (Vec m a)",
+         _×_
+           (KeyFun "concat")
+           "(InlineInduction m, InlineInduction n) => Vec n (Vec m a) -> Vec (Mult n m) a",
+         _×_
+           (KeyFun "concatMap")
+           "forall a b n m. (InlineInduction m, InlineInduction n) => (a -> Vec m b) -> Vec n a -> Vec (Mult n m) b",
+         _×_ (KeyFun "cons") "a -> Vec n a -> Vec ( 'S n) a",
+         _×_ (KeyFun "empty") "Vec  'Z a",
+         _×_
+           (KeyFun "ensureSpine") "InlineInduction n => Vec n a -> Vec n a",
+         _×_
+           (KeyFun "foldMap")
+           "(Monoid m, InlineInduction n) => (a -> m) -> Vec n a -> m",
+         _×_
+           (KeyFun "foldMap1")
+           "forall s a n. (Semigroup s, InlineInduction n) => (a -> s) -> Vec ( 'S n) a -> s",
+         _×_
+           (KeyFun "foldr")
+           "forall a b n. InlineInduction n => (a -> b -> b) -> b -> Vec n a -> b",
+         _×_
+           (KeyFun "fromList") "InlineInduction n => [a] -> Maybe (Vec n a)",
+         _×_
+           (KeyFun "fromListPrefix")
+           "InlineInduction n => [a] -> Maybe (Vec n a)",
+         _×_
+           (KeyFun "fromPull")
+           "forall n a. InlineInduction n => Vec n a -> Vec n a",
+         _×_ (KeyFun "head") "Vec ( 'S n) a -> a",
+         _×_
+           (KeyFun "ifoldMap")
+           "forall a n m. (Monoid m, InlineInduction n) => (Fin n -> a -> m) -> Vec n a -> m",
+         _×_
+           (KeyFun "ifoldMap1")
+           "forall a n s. (Semigroup s, InlineInduction n) => (Fin ( 'S n) -> a -> s) -> Vec ( 'S n) a -> s",
+         _×_
+           (KeyFun "ifoldr")
+           "forall a b n. InlineInduction n => (Fin n -> a -> b -> b) -> b -> Vec n a -> b",
+         _×_
+           (KeyFun "imap")
+           "InlineInduction n => (Fin n -> a -> b) -> Vec n a -> Vec n b",
+         _×_
+           (KeyFun "itraverse")
+           "forall n f a b. (Applicative f, InlineInduction n) => (Fin n -> a -> f b) -> Vec n a -> f (Vec n b)",
+         _×_
+           (KeyFun "itraverse_")
+           "forall n f a b. (Applicative f, InlineInduction n) => (Fin n -> a -> f b) -> Vec n a -> f ()",
+         _×_
+           (KeyFun "ix")
+           "forall n a. InlineInduction n => Fin n -> Lens' (Vec n a) a",
+         _×_
+           (KeyFun "izipWith")
+           "InlineInduction n => (Fin n -> a -> b -> c) -> Vec n a -> Vec n b -> Vec n c",
+         _×_
+           (KeyFun "join") "InlineInduction n => Vec n (Vec n a) -> Vec n a",
+         _×_
+           (KeyFun "length")
+           "forall n a. InlineInduction n => Vec n a -> Int",
+         _×_
+           (KeyFun "map")
+           "forall a b n. InlineInduction n => (a -> b) -> Vec n a -> Vec n b",
+         _×_ (KeyFun "null") "forall n a. SNatI n => Vec n a -> Bool",
+         _×_
+           (KeyFun "product") "(Num a, InlineInduction n) => Vec n a -> a",
+         _×_
+           (KeyFun "reifyList")
+           "[a] -> (forall n. InlineInduction n => Vec n a -> r) -> r",
+         _×_ (KeyFun "singleton") "a -> Vec ( 'S  'Z) a",
+         _×_
+           (KeyFun "split")
+           "InlineInduction n => Vec (Plus n m) a -> (Vec n a, Vec m a)",
+         _×_ (KeyFun "sum") "(Num a, InlineInduction n) => Vec n a -> a",
+         _×_ (KeyFun "tail") "Vec ( 'S n) a -> Vec n a",
+         _×_
+           (KeyFun "toList")
+           "forall n a. InlineInduction n => Vec n a -> [a]",
+         _×_
+           (KeyFun "toPull")
+           "forall n a. InlineInduction n => Vec n a -> Vec n a",
+         _×_
+           (KeyFun "traverse")
+           "forall n f a b. (Applicative f, InlineInduction n) => (a -> f b) -> Vec n a -> f (Vec n b)",
+         _×_
+           (KeyFun "traverse1")
+           "forall n f a b. (Apply f, InlineInduction n) => (a -> f b) -> Vec ( 'S n) a -> f (Vec ( 'S n) b)",
+         _×_ (KeyFun "universe") "InlineInduction n => Vec n (Fin n)",
+         _×_
+           (KeyFun "zipWith")
+           "forall a b c n. InlineInduction n => (a -> b -> c) -> Vec n a -> Vec n b -> Vec n c"]),
+   _×_
+     (ModuleName "Data.Vec.DataFamily.SpineStrict.Pigeonhole")
+     (Map.fromList
+        [_×_
+           (KeyCls "Pigeonhole f where ")
+           " type family PigeonholeSize f :: Nat; type PigeonholeSize f = GPigeonholeSize f; ",
+         _×_
+           (KeyIns
+              "(Data.Vec.DataFamily.SpineStrict.Pigeonhole.GFromRep1 a, Data.Vec.DataFamily.SpineStrict.Pigeonhole.GFromRep1 b) => Data.Vec.DataFamily.SpineStrict.Pigeonhole.GFromRep1 ((GHC.Generics.:*:) * a b)")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Vec.DataFamily.SpineStrict.Pigeonhole.GToRep1 a, Data.Vec.DataFamily.SpineStrict.Pigeonhole.GToRep1 b) => Data.Vec.DataFamily.SpineStrict.Pigeonhole.GToRep1 ((GHC.Generics.:*:) * a b)")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Vec.DataFamily.SpineStrict.Pigeonhole.Pigeonhole f, Data.Vec.DataFamily.SpineStrict.Pigeonhole.Pigeonhole g, Data.Type.Nat.InlineInduction (Data.Vec.DataFamily.SpineStrict.Pigeonhole.PigeonholeSize f)) => Data.Vec.DataFamily.SpineStrict.Pigeonhole.Pigeonhole (Data.Functor.Product.Product * f g)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Vec.DataFamily.SpineStrict.Pigeonhole.GFromRep1 (GHC.Generics.U1 *)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Vec.DataFamily.SpineStrict.Pigeonhole.GFromRep1 GHC.Generics.Par1")
+           "",
+         _×_
+           (KeyIns
+              "Data.Vec.DataFamily.SpineStrict.Pigeonhole.GFromRep1 a => Data.Vec.DataFamily.SpineStrict.Pigeonhole.GFromRep1 (GHC.Generics.M1 * d c a)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Vec.DataFamily.SpineStrict.Pigeonhole.GToRep1 (GHC.Generics.U1 *)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Vec.DataFamily.SpineStrict.Pigeonhole.GToRep1 GHC.Generics.Par1")
+           "",
+         _×_
+           (KeyIns
+              "Data.Vec.DataFamily.SpineStrict.Pigeonhole.GToRep1 a => Data.Vec.DataFamily.SpineStrict.Pigeonhole.GToRep1 (GHC.Generics.M1 * d c a)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Vec.DataFamily.SpineStrict.Pigeonhole.Pigeonhole (Data.Proxy.Proxy *)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Vec.DataFamily.SpineStrict.Pigeonhole.Pigeonhole Data.Functor.Identity.Identity")
+           "",
+         _×_ (KeyTyp "GFrom") "c = GFromRep1 (Rep1 c)",
+         _×_
+           (KeyTyp "GPigeonholeSize") "c = PigeonholeSizeRep (Rep1 c) Nat0",
+         _×_ (KeyTyp "GTo") "c = GToRep1 (Rep1 c)",
+         _×_
+           (KeyFun "from")
+           "(Pigeonhole f, Generic1 f, GFrom f, PigeonholeSize f ~ GPigeonholeSize f) => f x -> Vec (PigeonholeSize f) x",
+         _×_
+           (KeyFun "gfrom")
+           "(Generic1 c, GFrom c) => c a -> Vec (GPigeonholeSize c) a",
+         _×_
+           (KeyFun "gindex")
+           "(Generic i, GFrom i, Generic1 f, GFrom f, GEnumSize i ~ GPigeonholeSize f, InlineInduction (GPigeonholeSize f)) => f a -> i -> a",
+         _×_
+           (KeyFun "gitraverse")
+           "(Generic i, GTo i, Generic1 t, GFrom t, GTo t, GEnumSize i ~ GPigeonholeSize t, InlineInduction (GPigeonholeSize t), Applicative f) => (i -> a -> f b) -> t a -> f (t b)",
+         _×_
+           (KeyFun "gix")
+           "(Generic i, GFrom i, Generic1 t, GTo t, GFrom t, GEnumSize i ~ GPigeonholeSize t, InlineInduction (GPigeonholeSize t), Functor f) => i -> (a -> f a) -> t a -> f (t a)",
+         _×_
+           (KeyFun "gtabulate")
+           "(Generic i, GTo i, Generic1 f, GTo f, GEnumSize i ~ GPigeonholeSize f, InlineInduction (GPigeonholeSize f)) => (i -> a) -> f a",
+         _×_
+           (KeyFun "gto")
+           "forall c a. (Generic1 c, GTo c) => Vec (GPigeonholeSize c) a -> c a",
+         _×_
+           (KeyFun "gtraverse")
+           "(Generic1 t, GFrom t, GTo t, InlineInduction (GPigeonholeSize t), Applicative f) => (a -> f b) -> t a -> f (t b)",
+         _×_
+           (KeyFun "to")
+           "(Pigeonhole f, Generic1 f, GTo f, PigeonholeSize f ~ GPigeonholeSize f) => Vec (PigeonholeSize f) x -> f x"]),
+   _×_
+     (ModuleName "Data.Vec.Lazy")
+     (Map.fromList
+        [_×_
+           (KeyCls
+              "Each s t a b => VecEach s t a b | s -> a, t -> b, s b -> t, t a -> s")
+           "",
+         _×_ (KeyDat "Vec") "(n :: Nat) a",
+         _×_ (KeyInR "5 ++") "",
+         _×_ (KeyInR "5 :::") "",
+         _×_
+           (KeyIns
+              "((a :: *) Data.Type.Equality.~ (a' :: *), (b :: *) Data.Type.Equality.~ (b' :: *)) => Data.Vec.Lazy.VecEach (a, a') (b, b') a b")
+           "",
+         _×_
+           (KeyIns
+              "((a :: *) Data.Type.Equality.~ (a2 :: *), (a :: *) Data.Type.Equality.~ (a3 :: *), (a :: *) Data.Type.Equality.~ (a4 :: *), (b :: *) Data.Type.Equality.~ (b2 :: *), (b :: *) Data.Type.Equality.~ (b3 :: *), (b :: *) Data.Type.Equality.~ (b4 :: *)) => Data.Vec.Lazy.VecEach (a, a2, a3, a4) (b, b2, b3, b4) a b")
+           "",
+         _×_
+           (KeyIns
+              "((a :: *) Data.Type.Equality.~ (a2 :: *), (a :: *) Data.Type.Equality.~ (a3 :: *), (b :: *) Data.Type.Equality.~ (b2 :: *), (b :: *) Data.Type.Equality.~ (b3 :: *)) => Data.Vec.Lazy.VecEach (a, a2, a3) (b, b2, b3) a b")
+           "",
+         _×_
+           (KeyIns
+              "((n :: Data.Nat.Nat) Data.Type.Equality.~ ('Data.Nat.S m :: Data.Nat.Nat)) => Data.Semigroup.Foldable.Class.Foldable1 (Data.Vec.Lazy.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "((n :: Data.Nat.Nat) Data.Type.Equality.~ ('Data.Nat.S m :: Data.Nat.Nat)) => Data.Semigroup.Traversable.Class.Traversable1 (Data.Vec.Lazy.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Base.Monoid a, Data.Type.Nat.SNatI n) => GHC.Base.Monoid (Data.Vec.Lazy.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "Control.DeepSeq.NFData a => Control.DeepSeq.NFData (Data.Vec.Lazy.Vec n a)")
+           "",
+         _×_ (KeyIns "Control.Lens.At.Ixed (Data.Vec.Lazy.Vec n a)") "",
+         _×_
+           (KeyIns
+              "Control.Lens.Each.Each (Data.Vec.Lazy.Vec n a) (Data.Vec.Lazy.Vec n b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Indexed.FoldableWithIndex (Data.Fin.Fin n) (Data.Vec.Lazy.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Indexed.FunctorWithIndex (Data.Fin.Fin n) (Data.Vec.Lazy.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Indexed.TraversableWithIndex (Data.Fin.Fin n) (Data.Vec.Lazy.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field1 (Data.Vec.Lazy.Vec ('Data.Nat.S n) a) (Data.Vec.Lazy.Vec ('Data.Nat.S n) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field2 (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S n)) a) (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S n)) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field3 (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))) a) (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field4 (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))) a) (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field5 (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))) a) (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field6 (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))))) a) (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field7 (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))))) a) (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field8 (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))))))) a) (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n)))))))) a) a a")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Tuple.Field9 (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))))))) a) (Data.Vec.Lazy.Vec ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S ('Data.Nat.S n))))))))) a) a a")
+           "",
+         _×_ (KeyIns "Data.Foldable.Foldable (Data.Vec.Lazy.Vec n)") "",
+         _×_
+           (KeyIns "Data.Functor.Bind.Class.Apply (Data.Vec.Lazy.Vec n)") "",
+         _×_
+           (KeyIns "Data.Functor.Bind.Class.Bind (Data.Vec.Lazy.Vec n)") "",
+         _×_
+           (KeyIns
+              "Data.Hashable.Class.Hashable a => Data.Hashable.Class.Hashable (Data.Vec.Lazy.Vec n a)")
+           "",
+         _×_
+           (KeyIns "Data.Traversable.Traversable (Data.Vec.Lazy.Vec n)") "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.SNatI n => Data.Distributive.Distributive (Data.Vec.Lazy.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.SNatI n => Data.Functor.Rep.Representable (Data.Vec.Lazy.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.SNatI n => GHC.Base.Applicative (Data.Vec.Lazy.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.SNatI n => GHC.Base.Monad (Data.Vec.Lazy.Vec n)")
+           "",
+         _×_ (KeyIns "GHC.Base.Functor (Data.Vec.Lazy.Vec n)") "",
+         _×_
+           (KeyIns
+              "GHC.Base.Semigroup a => GHC.Base.Semigroup (Data.Vec.Lazy.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Classes.Eq a => GHC.Classes.Eq (Data.Vec.Lazy.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Classes.Ord a => GHC.Classes.Ord (Data.Vec.Lazy.Vec n a)")
+           "",
+         _×_
+           (KeyIns "GHC.Show.Show a => GHC.Show.Show (Data.Vec.Lazy.Vec n a)")
+           "",
+         _×_ (KeyFun "(!)") "Vec n a -> Fin n -> a",
+         _×_ (KeyFun "(++)") "Vec n a -> Vec m a -> Vec (Plus n m) a",
+         _×_ (KeyFun "[:::]") "a -> Vec n a -> Vec ( 'S n) a",
+         _×_ (KeyFun "[VNil]") "Vec  'Z a",
+         _×_
+           (KeyFun "_Cons")
+           "Iso (Vec ( 'S n) a) (Vec ( 'S n) b) (a, Vec n a) (b, Vec n b)",
+         _×_
+           (KeyFun "_Pull")
+           "SNatI n => Iso (Vec n a) (Vec n b) (Vec n a) (Vec n b)",
+         _×_ (KeyFun "_Vec") "SNatI n => Prism' [a] (Vec n a)",
+         _×_ (KeyFun "_head") "Lens' (Vec ( 'S n) a) a",
+         _×_ (KeyFun "_tail") "Lens' (Vec ( 'S n) a) (Vec n a)",
+         _×_ (KeyFun "bind") "Vec n a -> (a -> Vec n b) -> Vec n b",
+         _×_
+           (KeyFun "chunks")
+           "(SNatI n, SNatI m) => Vec (Mult n m) a -> Vec n (Vec m a)",
+         _×_ (KeyFun "concat") "Vec n (Vec m a) -> Vec (Mult n m) a",
+         _×_
+           (KeyFun "concatMap")
+           "(a -> Vec m b) -> Vec n a -> Vec (Mult n m) b",
+         _×_ (KeyFun "cons") "a -> Vec n a -> Vec ( 'S n) a",
+         _×_ (KeyFun "empty") "Vec  'Z a",
+         _×_ (KeyFun "foldMap") "Monoid m => (a -> m) -> Vec n a -> m",
+         _×_
+           (KeyFun "foldMap1")
+           "Semigroup s => (a -> s) -> Vec ( 'S n) a -> s",
+         _×_
+           (KeyFun "foldl'")
+           "forall a b n. (b -> a -> b) -> b -> Vec n a -> b",
+         _×_
+           (KeyFun "foldr")
+           "forall a b n. (a -> b -> b) -> b -> Vec n a -> b",
+         _×_ (KeyFun "fromList") "SNatI n => [a] -> Maybe (Vec n a)",
+         _×_ (KeyFun "fromListPrefix") "SNatI n => [a] -> Maybe (Vec n a)",
+         _×_
+           (KeyFun "fromPull") "forall n a. SNatI n => Vec n a -> Vec n a",
+         _×_ (KeyFun "head") "Vec ( 'S n) a -> a",
+         _×_
+           (KeyFun "ifoldMap")
+           "Monoid m => (Fin n -> a -> m) -> Vec n a -> m",
+         _×_
+           (KeyFun "ifoldMap1")
+           "Semigroup s => (Fin ( 'S n) -> a -> s) -> Vec ( 'S n) a -> s",
+         _×_
+           (KeyFun "ifoldr")
+           "forall a b n. (Fin n -> a -> b -> b) -> b -> Vec n a -> b",
+         _×_ (KeyFun "imap") "(Fin n -> a -> b) -> Vec n a -> Vec n b",
+         _×_
+           (KeyFun "itraverse")
+           "Applicative f => (Fin n -> a -> f b) -> Vec n a -> f (Vec n b)",
+         _×_
+           (KeyFun "itraverse_")
+           "Applicative f => (Fin n -> a -> f b) -> Vec n a -> f ()",
+         _×_ (KeyFun "ix") "Fin n -> Lens' (Vec n a) a",
+         _×_
+           (KeyFun "izipWith")
+           "(Fin n -> a -> b -> c) -> Vec n a -> Vec n b -> Vec n c",
+         _×_ (KeyFun "join") "Vec n (Vec n a) -> Vec n a",
+         _×_ (KeyFun "length") "Vec n a -> Int",
+         _×_ (KeyFun "map") "(a -> b) -> Vec n a -> Vec n b",
+         _×_
+           (KeyFun "mapWithVec")
+           "VecEach s t a b => (forall n. InlineInduction n => Vec n a -> Vec n b) -> s -> t",
+         _×_ (KeyFun "null") "Vec n a -> Bool",
+         _×_ (KeyFun "product") "Num a => Vec n a -> a",
+         _×_
+           (KeyFun "reifyList")
+           "[a] -> (forall n. InlineInduction n => Vec n a -> r) -> r",
+         _×_ (KeyFun "singleton") "a -> Vec ( 'S  'Z) a",
+         _×_
+           (KeyFun "split")
+           "SNatI n => Vec (Plus n m) a -> (Vec n a, Vec m a)",
+         _×_ (KeyFun "sum") "Num a => Vec n a -> a",
+         _×_ (KeyFun "tail") "Vec ( 'S n) a -> Vec n a",
+         _×_ (KeyFun "toList") "Vec n a -> [a]",
+         _×_ (KeyFun "toPull") "Vec n a -> Vec n a",
+         _×_
+           (KeyFun "traverse")
+           "forall n f a b. Applicative f => (a -> f b) -> Vec n a -> f (Vec n b)",
+         _×_
+           (KeyFun "traverse1")
+           "forall n f a b. Apply f => (a -> f b) -> Vec ( 'S n) a -> f (Vec ( 'S n) b)",
+         _×_
+           (KeyFun "traverseWithVec")
+           "(VecEach s t a b, Applicative f) => (forall n. InlineInduction n => Vec n a -> f (Vec n b)) -> s -> f t",
+         _×_ (KeyFun "universe") "SNatI n => Vec n (Fin n)",
+         _×_ (KeyFun "withDict") "Vec n a -> (InlineInduction n => r) -> r",
+         _×_
+           (KeyFun "zipWith")
+           "(a -> b -> c) -> Vec n a -> Vec n b -> Vec n c"]),
+   _×_
+     (ModuleName "Data.Vec.Lazy.Inline")
+     (Map.fromList
+        [_×_
+           (KeyCls
+              "Each s t a b => VecEach s t a b | s -> a, t -> b, s b -> t, t a -> s")
+           "",
+         _×_ (KeyDat "Vec") "(n :: Nat) a",
+         _×_ (KeyInR "5 ++") "",
+         _×_ (KeyInR "5 :::") "",
+         _×_ (KeyFun "(!)") "InlineInduction n => Vec n a -> Fin n -> a",
+         _×_
+           (KeyFun "(++)")
+           "forall n m a. InlineInduction n => Vec n a -> Vec m a -> Vec (Plus n m) a",
+         _×_ (KeyFun "[:::]") "a -> Vec n a -> Vec ( 'S n) a",
+         _×_ (KeyFun "[VNil]") "Vec  'Z a",
+         _×_
+           (KeyFun "_Cons")
+           "Iso (Vec ( 'S n) a) (Vec ( 'S n) b) (a, Vec n a) (b, Vec n b)",
+         _×_
+           (KeyFun "_Pull")
+           "InlineInduction n => Iso (Vec n a) (Vec n b) (Vec n a) (Vec n b)",
+         _×_ (KeyFun "_Vec") "InlineInduction n => Prism' [a] (Vec n a)",
+         _×_ (KeyFun "_head") "Lens' (Vec ( 'S n) a) a",
+         _×_ (KeyFun "_tail") "Lens' (Vec ( 'S n) a) (Vec n a)",
+         _×_
+           (KeyFun "bind")
+           "InlineInduction n => Vec n a -> (a -> Vec n b) -> Vec n b",
+         _×_
+           (KeyFun "chunks")
+           "(InlineInduction n, InlineInduction m) => Vec (Mult n m) a -> Vec n (Vec m a)",
+         _×_
+           (KeyFun "concat")
+           "(InlineInduction m, InlineInduction n) => Vec n (Vec m a) -> Vec (Mult n m) a",
+         _×_
+           (KeyFun "concatMap")
+           "forall a b n m. (InlineInduction m, InlineInduction n) => (a -> Vec m b) -> Vec n a -> Vec (Mult n m) b",
+         _×_ (KeyFun "cons") "a -> Vec n a -> Vec ( 'S n) a",
+         _×_ (KeyFun "empty") "Vec  'Z a",
+         _×_
+           (KeyFun "foldMap")
+           "(Monoid m, InlineInduction n) => (a -> m) -> Vec n a -> m",
+         _×_
+           (KeyFun "foldMap1")
+           "forall s a n. (Semigroup s, InlineInduction n) => (a -> s) -> Vec ( 'S n) a -> s",
+         _×_
+           (KeyFun "foldr")
+           "forall a b n. InlineInduction n => (a -> b -> b) -> b -> Vec n a -> b",
+         _×_
+           (KeyFun "fromList") "InlineInduction n => [a] -> Maybe (Vec n a)",
+         _×_
+           (KeyFun "fromListPrefix")
+           "InlineInduction n => [a] -> Maybe (Vec n a)",
+         _×_
+           (KeyFun "fromPull")
+           "forall n a. InlineInduction n => Vec n a -> Vec n a",
+         _×_ (KeyFun "head") "Vec ( 'S n) a -> a",
+         _×_
+           (KeyFun "ifoldMap")
+           "forall a n m. (Monoid m, InlineInduction n) => (Fin n -> a -> m) -> Vec n a -> m",
+         _×_
+           (KeyFun "ifoldMap1")
+           "forall a n s. (Semigroup s, InlineInduction n) => (Fin ( 'S n) -> a -> s) -> Vec ( 'S n) a -> s",
+         _×_
+           (KeyFun "ifoldr")
+           "forall a b n. InlineInduction n => (Fin n -> a -> b -> b) -> b -> Vec n a -> b",
+         _×_
+           (KeyFun "imap")
+           "InlineInduction n => (Fin n -> a -> b) -> Vec n a -> Vec n b",
+         _×_
+           (KeyFun "itraverse")
+           "forall n f a b. (Applicative f, InlineInduction n) => (Fin n -> a -> f b) -> Vec n a -> f (Vec n b)",
+         _×_
+           (KeyFun "itraverse_")
+           "forall n f a b. (Applicative f, InlineInduction n) => (Fin n -> a -> f b) -> Vec n a -> f ()",
+         _×_
+           (KeyFun "ix") "InlineInduction n => Fin n -> Lens' (Vec n a) a",
+         _×_
+           (KeyFun "izipWith")
+           "InlineInduction n => (Fin n -> a -> b -> c) -> Vec n a -> Vec n b -> Vec n c",
+         _×_
+           (KeyFun "join") "InlineInduction n => Vec n (Vec n a) -> Vec n a",
+         _×_
+           (KeyFun "length")
+           "forall n a. InlineInduction n => Vec n a -> Int",
+         _×_
+           (KeyFun "map")
+           "forall a b n. InlineInduction n => (a -> b) -> Vec n a -> Vec n b",
+         _×_
+           (KeyFun "mapWithVec")
+           "VecEach s t a b => (forall n. InlineInduction n => Vec n a -> Vec n b) -> s -> t",
+         _×_ (KeyFun "null") "Vec n a -> Bool",
+         _×_
+           (KeyFun "product") "(Num a, InlineInduction n) => Vec n a -> a",
+         _×_
+           (KeyFun "reifyList")
+           "[a] -> (forall n. InlineInduction n => Vec n a -> r) -> r",
+         _×_ (KeyFun "singleton") "a -> Vec ( 'S  'Z) a",
+         _×_
+           (KeyFun "split")
+           "InlineInduction n => Vec (Plus n m) a -> (Vec n a, Vec m a)",
+         _×_ (KeyFun "sum") "(Num a, InlineInduction n) => Vec n a -> a",
+         _×_ (KeyFun "tail") "Vec ( 'S n) a -> Vec n a",
+         _×_
+           (KeyFun "toList")
+           "forall n a. InlineInduction n => Vec n a -> [a]",
+         _×_
+           (KeyFun "toPull")
+           "forall n a. InlineInduction n => Vec n a -> Vec n a",
+         _×_
+           (KeyFun "traverse")
+           "forall n f a b. (Applicative f, InlineInduction n) => (a -> f b) -> Vec n a -> f (Vec n b)",
+         _×_
+           (KeyFun "traverse1")
+           "forall n f a b. (Apply f, InlineInduction n) => (a -> f b) -> Vec ( 'S n) a -> f (Vec ( 'S n) b)",
+         _×_
+           (KeyFun "traverseWithVec")
+           "(VecEach s t a b, Applicative f) => (forall n. InlineInduction n => Vec n a -> f (Vec n b)) -> s -> f t",
+         _×_ (KeyFun "universe") "InlineInduction n => Vec n (Fin n)",
+         _×_
+           (KeyFun "zipWith")
+           "forall a b c n. InlineInduction n => (a -> b -> c) -> Vec n a -> Vec n b -> Vec n c"]),
+   _×_
+     (ModuleName "Data.Vec.Pull")
+     (Map.fromList
+        [_×_
+           (KeyIns
+              "(GHC.Classes.Eq a, Data.Type.Nat.SNatI n) => GHC.Classes.Eq (Data.Vec.Pull.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "Control.Lens.Indexed.FunctorWithIndex (Data.Fin.Fin n) (Data.Vec.Pull.Vec n)")
+           "",
+         _×_
+           (KeyIns "Data.Distributive.Distributive (Data.Vec.Pull.Vec n)") "",
+         _×_
+           (KeyIns "Data.Functor.Bind.Class.Apply (Data.Vec.Pull.Vec n)") "",
+         _×_
+           (KeyIns "Data.Functor.Bind.Class.Bind (Data.Vec.Pull.Vec n)") "",
+         _×_
+           (KeyIns "Data.Functor.Rep.Representable (Data.Vec.Pull.Vec n)") "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.SNatI n => Control.Lens.Indexed.FoldableWithIndex (Data.Fin.Fin n) (Data.Vec.Pull.Vec n)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Type.Nat.SNatI n => Data.Foldable.Foldable (Data.Vec.Pull.Vec n)")
+           "",
+         _×_ (KeyIns "GHC.Base.Applicative (Data.Vec.Pull.Vec n)") "",
+         _×_ (KeyIns "GHC.Base.Functor (Data.Vec.Pull.Vec n)") "",
+         _×_ (KeyIns "GHC.Base.Monad (Data.Vec.Pull.Vec n)") "",
+         _×_
+           (KeyIns
+              "GHC.Base.Monoid a => GHC.Base.Monoid (Data.Vec.Pull.Vec n a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Semigroup a => GHC.Base.Semigroup (Data.Vec.Pull.Vec n a)")
+           "",
+         _×_ (KeyNew "Vec") "n a",
+         _×_ (KeyFun "(!)") "Vec n a -> Fin n -> a",
+         _×_ (KeyFun "Vec") "(Fin n -> a) -> Vec n a",
+         _×_ (KeyFun "[unVec]") "Vec n a -> Fin n -> a",
+         _×_
+           (KeyFun "_Cons")
+           "Iso (Vec ( 'S n) a) (Vec ( 'S n) b) (a, Vec n a) (b, Vec n b)",
+         _×_ (KeyFun "_Vec") "SNatI n => Prism' [a] (Vec n a)",
+         _×_ (KeyFun "_head") "Lens' (Vec ( 'S n) a) a",
+         _×_ (KeyFun "_tail") "Lens' (Vec ( 'S n) a) (Vec n a)",
+         _×_ (KeyFun "bind") "Vec n a -> (a -> Vec n b) -> Vec n b",
+         _×_ (KeyFun "empty") "Vec  'Z a",
+         _×_
+           (KeyFun "foldMap")
+           "(Monoid m, SNatI n) => (a -> m) -> Vec n a -> m",
+         _×_
+           (KeyFun "foldMap1")
+           "(Semigroup s, SNatI n) => (a -> s) -> Vec ( 'S n) a -> s",
+         _×_
+           (KeyFun "foldl'") "SNatI n => (b -> a -> b) -> b -> Vec n a -> b",
+         _×_
+           (KeyFun "foldr") "SNatI n => (a -> b -> b) -> b -> Vec n a -> b",
+         _×_ (KeyFun "fromList") "SNatI n => [a] -> Maybe (Vec n a)",
+         _×_ (KeyFun "fromListPrefix") "SNatI n => [a] -> Maybe (Vec n a)",
+         _×_ (KeyFun "head") "Vec ( 'S n) a -> a",
+         _×_
+           (KeyFun "ifoldMap")
+           "(Monoid m, SNatI n) => (Fin n -> a -> m) -> Vec n a -> m",
+         _×_
+           (KeyFun "ifoldMap1")
+           "(Semigroup s, SNatI n) => (Fin ( 'S n) -> a -> s) -> Vec ( 'S n) a -> s",
+         _×_
+           (KeyFun "ifoldr")
+           "SNatI n => (Fin n -> a -> b -> b) -> b -> Vec n a -> b",
+         _×_ (KeyFun "imap") "(Fin n -> a -> b) -> Vec n a -> Vec n b",
+         _×_ (KeyFun "ix") "Fin n -> Lens' (Vec n a) a",
+         _×_
+           (KeyFun "izipWith")
+           "(Fin n -> a -> b -> c) -> Vec n a -> Vec n b -> Vec n c",
+         _×_ (KeyFun "join") "Vec n (Vec n a) -> Vec n a",
+         _×_ (KeyFun "length") "forall n a. SNatI n => Vec n a -> Int",
+         _×_ (KeyFun "map") "(a -> b) -> Vec n a -> Vec n b",
+         _×_ (KeyFun "null") "forall n a. SNatI n => Vec n a -> Bool",
+         _×_ (KeyFun "product") "(Num a, SNatI n) => Vec n a -> a",
+         _×_
+           (KeyFun "reifyList")
+           "[a] -> (forall n. InlineInduction n => Vec n a -> r) -> r",
+         _×_ (KeyFun "singleton") "a -> Vec ( 'S  'Z) a",
+         _×_ (KeyFun "sum") "(Num a, SNatI n) => Vec n a -> a",
+         _×_ (KeyFun "tail") "Vec ( 'S n) a -> Vec n a",
+         _×_ (KeyFun "toList") "SNatI n => Vec n a -> [a]",
+         _×_ (KeyFun "universe") "SNatI n => Vec n (Fin n)",
+         _×_
+           (KeyFun "zipWith")
+           "(a -> b -> c) -> Vec n a -> Vec n b -> Vec n c"])]

@@ -1,0 +1,1257 @@
+Map.fromList
+  [_×_
+     (ModuleName "Servant.API")
+     (Map.fromList
+        [_×_ (KeyCls "Accept ctype") "",
+         _×_ (KeyCls "Accept ctype => MimeRender ctype a") "",
+         _×_ (KeyCls "Accept ctype => MimeUnrender ctype a") "",
+         _×_
+           (KeyCls
+              "AddHeader h v orig new | h v orig -> new, new -> h, new -> v, new -> orig")
+           "",
+         _×_ (KeyCls "BuildHeadersTo hs") "",
+         _×_ (KeyCls "FramingRender strategy") "",
+         _×_ (KeyCls "FramingUnrender strategy") "",
+         _×_ (KeyCls "FromSourceIO chunk a | a -> chunk") "",
+         _×_ (KeyCls "GetHeaders ls") "",
+         _×_
+           (KeyCls "HasLink endpoint where ")
+           " type family MkLink endpoint (a :: *); ",
+         _×_ (KeyCls "HasResponseHeader h a headers") "",
+         _×_ (KeyCls "ReflectMethod a") "",
+         _×_ (KeyCls "SBoolI (b :: Bool)") "",
+         _×_ (KeyCls "ToHttpApiData a") "",
+         _×_ (KeyCls "ToSourceIO chunk a | a -> chunk") "",
+         _×_ (KeyDat "(path") ":: k) :> (a :: *)",
+         _×_ (KeyDat "AuthProtect") "(tag :: k)",
+         _×_ (KeyDat "BasicAuth") "(realm :: Symbol) (userData :: *)",
+         _×_
+           (KeyDat "BasicAuthData")
+           "BasicAuthData :: !ByteString -> !ByteString -> BasicAuthData",
+         _×_ (KeyDat "Capture'") "(mods :: [*]) (sym :: Symbol) (a :: *)",
+         _×_ (KeyDat "CaptureAll") "(sym :: Symbol) (a :: *)",
+         _×_ (KeyDat "Description") "(sym :: Symbol)",
+         _×_ (KeyDat "EmptyAPI") "EmptyAPI :: EmptyAPI",
+         _×_ (KeyDat "HList") "a",
+         _×_ (KeyDat "Header'") "(mods :: [*]) (sym :: Symbol) a",
+         _×_ (KeyDat "Headers") "ls a",
+         _×_
+           (KeyDat "HttpVersion")
+           "HttpVersion :: !Int -> !Int -> HttpVersion",
+         _×_
+           (KeyDat "IsSecure")
+           "-- | the connection to the server is secure (HTTPS)",
+         _×_
+           (KeyDat "Lenient")
+           "-- | Optional argument. Wrapped in <a>Maybe</a>.",
+         _×_
+           (KeyDat "Link")
+           "-- | Create a valid (by construction) relative URI with query params.",
+         _×_
+           (KeyDat "NetstringFraming")
+           "-- | A simple framing strategy that has no header, and inserts a newline",
+         _×_
+           (KeyDat "NewlineFraming")
+           "-- | A framing strategy that does not do any framing at all, it just passes",
+         _×_ (KeyDat "NoContent") "NoContent :: NoContent",
+         _×_ (KeyDat "NoContentVerb") "(method :: k1)",
+         _×_
+           (KeyDat "NoFraming")
+           "-- | The <a>FramingUnrender</a> class provides the logic for parsing a",
+         _×_ (KeyDat "OctetStream") "data FormUrlEncoded",
+         _×_ (KeyDat "Optional") "-- | Required argument. Not wrapped.",
+         _×_ (KeyDat "PlainText") "data JSON",
+         _×_ (KeyDat "QueryFlag") "(sym :: Symbol)",
+         _×_
+           (KeyDat "QueryParam'") "(mods :: [*]) (sym :: Symbol) (a :: *)",
+         _×_ (KeyDat "QueryParams") "(sym :: Symbol) (a :: *)",
+         _×_ (KeyDat "Raw") "class FromHttpApiData a",
+         _×_
+           (KeyDat "RemoteHost")
+           "-- | Was this request made over an SSL connection?",
+         _×_
+           (KeyDat "ReqBody'") "(mods :: [*]) (contentTypes :: [*]) (a :: *)",
+         _×_
+           (KeyDat "Required")
+           "-- | Capture all remaining values from the request path under a certain",
+         _×_ (KeyDat "ResponseHeader") "(sym :: Symbol) a",
+         _×_ (KeyDat "SBool") "(b :: Bool)",
+         _×_ (KeyDat "StdMethod") "GET :: StdMethod",
+         _×_
+           (KeyDat "Stream")
+           "(method :: k1) (status :: Nat) (framing :: *) (contentType :: *) (a :: *)",
+         _×_
+           (KeyDat "StreamBody'")
+           "(mods :: [*]) (framing :: *) (contentType :: *) (a :: *)",
+         _×_
+           (KeyDat "Strict")
+           "-- | Leniently parsed argument, i.e. parsing never fail. Wrapped in",
+         _×_ (KeyDat "Summary") "(sym :: Symbol)",
+         _×_
+           (KeyDat "URI")
+           "URI :: String -> Maybe URIAuth -> String -> String -> String -> URI",
+         _×_
+           (KeyDat "Verb")
+           "(method :: k1) (statusCode :: Nat) (contentTypes :: [*]) (a :: *)",
+         _×_
+           (KeyDat "WithNamedContext")
+           "(name :: Symbol) (subContext :: [*]) subApi",
+         _×_ (KeyDat "a") ":<|> b",
+         _×_ (KeyInR "3 :<|>") "",
+         _×_ (KeyInR "4 :>") "",
+         _×_ (KeyTyF "If") "(cond :: Bool) (tru :: k) (fls :: k) :: k",
+         _×_ (KeyTyF "IsElem") "endpoint api :: Constraint",
+         _×_ (KeyTyF "IsElem'") "a s :: Constraint",
+         _×_ (KeyTyp "Capture") "= Capture' '[]",
+         _×_ (KeyTyp "Delete") "= Verb  'DELETE 200",
+         _×_ (KeyTyp "DeleteAccepted") "= Verb  'DELETE 202",
+         _×_ (KeyTyp "DeleteNoContent") "= NoContentVerb  'DELETE",
+         _×_ (KeyTyp "DeleteNonAuthoritative") "= Verb  'DELETE 203",
+         _×_ (KeyTyp "Get") "= Verb  'GET 200",
+         _×_ (KeyTyp "GetAccepted") "= Verb  'GET 202",
+         _×_ (KeyTyp "GetNoContent") "= NoContentVerb  'GET",
+         _×_ (KeyTyp "GetNonAuthoritative") "= Verb  'GET 203",
+         _×_ (KeyTyp "GetPartialContent") "= Verb  'GET 206",
+         _×_ (KeyTyp "GetResetContent") "= Verb  'GET 205",
+         _×_ (KeyTyp "Header") "= Header' '[Optional, Strict]",
+         _×_ (KeyTyp "Patch") "= Verb  'PATCH 200",
+         _×_ (KeyTyp "PatchAccepted") "= Verb  'PATCH 202",
+         _×_ (KeyTyp "PatchNoContent") "= NoContentVerb  'PATCH",
+         _×_ (KeyTyp "PatchNonAuthoritative") "= Verb  'PATCH 203",
+         _×_ (KeyTyp "Post") "= Verb  'POST 200",
+         _×_ (KeyTyp "PostAccepted") "= Verb  'POST 202",
+         _×_ (KeyTyp "PostCreated") "= Verb  'POST 201",
+         _×_ (KeyTyp "PostNoContent") "= NoContentVerb  'POST",
+         _×_ (KeyTyp "PostNonAuthoritative") "= Verb  'POST 203",
+         _×_ (KeyTyp "PostResetContent") "= Verb  'POST 205",
+         _×_ (KeyTyp "Put") "= Verb  'PUT 200",
+         _×_ (KeyTyp "PutAccepted") "= Verb  'PUT 202",
+         _×_ (KeyTyp "PutCreated") "= Verb  'PUT 201",
+         _×_ (KeyTyp "PutNoContent") "= NoContentVerb  'PUT",
+         _×_ (KeyTyp "PutNonAuthoritative") "= Verb  'PUT 203",
+         _×_ (KeyTyp "QueryParam") "= QueryParam' '[Optional, Strict]",
+         _×_ (KeyTyp "ReqBody") "= ReqBody' '[Required, Strict]",
+         _×_ (KeyTyp "SourceIO") "= SourceT IO",
+         _×_ (KeyTyp "StreamBody") "= StreamBody' '[]",
+         _×_ (KeyTyp "StreamGet") "= Stream  'GET 200",
+         _×_ (KeyTyp "StreamPost") "= Stream  'POST 200",
+         _×_ (KeyTyp "Vault") "= Vault RealWorld",
+         _×_ (KeyFun "(:<|>)") "a -> b -> (:<|>) a b",
+         _×_ (KeyFun "CONNECT") "StdMethod",
+         _×_ (KeyFun "DELETE") "StdMethod",
+         _×_ (KeyFun "HEAD") "StdMethod",
+         _×_ (KeyFun "Header") "a -> ResponseHeader a",
+         _×_ (KeyFun "Headers") "a -> HList ls -> Headers ls a",
+         _×_ (KeyFun "MissingHeader") "ResponseHeader a",
+         _×_ (KeyFun "NotSecure") "IsSecure",
+         _×_ (KeyFun "OPTIONS") "StdMethod",
+         _×_ (KeyFun "PATCH") "StdMethod",
+         _×_ (KeyFun "POST") "StdMethod",
+         _×_ (KeyFun "PUT") "StdMethod",
+         _×_ (KeyFun "Secure") "IsSecure",
+         _×_ (KeyFun "TRACE") "StdMethod",
+         _×_ (KeyFun "UndecodableHeader") "ByteString -> ResponseHeader a",
+         _×_
+           (KeyFun "[HCons]")
+           "ResponseHeader h x -> HList xs -> HList (Header h x : xs)",
+         _×_ (KeyFun "[HNil]") "HList '[]",
+         _×_ (KeyFun "[SFalse]") "forall (b :: Bool). () => SBool False",
+         _×_ (KeyFun "[STrue]") "forall (b :: Bool). () => SBool True",
+         _×_ (KeyFun "[basicAuthPassword]") "BasicAuthData -> !ByteString",
+         _×_ (KeyFun "[basicAuthUsername]") "BasicAuthData -> !ByteString",
+         _×_ (KeyFun "[getHeadersHList]") "Headers ls a -> HList ls",
+         _×_ (KeyFun "[getResponse]") "Headers ls a -> a",
+         _×_ (KeyFun "[httpMajor]") "HttpVersion -> !Int",
+         _×_ (KeyFun "[httpMinor]") "HttpVersion -> !Int",
+         _×_ (KeyFun "[uriAuthority]") "URI -> Maybe URIAuth",
+         _×_ (KeyFun "[uriFragment]") "URI -> String",
+         _×_ (KeyFun "[uriPath]") "URI -> String",
+         _×_ (KeyFun "[uriQuery]") "URI -> String",
+         _×_ (KeyFun "[uriScheme]") "URI -> String",
+         _×_
+           (KeyFun "addHeader") "AddHeader h v orig new => v -> orig -> new",
+         _×_
+           (KeyFun "buildHeadersTo")
+           "BuildHeadersTo hs => [Header] -> HList hs",
+         _×_
+           (KeyFun "contentType") "Accept ctype => Proxy ctype -> MediaType",
+         _×_
+           (KeyFun "contentTypes")
+           "Accept ctype => Proxy ctype -> NonEmpty MediaType",
+         _×_
+           (KeyFun "framingRender")
+           "(FramingRender strategy, Monad m) => Proxy strategy -> (a -> ByteString) -> SourceT m a -> SourceT m ByteString",
+         _×_
+           (KeyFun "framingUnrender")
+           "(FramingUnrender strategy, Monad m) => Proxy strategy -> (ByteString -> Either String a) -> SourceT m ByteString -> SourceT m a",
+         _×_
+           (KeyFun "fromSourceIO")
+           "FromSourceIO chunk a => SourceIO chunk -> a",
+         _×_ (KeyFun "getHeaders") "GetHeaders ls => ls -> [Header]",
+         _×_
+           (KeyFun "lookupResponseHeader")
+           "HasResponseHeader h a headers => Headers headers r -> ResponseHeader h a",
+         _×_
+           (KeyFun "mimeRender")
+           "MimeRender ctype a => Proxy ctype -> a -> ByteString",
+         _×_
+           (KeyFun "mimeUnrender")
+           "MimeUnrender ctype a => Proxy ctype -> ByteString -> Either String a",
+         _×_
+           (KeyFun "mimeUnrenderWithType")
+           "MimeUnrender ctype a => Proxy ctype -> MediaType -> ByteString -> Either String a",
+         _×_ (KeyFun "noHeader") "AddHeader h v orig new => orig -> new",
+         _×_
+           (KeyFun "parseHeader")
+           "FromHttpApiData a => ByteString -> Either Text a",
+         _×_
+           (KeyFun "parseQueryParam")
+           "FromHttpApiData a => Text -> Either Text a",
+         _×_
+           (KeyFun "parseUrlPiece")
+           "FromHttpApiData a => Text -> Either Text a",
+         _×_
+           (KeyFun "reflectMethod") "ReflectMethod a => Proxy a -> Method",
+         _×_
+           (KeyFun "safeLink")
+           "forall endpoint api. (IsElem endpoint api, HasLink endpoint) => Proxy api -> Proxy endpoint -> MkLink endpoint Link",
+         _×_ (KeyFun "sbool") "SBoolI b => SBool b",
+         _×_ (KeyFun "toEncodedUrlPiece") "ToHttpApiData a => a -> Builder",
+         _×_ (KeyFun "toHeader") "ToHttpApiData a => a -> ByteString",
+         _×_
+           (KeyFun "toLink")
+           "HasLink endpoint => (Link -> a) -> Proxy endpoint -> Link -> MkLink endpoint a",
+         _×_ (KeyFun "toQueryParam") "ToHttpApiData a => a -> Text",
+         _×_
+           (KeyFun "toSourceIO") "ToSourceIO chunk a => a -> SourceIO chunk",
+         _×_ (KeyFun "toUrlPiece") "ToHttpApiData a => a -> Text"]),
+   _×_
+     (ModuleName "Servant.API.Alternative")
+     (Map.fromList
+        [_×_ (KeyDat "a") ":<|> b",
+         _×_ (KeyInR "3 :<|>") "",
+         _×_
+           (KeyIns
+              "(GHC.Base.Monoid a, GHC.Base.Monoid b) => GHC.Base.Monoid (a Servant.API.Alternative.:<|> b)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Base.Semigroup a, GHC.Base.Semigroup b) => GHC.Base.Semigroup (a Servant.API.Alternative.:<|> b)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Classes.Eq a, GHC.Classes.Eq b) => GHC.Classes.Eq (a Servant.API.Alternative.:<|> b)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Enum.Bounded a, GHC.Enum.Bounded b) => GHC.Enum.Bounded (a Servant.API.Alternative.:<|> b)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Show.Show a, GHC.Show.Show b) => GHC.Show.Show (a Servant.API.Alternative.:<|> b)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Biapplicative.Biapplicative (Servant.API.Alternative.:<|>)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Bifoldable.Bifoldable (Servant.API.Alternative.:<|>)")
+           "",
+         _×_
+           (KeyIns "Data.Bifunctor.Bifunctor (Servant.API.Alternative.:<|>)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Bitraversable.Bitraversable (Servant.API.Alternative.:<|>)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Foldable.Foldable ((Servant.API.Alternative.:<|>) a)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Traversable.Traversable ((Servant.API.Alternative.:<|>) a)")
+           "",
+         _×_
+           (KeyIns "GHC.Base.Functor ((Servant.API.Alternative.:<|>) a)") "",
+         _×_ (KeyFun "(:<|>)") "a -> b -> (:<|>) a b"]),
+   _×_
+     (ModuleName "Servant.API.BasicAuth")
+     (Map.fromList
+        [_×_ (KeyDat "BasicAuth") "(realm :: Symbol) (userData :: *)",
+         _×_
+           (KeyDat "BasicAuthData")
+           "BasicAuthData :: !ByteString -> !ByteString -> BasicAuthData",
+         _×_ (KeyFun "[basicAuthPassword]") "BasicAuthData -> !ByteString",
+         _×_
+           (KeyFun "[basicAuthUsername]") "BasicAuthData -> !ByteString"]),
+   _×_
+     (ModuleName "Servant.API.Capture")
+     (Map.fromList
+        [_×_ (KeyDat "Capture'") "(mods :: [*]) (sym :: Symbol) (a :: *)",
+         _×_ (KeyDat "CaptureAll") "(sym :: Symbol) (a :: *)",
+         _×_ (KeyTyp "Capture") "= Capture' '[]"]),
+   _×_
+     (ModuleName "Servant.API.ContentTypes")
+     (Map.fromList
+        [_×_ (KeyCls "(AllMime list) => AllCTRender (list :: [*]) a") "",
+         _×_ (KeyCls "(AllMime list) => AllMimeRender (list :: [*]) a") "",
+         _×_
+           (KeyCls "(AllMime list) => AllMimeUnrender (list :: [*]) a") "",
+         _×_ (KeyCls "Accept ctype") "",
+         _×_ (KeyCls "Accept ctype => MimeRender ctype a") "",
+         _×_ (KeyCls "Accept ctype => MimeUnrender ctype a") "",
+         _×_ (KeyCls "AllCTUnrender (list :: [*]) a") "",
+         _×_ (KeyCls "AllMime (list :: [*])") "",
+         _×_ (KeyDat "FormUrlEncoded") "data OctetStream",
+         _×_ (KeyDat "JSON") "data PlainText",
+         _×_ (KeyDat "NoContent") "NoContent :: NoContent",
+         _×_
+           (KeyIns
+              "(Servant.API.ContentTypes.Accept ct, Servant.API.ContentTypes.AllMime cts, Servant.API.ContentTypes.AllMimeRender (ct : cts) a) => Servant.API.ContentTypes.AllCTRender (ct : cts) a")
+           "",
+         _×_
+           (KeyIns
+              "(Servant.API.ContentTypes.Accept ctyp, Servant.API.ContentTypes.AllMime ctyps) => Servant.API.ContentTypes.AllMime (ctyp : ctyps)")
+           "",
+         _×_
+           (KeyIns
+              "(Servant.API.ContentTypes.MimeRender ctyp a, Servant.API.ContentTypes.AllMimeRender (ctyp' : ctyps) a) => Servant.API.ContentTypes.AllMimeRender (ctyp : ctyp' : ctyps) a")
+           "",
+         _×_
+           (KeyIns
+              "(Servant.API.ContentTypes.MimeUnrender ctyp a, Servant.API.ContentTypes.AllMimeUnrender ctyps a) => Servant.API.ContentTypes.AllMimeUnrender (ctyp : ctyps) a")
+           "",
+         _×_
+           (KeyIns
+              "(TypeError ...) => Servant.API.ContentTypes.AllCTRender '[] ()")
+           "",
+         _×_
+           (KeyIns
+              "Control.DeepSeq.NFData Servant.API.ContentTypes.NoContent")
+           "",
+         _×_
+           (KeyIns
+              "Data.Aeson.Types.FromJSON.FromJSON a => Servant.API.ContentTypes.MimeUnrender Servant.API.ContentTypes.JSON a")
+           "",
+         _×_
+           (KeyIns
+              "Data.Aeson.Types.ToJSON.ToJSON a => Servant.API.ContentTypes.MimeRender Servant.API.ContentTypes.JSON a")
+           "",
+         _×_
+           (KeyIns "GHC.Classes.Eq Servant.API.ContentTypes.AcceptHeader") "",
+         _×_
+           (KeyIns "GHC.Classes.Eq Servant.API.ContentTypes.NoContent") "",
+         _×_
+           (KeyIns
+              "GHC.Generics.Generic Servant.API.ContentTypes.AcceptHeader")
+           "",
+         _×_
+           (KeyIns "GHC.Generics.Generic Servant.API.ContentTypes.NoContent")
+           "",
+         _×_
+           (KeyIns "GHC.Read.Read Servant.API.ContentTypes.AcceptHeader") "",
+         _×_ (KeyIns "GHC.Read.Read Servant.API.ContentTypes.NoContent") "",
+         _×_
+           (KeyIns "GHC.Show.Show Servant.API.ContentTypes.AcceptHeader") "",
+         _×_ (KeyIns "GHC.Show.Show Servant.API.ContentTypes.NoContent") "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.Accept Servant.API.ContentTypes.FormUrlEncoded")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.Accept Servant.API.ContentTypes.JSON")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.Accept Servant.API.ContentTypes.OctetStream")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.Accept Servant.API.ContentTypes.PlainText")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.Accept ctyp => Servant.API.ContentTypes.AllMimeRender '[ctyp] Servant.API.ContentTypes.NoContent")
+           "",
+         _×_ (KeyIns "Servant.API.ContentTypes.AllMime '[]") "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.AllMime (ctyp : ctyp' : ctyps) => Servant.API.ContentTypes.AllMimeRender (ctyp : ctyp' : ctyps) Servant.API.ContentTypes.NoContent")
+           "",
+         _×_ (KeyIns "Servant.API.ContentTypes.AllMimeUnrender '[] a") "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.AllMimeUnrender ctyps a => Servant.API.ContentTypes.AllCTUnrender ctyps a")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.MimeRender Servant.API.ContentTypes.OctetStream Data.ByteString.Internal.ByteString")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.MimeRender Servant.API.ContentTypes.OctetStream Data.ByteString.Lazy.Internal.ByteString")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.MimeRender Servant.API.ContentTypes.PlainText Data.Text.Internal.Lazy.Text")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.MimeRender Servant.API.ContentTypes.PlainText Data.Text.Internal.Text")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.MimeRender Servant.API.ContentTypes.PlainText GHC.Base.String")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.MimeRender ctyp a => Servant.API.ContentTypes.AllMimeRender '[ctyp] a")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.MimeUnrender Servant.API.ContentTypes.OctetStream Data.ByteString.Internal.ByteString")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.MimeUnrender Servant.API.ContentTypes.OctetStream Data.ByteString.Lazy.Internal.ByteString")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.MimeUnrender Servant.API.ContentTypes.PlainText Data.Text.Internal.Lazy.Text")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.MimeUnrender Servant.API.ContentTypes.PlainText Data.Text.Internal.Text")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ContentTypes.MimeUnrender Servant.API.ContentTypes.PlainText GHC.Base.String")
+           "",
+         _×_
+           (KeyIns
+              "Web.Internal.FormUrlEncoded.FromForm a => Servant.API.ContentTypes.MimeUnrender Servant.API.ContentTypes.FormUrlEncoded a")
+           "",
+         _×_
+           (KeyIns
+              "Web.Internal.FormUrlEncoded.ToForm a => Servant.API.ContentTypes.MimeRender Servant.API.ContentTypes.FormUrlEncoded a")
+           "",
+         _×_
+           (KeyNew "AcceptHeader")
+           "AcceptHeader :: ByteString -> AcceptHeader",
+         _×_ (KeyFun "allMime") "AllMime list => Proxy list -> [MediaType]",
+         _×_
+           (KeyFun "allMimeRender")
+           "AllMimeRender list a => Proxy list -> a -> [(MediaType, ByteString)]",
+         _×_
+           (KeyFun "allMimeUnrender")
+           "AllMimeUnrender list a => Proxy list -> [(MediaType, ByteString -> Either String a)]",
+         _×_
+           (KeyFun "canHandleAcceptH")
+           "AllMime list => Proxy list -> AcceptHeader -> Bool",
+         _×_
+           (KeyFun "canHandleCTypeH")
+           "AllCTUnrender list a => Proxy list -> ByteString -> Maybe (ByteString -> Either String a)",
+         _×_
+           (KeyFun "contentType") "Accept ctype => Proxy ctype -> MediaType",
+         _×_
+           (KeyFun "contentTypes")
+           "Accept ctype => Proxy ctype -> NonEmpty MediaType",
+         _×_
+           (KeyFun "eitherDecodeLenient")
+           "FromJSON a => ByteString -> Either String a",
+         _×_
+           (KeyFun "handleAcceptH")
+           "AllCTRender list a => Proxy list -> AcceptHeader -> a -> Maybe (ByteString, ByteString)",
+         _×_
+           (KeyFun "handleCTypeH")
+           "AllCTUnrender list a => Proxy list -> ByteString -> ByteString -> Maybe (Either String a)",
+         _×_
+           (KeyFun "mimeRender")
+           "MimeRender ctype a => Proxy ctype -> a -> ByteString",
+         _×_
+           (KeyFun "mimeUnrender")
+           "MimeUnrender ctype a => Proxy ctype -> ByteString -> Either String a",
+         _×_
+           (KeyFun "mimeUnrenderWithType")
+           "MimeUnrender ctype a => Proxy ctype -> MediaType -> ByteString -> Either String a"]),
+   _×_
+     (ModuleName "Servant.API.Description")
+     (Map.fromList
+        [_×_ (KeyDat "Description") "(sym :: Symbol)",
+         _×_ (KeyDat "Summary") "(sym :: Symbol)",
+         _×_
+           (KeyTyF "FoldDescription'")
+           "(acc :: Symbol) (mods :: [*]) :: Symbol",
+         _×_ (KeyTyp "FoldDescription") "mods = FoldDescription' \"\" mods",
+         _×_
+           (KeyFun "reflectDescription")
+           "forall mods. KnownSymbol (FoldDescription mods) => Proxy mods -> String"]),
+   _×_
+     (ModuleName "Servant.API.Empty")
+     (Map.fromList
+        [_×_ (KeyDat "EmptyAPI") "EmptyAPI :: EmptyAPI",
+         _×_ (KeyIns "GHC.Classes.Eq Servant.API.Empty.EmptyAPI") "",
+         _×_ (KeyIns "GHC.Enum.Bounded Servant.API.Empty.EmptyAPI") "",
+         _×_ (KeyIns "GHC.Enum.Enum Servant.API.Empty.EmptyAPI") "",
+         _×_ (KeyIns "GHC.Show.Show Servant.API.Empty.EmptyAPI") ""]),
+   _×_
+     (ModuleName "Servant.API.Experimental.Auth")
+     (Map.fromList [_×_ (KeyDat "AuthProtect") "(tag :: k)"]),
+   _×_
+     (ModuleName "Servant.API.Generic")
+     (Map.fromList
+        [_×_ (KeyCls "GServantProduct f") "",
+         _×_
+           (KeyCls "Generic a where ") " type family Rep a :: Type -> Type; ",
+         _×_
+           (KeyCls "GenericMode mode where ")
+           " type family mode :- api :: *; ",
+         _×_
+           (KeyDat "AsApi")
+           "type ToServantApi routes = ToServant routes AsApi",
+         _×_ (KeyInL "0 :-") "",
+         _×_
+           (KeyIns
+              "(Servant.API.Generic.GServantProduct l, Servant.API.Generic.GServantProduct r) => Servant.API.Generic.GServantProduct (l GHC.Generics.:*: r)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Generic.GServantProduct (GHC.Generics.K1 i c)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Generic.GServantProduct f => Servant.API.Generic.GServantProduct (GHC.Generics.M1 i c f)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Generic.GenericMode Servant.API.Generic.AsApi")
+           "",
+         _×_
+           (KeyTyp "GenericServant")
+           "routes mode = (GenericMode mode, Generic (routes mode), GServantProduct (Rep (routes mode)))",
+         _×_
+           (KeyTyp "ToServant")
+           "routes mode = GToServant (Rep (routes mode))",
+         _×_
+           (KeyFun "fromServant")
+           "GenericServant routes mode => ToServant routes mode -> routes mode",
+         _×_
+           (KeyFun "genericApi")
+           "GenericServant routes AsApi => Proxy routes -> Proxy (ToServantApi routes)",
+         _×_
+           (KeyFun "toServant")
+           "GenericServant routes mode => routes mode -> ToServant routes mode"]),
+   _×_
+     (ModuleName "Servant.API.Header")
+     (Map.fromList
+        [_×_ (KeyDat "Header'") "(mods :: [*]) (sym :: Symbol) a",
+         _×_ (KeyTyp "Header") "= Header' '[Optional, Strict]"]),
+   _×_
+     (ModuleName "Servant.API.HttpVersion")
+     (Map.fromList
+        [_×_
+           (KeyDat "HttpVersion")
+           "HttpVersion :: !Int -> !Int -> HttpVersion",
+         _×_ (KeyFun "[httpMajor]") "HttpVersion -> !Int",
+         _×_ (KeyFun "[httpMinor]") "HttpVersion -> !Int"]),
+   _×_
+     (ModuleName "Servant.API.Internal.Test.ComprehensiveAPI")
+     (Map.fromList []),
+   _×_
+     (ModuleName "Servant.API.IsSecure")
+     (Map.fromList
+        [_×_
+           (KeyDat "IsSecure")
+           "-- | the connection to the server is secure (HTTPS)",
+         _×_ (KeyIns "GHC.Classes.Eq Servant.API.IsSecure.IsSecure") "",
+         _×_ (KeyIns "GHC.Classes.Ord Servant.API.IsSecure.IsSecure") "",
+         _×_
+           (KeyIns "GHC.Generics.Generic Servant.API.IsSecure.IsSecure") "",
+         _×_ (KeyIns "GHC.Read.Read Servant.API.IsSecure.IsSecure") "",
+         _×_ (KeyIns "GHC.Show.Show Servant.API.IsSecure.IsSecure") "",
+         _×_ (KeyFun "NotSecure") "IsSecure",
+         _×_ (KeyFun "Secure") "IsSecure"]),
+   _×_
+     (ModuleName "Servant.API.Modifiers")
+     (Map.fromList
+        [_×_
+           (KeyDat "Lenient") "-- | Strictly parsed argument. Not wrapped.",
+         _×_
+           (KeyDat "Optional")
+           "-- | Fold modifier list to decide whether argument is required.",
+         _×_
+           (KeyDat "Required")
+           "-- | Optional argument. Wrapped in <a>Maybe</a>.",
+         _×_
+           (KeyDat "Strict")
+           "-- | Fold modifier list to decide whether argument should be parsed",
+         _×_ (KeyTyF "FoldLenient'") "(acc :: Bool) (mods :: [*]) :: Bool",
+         _×_ (KeyTyF "FoldRequired'") "(acc :: Bool) (mods :: [*]) :: Bool",
+         _×_ (KeyTyp "FoldLenient") "mods = FoldLenient'  'False mods",
+         _×_ (KeyTyp "FoldRequired") "mods = FoldRequired'  'False mods",
+         _×_
+           (KeyTyp "RequestArgument")
+           "mods a = If (FoldRequired mods) (If (FoldLenient mods) (Either Text a) a) (Maybe (If (FoldLenient mods) (Either Text a) a))",
+         _×_
+           (KeyTyp "RequiredArgument")
+           "mods a = If (FoldRequired mods) a (Maybe a)",
+         _×_
+           (KeyFun "foldRequiredArgument")
+           "forall mods a r. SBoolI (FoldRequired mods) => Proxy mods -> (a -> r) -> (Maybe a -> r) -> RequiredArgument mods a -> r",
+         _×_
+           (KeyFun "unfoldRequestArgument")
+           "forall mods m a. (Monad m, SBoolI (FoldRequired mods), SBoolI (FoldLenient mods)) => Proxy mods -> m (RequestArgument mods a) -> (Text -> m (RequestArgument mods a)) -> Maybe (Either Text a) -> m (RequestArgument mods a)",
+         _×_
+           (KeyFun "unfoldRequiredArgument")
+           "forall mods m a. (Monad m, SBoolI (FoldRequired mods), SBoolI (FoldLenient mods)) => Proxy mods -> m (RequiredArgument mods a) -> (Text -> m (RequiredArgument mods a)) -> Maybe (Either Text a) -> m (RequiredArgument mods a)"]),
+   _×_
+     (ModuleName "Servant.API.QueryParam")
+     (Map.fromList
+        [_×_ (KeyDat "QueryFlag") "(sym :: Symbol)",
+         _×_
+           (KeyDat "QueryParam'") "(mods :: [*]) (sym :: Symbol) (a :: *)",
+         _×_ (KeyDat "QueryParams") "(sym :: Symbol) (a :: *)",
+         _×_ (KeyTyp "QueryParam") "= QueryParam' '[Optional, Strict]"]),
+   _×_
+     (ModuleName "Servant.API.Raw")
+     (Map.fromList
+        [_×_ (KeyDat "Raw") "module Servant.API.RemoteHost",
+         _×_ (KeyDat "RemoteHost") "module Servant.API.ReqBody",
+         _×_
+           (KeyDat "ReqBody'") "(mods :: [*]) (contentTypes :: [*]) (a :: *)",
+         _×_ (KeyTyp "ReqBody") "= ReqBody' '[Required, Strict]"]),
+   _×_
+     (ModuleName "Servant.API.ResponseHeaders")
+     (Map.fromList
+        [_×_
+           (KeyCls
+              "AddHeader h v orig new | h v orig -> new, new -> h, new -> v, new -> orig")
+           "",
+         _×_ (KeyCls "BuildHeadersTo hs") "",
+         _×_ (KeyCls "GetHeaders ls") "",
+         _×_ (KeyCls "GetHeaders' hs") "",
+         _×_ (KeyCls "HasResponseHeader h a headers") "",
+         _×_ (KeyDat "HList") "a",
+         _×_ (KeyDat "Headers") "ls a",
+         _×_ (KeyDat "ResponseHeader") "(sym :: Symbol) a",
+         _×_
+           (KeyIns
+              "(GHC.TypeLits.KnownSymbol h, Servant.API.ResponseHeaders.GetHeadersFromHList rest, Web.Internal.HttpApiData.ToHttpApiData v) => Servant.API.ResponseHeaders.GetHeaders' (Servant.API.Header.Header h v : rest)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.TypeLits.KnownSymbol h, Web.Internal.HttpApiData.ToHttpApiData v) => Servant.API.ResponseHeaders.AddHeader h v (Servant.API.ResponseHeaders.Headers (fst : rest) a) (Servant.API.ResponseHeaders.Headers (Servant.API.Header.Header h v : fst : rest) a)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.TypeLits.KnownSymbol h, Web.Internal.HttpApiData.ToHttpApiData v, new Data.Type.Equality.~ Servant.API.ResponseHeaders.Headers '[Servant.API.Header.Header h v] a) => Servant.API.ResponseHeaders.AddHeader h v a new")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.TypeLits.KnownSymbol h, Web.Internal.HttpApiData.ToHttpApiData x, Servant.API.ResponseHeaders.GetHeadersFromHList xs) => Servant.API.ResponseHeaders.GetHeadersFromHList (Servant.API.Header.Header h x : xs)")
+           "",
+         _×_
+           (KeyIns
+              "(Servant.API.ResponseHeaders.NFDataHList ls, Control.DeepSeq.NFData a) => Control.DeepSeq.NFData (Servant.API.ResponseHeaders.Headers ls a)")
+           "",
+         _×_
+           (KeyIns
+              "(Web.Internal.HttpApiData.FromHttpApiData v, Servant.API.ResponseHeaders.BuildHeadersTo xs, GHC.TypeLits.KnownSymbol h) => Servant.API.ResponseHeaders.BuildHeadersTo (Servant.API.Header.Header h v : xs)")
+           "",
+         _×_
+           (KeyIns
+              "(y Data.Type.Equality.~ Servant.API.Header.Header h x, Control.DeepSeq.NFData x, Servant.API.ResponseHeaders.NFDataHList xs) => Servant.API.ResponseHeaders.NFDataHList (y : xs)")
+           "",
+         _×_
+           (KeyIns
+              "Control.DeepSeq.NFData a => Control.DeepSeq.NFData (Servant.API.ResponseHeaders.ResponseHeader sym a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Functor (Servant.API.ResponseHeaders.Headers ls)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Functor (Servant.API.ResponseHeaders.ResponseHeader sym)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Classes.Eq a => GHC.Classes.Eq (Servant.API.ResponseHeaders.ResponseHeader sym a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Show.Show a => GHC.Show.Show (Servant.API.ResponseHeaders.ResponseHeader sym a)")
+           "",
+         _×_ (KeyIns "Servant.API.ResponseHeaders.BuildHeadersTo '[]") "",
+         _×_ (KeyIns "Servant.API.ResponseHeaders.GetHeaders' '[]") "",
+         _×_
+           (KeyIns
+              "Servant.API.ResponseHeaders.GetHeaders' hs => Servant.API.ResponseHeaders.GetHeaders (Servant.API.ResponseHeaders.Headers hs a)")
+           "",
+         _×_
+           (KeyIns "Servant.API.ResponseHeaders.GetHeadersFromHList '[]") "",
+         _×_
+           (KeyIns
+              "Servant.API.ResponseHeaders.GetHeadersFromHList hs => Servant.API.ResponseHeaders.GetHeaders (Servant.API.ResponseHeaders.HList hs)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ResponseHeaders.HasResponseHeader h a (Servant.API.Header.Header h a : rest)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.ResponseHeaders.HasResponseHeader h a rest => Servant.API.ResponseHeaders.HasResponseHeader h a (first : rest)")
+           "",
+         _×_ (KeyIns "Servant.API.ResponseHeaders.NFDataHList '[]") "",
+         _×_
+           (KeyIns
+              "Servant.API.ResponseHeaders.NFDataHList xs => Control.DeepSeq.NFData (Servant.API.ResponseHeaders.HList xs)")
+           "",
+         _×_ (KeyTyF "HeaderValMap") "(f :: * -> *) (xs :: [*])",
+         _×_ (KeyFun "Header") "a -> ResponseHeader a",
+         _×_ (KeyFun "Headers") "a -> HList ls -> Headers ls a",
+         _×_ (KeyFun "MissingHeader") "ResponseHeader a",
+         _×_ (KeyFun "UndecodableHeader") "ByteString -> ResponseHeader a",
+         _×_
+           (KeyFun "[HCons]")
+           "ResponseHeader h x -> HList xs -> HList (Header h x : xs)",
+         _×_ (KeyFun "[HNil]") "HList '[]",
+         _×_ (KeyFun "[getHeadersHList]") "Headers ls a -> HList ls",
+         _×_ (KeyFun "[getResponse]") "Headers ls a -> a",
+         _×_
+           (KeyFun "addHeader") "AddHeader h v orig new => v -> orig -> new",
+         _×_
+           (KeyFun "buildHeadersTo")
+           "BuildHeadersTo hs => [Header] -> HList hs",
+         _×_ (KeyFun "getHeaders") "GetHeaders ls => ls -> [Header]",
+         _×_
+           (KeyFun "lookupResponseHeader")
+           "HasResponseHeader h a headers => Headers headers r -> ResponseHeader h a",
+         _×_ (KeyFun "noHeader") "AddHeader h v orig new => orig -> new"]),
+   _×_
+     (ModuleName "Servant.API.Stream")
+     (Map.fromList
+        [_×_ (KeyCls "FramingRender strategy") "",
+         _×_ (KeyCls "FramingUnrender strategy") "",
+         _×_ (KeyCls "FromSourceIO chunk a | a -> chunk") "",
+         _×_ (KeyCls "SourceToSourceIO m") "",
+         _×_ (KeyCls "ToSourceIO chunk a | a -> chunk") "",
+         _×_
+           (KeyDat "NetstringFraming")
+           "instance GHC.Generics.Generic (Servant.API.Stream.StreamBody' mods framing contentType a)",
+         _×_
+           (KeyDat "NewlineFraming")
+           "-- | The netstring framing strategy as defined by djb:",
+         _×_
+           (KeyDat "NoFraming")
+           "-- | A simple framing strategy that has no header, and inserts a newline",
+         _×_
+           (KeyDat "Stream")
+           "(method :: k1) (status :: Nat) (framing :: *) (contentType :: *) (a :: *)",
+         _×_
+           (KeyDat "StreamBody'")
+           "(mods :: [*]) (framing :: *) (contentType :: *) (a :: *)",
+         _×_
+           (KeyIns
+              "Control.Monad.IO.Class.MonadIO m => Servant.API.Stream.FromSourceIO a (Servant.Types.SourceT.SourceT m a)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Stream.FramingRender Servant.API.Stream.NetstringFraming")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Stream.FramingRender Servant.API.Stream.NewlineFraming")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Stream.FramingRender Servant.API.Stream.NoFraming")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Stream.FramingUnrender Servant.API.Stream.NetstringFraming")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Stream.FramingUnrender Servant.API.Stream.NewlineFraming")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Stream.FramingUnrender Servant.API.Stream.NoFraming")
+           "",
+         _×_ (KeyIns "Servant.API.Stream.SourceToSourceIO GHC.Types.IO") "",
+         _×_
+           (KeyIns
+              "Servant.API.Stream.SourceToSourceIO m => Servant.API.Stream.ToSourceIO chunk (Servant.Types.SourceT.SourceT m chunk)")
+           "",
+         _×_
+           (KeyIns "Servant.API.Stream.ToSourceIO a (GHC.Base.NonEmpty a)")
+           "",
+         _×_ (KeyIns "Servant.API.Stream.ToSourceIO a [a]") "",
+         _×_
+           (KeyIns
+              "forall k1 (method :: k1) (status :: GHC.Types.Nat) framing contentType a. GHC.Generics.Generic (Servant.API.Stream.Stream method status framing contentType a)")
+           "",
+         _×_ (KeyTyp "SourceIO") "= SourceT IO",
+         _×_ (KeyTyp "StreamBody") "= StreamBody' '[]",
+         _×_ (KeyTyp "StreamGet") "= Stream  'GET 200",
+         _×_ (KeyTyp "StreamPost") "= Stream  'POST 200",
+         _×_
+           (KeyFun "framingRender")
+           "(FramingRender strategy, Monad m) => Proxy strategy -> (a -> ByteString) -> SourceT m a -> SourceT m ByteString",
+         _×_
+           (KeyFun "framingUnrender")
+           "(FramingUnrender strategy, Monad m) => Proxy strategy -> (ByteString -> Either String a) -> SourceT m ByteString -> SourceT m a",
+         _×_
+           (KeyFun "fromSourceIO")
+           "FromSourceIO chunk a => SourceIO chunk -> a",
+         _×_
+           (KeyFun "sourceToSourceIO")
+           "SourceToSourceIO m => SourceT m a -> SourceT IO a",
+         _×_
+           (KeyFun "toSourceIO")
+           "ToSourceIO chunk a => a -> SourceIO chunk"]),
+   _×_
+     (ModuleName "Servant.API.Sub")
+     (Map.fromList
+        [_×_ (KeyDat "(path") ":: k) :> (a :: *)",
+         _×_ (KeyInR "4 :>") ""]),
+   _×_
+     (ModuleName "Servant.API.TypeLevel")
+     (Map.fromList
+        [_×_ (KeyTyF "AllIsElem") "xs api :: Constraint",
+         _×_ (KeyTyF "AllIsIn") "xs api :: Constraint",
+         _×_
+           (KeyTyF "And") "(a :: Constraint) (b :: Constraint) :: Constraint",
+         _×_ (KeyTyF "AppendList") "xs ys",
+         _×_ (KeyTyF "ElemGo") "e es orig :: Constraint",
+         _×_ (KeyTyF "Endpoints") "api",
+         _×_ (KeyTyF "IsElem") "endpoint api :: Constraint",
+         _×_ (KeyTyF "IsElem'") "a s :: Constraint",
+         _×_ (KeyTyF "IsIn") "(endpoint :: *) (api :: *) :: Constraint",
+         _×_ (KeyTyF "IsStrictSubAPI") "sub api :: Constraint",
+         _×_ (KeyTyF "IsSubAPI") "sub api :: Constraint",
+         _×_ (KeyTyF "IsSubList") "a b :: Constraint",
+         _×_ (KeyTyF "MapSub") "e xs",
+         _×_
+           (KeyTyF "Or") "(a :: Constraint) (b :: Constraint) :: Constraint",
+         _×_ (KeyTyp "Elem") "e es = ElemGo e es es"]),
+   _×_
+     (ModuleName "Servant.API.Vault")
+     (Map.fromList [_×_ (KeyTyp "Vault") "= Vault RealWorld"]),
+   _×_
+     (ModuleName "Servant.API.Verbs")
+     (Map.fromList
+        [_×_ (KeyCls "ReflectMethod a") "",
+         _×_ (KeyDat "NoContentVerb") "(method :: k1)",
+         _×_ (KeyDat "StdMethod") "GET :: StdMethod",
+         _×_
+           (KeyDat "Verb")
+           "(method :: k1) (statusCode :: Nat) (contentTypes :: [*]) (a :: *)",
+         _×_
+           (KeyIns
+              "Servant.API.Verbs.ReflectMethod 'Network.HTTP.Types.Method.CONNECT")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Verbs.ReflectMethod 'Network.HTTP.Types.Method.DELETE")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Verbs.ReflectMethod 'Network.HTTP.Types.Method.GET")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Verbs.ReflectMethod 'Network.HTTP.Types.Method.HEAD")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Verbs.ReflectMethod 'Network.HTTP.Types.Method.OPTIONS")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Verbs.ReflectMethod 'Network.HTTP.Types.Method.PATCH")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Verbs.ReflectMethod 'Network.HTTP.Types.Method.POST")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Verbs.ReflectMethod 'Network.HTTP.Types.Method.PUT")
+           "",
+         _×_
+           (KeyIns
+              "Servant.API.Verbs.ReflectMethod 'Network.HTTP.Types.Method.TRACE")
+           "",
+         _×_
+           (KeyIns
+              "forall k1 (method :: k1) (statusCode :: GHC.Types.Nat) (contentTypes :: [*]) a. GHC.Generics.Generic (Servant.API.Verbs.Verb method statusCode contentTypes a)")
+           "",
+         _×_
+           (KeyIns
+              "forall k1 (method :: k1). GHC.Generics.Generic (Servant.API.Verbs.NoContentVerb method)")
+           "",
+         _×_ (KeyTyp "Delete") "= Verb  'DELETE 200",
+         _×_ (KeyTyp "DeleteAccepted") "= Verb  'DELETE 202",
+         _×_ (KeyTyp "DeleteNoContent") "= NoContentVerb  'DELETE",
+         _×_ (KeyTyp "DeleteNonAuthoritative") "= Verb  'DELETE 203",
+         _×_ (KeyTyp "DeleteResetContent") "= Verb  'DELETE 205",
+         _×_ (KeyTyp "Get") "= Verb  'GET 200",
+         _×_ (KeyTyp "GetAccepted") "= Verb  'GET 202",
+         _×_ (KeyTyp "GetNoContent") "= NoContentVerb  'GET",
+         _×_ (KeyTyp "GetNonAuthoritative") "= Verb  'GET 203",
+         _×_ (KeyTyp "GetPartialContent") "= Verb  'GET 206",
+         _×_ (KeyTyp "GetResetContent") "= Verb  'GET 205",
+         _×_ (KeyTyp "Patch") "= Verb  'PATCH 200",
+         _×_ (KeyTyp "PatchAccepted") "= Verb  'PATCH 202",
+         _×_ (KeyTyp "PatchNoContent") "= NoContentVerb  'PATCH",
+         _×_ (KeyTyp "PatchNonAuthoritative") "= Verb  'PATCH 203",
+         _×_ (KeyTyp "PatchResetContent") "= Verb  'PATCH 205",
+         _×_ (KeyTyp "Post") "= Verb  'POST 200",
+         _×_ (KeyTyp "PostAccepted") "= Verb  'POST 202",
+         _×_ (KeyTyp "PostCreated") "= Verb  'POST 201",
+         _×_ (KeyTyp "PostNoContent") "= NoContentVerb  'POST",
+         _×_ (KeyTyp "PostNonAuthoritative") "= Verb  'POST 203",
+         _×_ (KeyTyp "PostResetContent") "= Verb  'POST 205",
+         _×_ (KeyTyp "Put") "= Verb  'PUT 200",
+         _×_ (KeyTyp "PutAccepted") "= Verb  'PUT 202",
+         _×_ (KeyTyp "PutCreated") "= Verb  'PUT 201",
+         _×_ (KeyTyp "PutNoContent") "= NoContentVerb  'PUT",
+         _×_ (KeyTyp "PutNonAuthoritative") "= Verb  'PUT 203",
+         _×_ (KeyTyp "PutResetContent") "= Verb  'PUT 205",
+         _×_ (KeyFun "CONNECT") "StdMethod",
+         _×_ (KeyFun "DELETE") "StdMethod",
+         _×_ (KeyFun "HEAD") "StdMethod",
+         _×_ (KeyFun "OPTIONS") "StdMethod",
+         _×_ (KeyFun "PATCH") "StdMethod",
+         _×_ (KeyFun "POST") "StdMethod",
+         _×_ (KeyFun "PUT") "StdMethod",
+         _×_ (KeyFun "TRACE") "StdMethod",
+         _×_
+           (KeyFun "reflectMethod") "ReflectMethod a => Proxy a -> Method"]),
+   _×_
+     (ModuleName "Servant.API.WithNamedContext")
+     (Map.fromList
+        [_×_
+           (KeyDat "WithNamedContext")
+           "(name :: Symbol) (subContext :: [*]) subApi"]),
+   _×_
+     (ModuleName "Servant.Links")
+     (Map.fromList
+        [_×_
+           (KeyCls "HasLink endpoint where ")
+           " type family MkLink endpoint (a :: *); ",
+         _×_ (KeyDat "AsLink") "(a :: *)",
+         _×_ (KeyDat "Link") "-- | Transform <a>Link</a> into <a>URI</a>.",
+         _×_ (KeyDat "LinkArrayElementStyle") "-- | <pre>",
+         _×_ (KeyDat "Param") "SingleParam :: String -> Text -> Param",
+         _×_
+           (KeyDat "URI")
+           "URI :: String -> Maybe URIAuth -> String -> String -> String -> URI",
+         _×_
+           (KeyIns
+              "(GHC.TypeLits.KnownSymbol sym, Servant.Links.HasLink sub) => Servant.Links.HasLink (Servant.API.QueryParam.QueryFlag sym Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.TypeLits.KnownSymbol sym, Servant.Links.HasLink sub) => Servant.Links.HasLink (sym Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.TypeLits.KnownSymbol sym, Web.Internal.HttpApiData.ToHttpApiData v, Servant.Links.HasLink sub) => Servant.Links.HasLink (Servant.API.QueryParam.QueryParams sym v Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.TypeLits.KnownSymbol sym, Web.Internal.HttpApiData.ToHttpApiData v, Servant.Links.HasLink sub, Data.Singletons.Bool.SBoolI (Servant.API.Modifiers.FoldRequired mods)) => Servant.Links.HasLink (Servant.API.QueryParam.QueryParam' mods sym v Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "(Servant.Links.HasLink a, Servant.Links.HasLink b) => Servant.Links.HasLink (a Servant.API.Alternative.:<|> b)")
+           "",
+         _×_
+           (KeyIns
+              "(Web.Internal.HttpApiData.ToHttpApiData v, Servant.Links.HasLink sub) => Servant.Links.HasLink (Servant.API.Capture.Capture' mods sym v Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "(Web.Internal.HttpApiData.ToHttpApiData v, Servant.Links.HasLink sub) => Servant.Links.HasLink (Servant.API.Capture.CaptureAll sym v Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns "GHC.Classes.Eq Servant.Links.LinkArrayElementStyle") "",
+         _×_
+           (KeyIns "GHC.Classes.Ord Servant.Links.LinkArrayElementStyle") "",
+         _×_
+           (KeyIns "GHC.Enum.Bounded Servant.Links.LinkArrayElementStyle") "",
+         _×_
+           (KeyIns "GHC.Enum.Enum Servant.Links.LinkArrayElementStyle") "",
+         _×_ (KeyIns "GHC.Show.Show Servant.Links.Escaped") "",
+         _×_ (KeyIns "GHC.Show.Show Servant.Links.Link") "",
+         _×_
+           (KeyIns "GHC.Show.Show Servant.Links.LinkArrayElementStyle") "",
+         _×_ (KeyIns "GHC.Show.Show Servant.Links.Param") "",
+         _×_
+           (KeyIns "Servant.API.Generic.GenericMode (Servant.Links.AsLink a)")
+           "",
+         _×_ (KeyIns "Servant.Links.HasLink Servant.API.Empty.EmptyAPI") "",
+         _×_ (KeyIns "Servant.Links.HasLink Servant.API.Raw.Raw") "",
+         _×_
+           (KeyIns
+              "Servant.Links.HasLink sub => Servant.Links.HasLink (Data.Vault.Lazy.Vault Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.Links.HasLink sub => Servant.Links.HasLink (Network.HTTP.Types.Version.HttpVersion Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.Links.HasLink sub => Servant.Links.HasLink (Servant.API.BasicAuth.BasicAuth realm a Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.Links.HasLink sub => Servant.Links.HasLink (Servant.API.Description.Description s Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.Links.HasLink sub => Servant.Links.HasLink (Servant.API.Description.Summary s Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.Links.HasLink sub => Servant.Links.HasLink (Servant.API.Header.Header' mods sym a Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.Links.HasLink sub => Servant.Links.HasLink (Servant.API.IsSecure.IsSecure Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.Links.HasLink sub => Servant.Links.HasLink (Servant.API.RemoteHost.RemoteHost Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.Links.HasLink sub => Servant.Links.HasLink (Servant.API.ReqBody.ReqBody' mods ct a Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.Links.HasLink sub => Servant.Links.HasLink (Servant.API.Stream.StreamBody' mods framing ct a Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "Servant.Links.HasLink sub => Servant.Links.HasLink (Servant.API.WithNamedContext.WithNamedContext name context sub)")
+           "",
+         _×_
+           (KeyIns
+              "Web.Internal.HttpApiData.ToHttpApiData Servant.Links.Link")
+           "",
+         _×_
+           (KeyIns
+              "forall k sub (tag :: k). Servant.Links.HasLink sub => Servant.Links.HasLink (Servant.API.Experimental.Auth.AuthProtect tag Servant.API.Sub.:> sub)")
+           "",
+         _×_
+           (KeyIns
+              "forall k1 (m :: k1) (s :: GHC.Types.Nat) (ct :: [*]) a. Servant.Links.HasLink (Servant.API.Verbs.Verb m s ct a)")
+           "",
+         _×_
+           (KeyIns
+              "forall k1 (m :: k1) (status :: GHC.Types.Nat) fr ct a. Servant.Links.HasLink (Servant.API.Stream.Stream m status fr ct a)")
+           "",
+         _×_
+           (KeyIns
+              "forall k1 (m :: k1). Servant.Links.HasLink (Servant.API.Verbs.NoContentVerb m)")
+           "",
+         _×_ (KeyFun "ArrayElemParam") "String -> Text -> Param",
+         _×_ (KeyFun "FlagParam") "String -> Param",
+         _×_ (KeyFun "LinkArrayElementBracket") "LinkArrayElementStyle",
+         _×_ (KeyFun "LinkArrayElementPlain") "LinkArrayElementStyle",
+         _×_ (KeyFun "[uriAuthority]") "URI -> Maybe URIAuth",
+         _×_ (KeyFun "[uriFragment]") "URI -> String",
+         _×_ (KeyFun "[uriPath]") "URI -> String",
+         _×_ (KeyFun "[uriQuery]") "URI -> String",
+         _×_ (KeyFun "[uriScheme]") "URI -> String",
+         _×_
+           (KeyFun "allFieldLinks")
+           "(HasLink (ToServantApi routes), GenericServant routes (AsLink Link), ToServant routes (AsLink Link) ~ MkLink (ToServantApi routes) Link) => routes (AsLink Link)",
+         _×_
+           (KeyFun "allFieldLinks'")
+           "forall routes a. (HasLink (ToServantApi routes), GenericServant routes (AsLink a), ToServant routes (AsLink a) ~ MkLink (ToServantApi routes) a) => (Link -> a) -> routes (AsLink a)",
+         _×_
+           (KeyFun "allLinks")
+           "forall api. HasLink api => Proxy api -> MkLink api Link",
+         _×_
+           (KeyFun "allLinks'")
+           "forall api a. HasLink api => (Link -> a) -> Proxy api -> MkLink api a",
+         _×_
+           (KeyFun "fieldLink")
+           "(IsElem endpoint (ToServantApi routes), HasLink endpoint, GenericServant routes AsApi) => (routes AsApi -> endpoint) -> MkLink endpoint Link",
+         _×_
+           (KeyFun "fieldLink'")
+           "forall routes endpoint a. (IsElem endpoint (ToServantApi routes), HasLink endpoint, GenericServant routes AsApi) => (Link -> a) -> (routes AsApi -> endpoint) -> MkLink endpoint a",
+         _×_ (KeyFun "linkQueryParams") "Link -> [Param]",
+         _×_ (KeyFun "linkSegments") "Link -> [String]",
+         _×_ (KeyFun "linkURI") "Link -> URI",
+         _×_ (KeyFun "linkURI'") "LinkArrayElementStyle -> Link -> URI",
+         _×_
+           (KeyFun "safeLink")
+           "forall endpoint api. (IsElem endpoint api, HasLink endpoint) => Proxy api -> Proxy endpoint -> MkLink endpoint Link",
+         _×_
+           (KeyFun "safeLink'")
+           "forall endpoint api a. (IsElem endpoint api, HasLink endpoint) => (Link -> a) -> Proxy api -> Proxy endpoint -> MkLink endpoint a",
+         _×_
+           (KeyFun "toLink")
+           "HasLink endpoint => (Link -> a) -> Proxy endpoint -> Link -> MkLink endpoint a"]),
+   _×_
+     (ModuleName "Servant.Test.ComprehensiveAPI")
+     (Map.fromList
+        [_×_
+           (KeyTyp "ComprehensiveAPI")
+           "= ComprehensiveAPIWithoutStreamingOrRaw' (EmptyEndpoint :<|> StreamingEndpoint :<|> RawEndpoint)",
+         _×_
+           (KeyTyp "ComprehensiveAPIWithoutRaw")
+           "= ComprehensiveAPIWithoutStreamingOrRaw' (EmptyEndpoint :<|> StreamingEndpoint)",
+         _×_
+           (KeyTyp "ComprehensiveAPIWithoutStreaming")
+           "= ComprehensiveAPIWithoutStreamingOrRaw' (EmptyEndpoint :<|> RawEndpoint)",
+         _×_
+           (KeyTyp "ComprehensiveAPIWithoutStreamingOrRaw")
+           "= ComprehensiveAPIWithoutStreamingOrRaw' EmptyEndpoint",
+         _×_
+           (KeyTyp "ComprehensiveAPIWithoutStreamingOrRaw'")
+           "endpoint = GET :<|> \"get-int\" :> Get '[JSON] Int :<|> \"capture\" :> Capture' '[Description \"example description\"] \"foo\" Int :> GET :<|> \"capture-lenient\" :> Capture' '[Lenient] \"foo\" Int :> GET :<|> \"header\" :> Header \"foo\" Int :> GET :<|> \"header-lenient\" :> Header' '[Required, Lenient] \"bar\" Int :> GET :<|> \"http-version\" :> HttpVersion :> GET :<|> \"is-secure\" :> IsSecure :> GET :<|> \"param\" :> QueryParam \"foo\" Int :> GET :<|> \"param-lenient\" :> QueryParam' '[Required, Lenient] \"bar\" Int :> GET :<|> \"params\" :> QueryParams \"foo\" Int :> GET :<|> \"flag\" :> QueryFlag \"foo\" :> GET :<|> \"remote-host\" :> RemoteHost :> GET :<|> \"req-body\" :> ReqBody '[JSON] Int :> GET :<|> \"req-body-lenient\" :> ReqBody' '[Lenient] '[JSON] Int :> GET :<|> \"res-headers\" :> Get '[JSON] (Headers '[Header \"foo\" Int] NoContent) :<|> \"foo\" :> GET :<|> \"vault\" :> Vault :> GET :<|> \"post-no-content\" :> PostNoContent :<|> \"post-int\" :> Verb  'POST 204 '[JSON] Int :<|> \"named-context\" :> WithNamedContext \"foo\" '[] GET :<|> \"capture-all\" :> CaptureAll \"foo\" Int :> GET :<|> \"summary\" :> Summary \"foo\" :> GET :<|> \"description\" :> Description \"foo\" :> GET :<|> \"alternative\" :> (\"left\" :> GET :<|> \"right\" :> GET) :<|> endpoint",
+         _×_ (KeyTyp "EmptyEndpoint") "= \"empty-api\" :> EmptyAPI",
+         _×_ (KeyTyp "GET") "= Get '[JSON] NoContent",
+         _×_ (KeyTyp "RawEndpoint") "= \"raw\" :> Raw",
+         _×_
+           (KeyTyp "StreamingEndpoint")
+           "= \"streaming\" :> StreamBody' '[Description \"netstring\"] NetstringFraming JSON (SourceT IO Int) :> Stream  'GET 200 NetstringFraming JSON (SourceT IO Int)",
+         _×_ (KeyFun "comprehensiveAPI") "Proxy ComprehensiveAPI",
+         _×_
+           (KeyFun "comprehensiveAPIWithoutRaw")
+           "Proxy ComprehensiveAPIWithoutRaw",
+         _×_
+           (KeyFun "comprehensiveAPIWithoutStreaming")
+           "Proxy ComprehensiveAPIWithoutStreaming",
+         _×_
+           (KeyFun "comprehensiveAPIWithoutStreamingOrRaw")
+           "Proxy ComprehensiveAPIWithoutStreamingOrRaw"]),
+   _×_
+     (ModuleName "Servant.Types.SourceT")
+     (Map.fromList
+        [_×_ (KeyDat "StepT") "m a",
+         _×_
+           (KeyIns
+              "(Data.Functor.Identity.Identity Data.Type.Equality.~ m) => Data.Foldable.Foldable (Servant.Types.SourceT.SourceT m)")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Functor.Identity.Identity Data.Type.Equality.~ m) => Data.Foldable.Foldable (Servant.Types.SourceT.StepT m)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Base.Applicative m, Data.Functor.Classes.Show1 m) => Data.Functor.Classes.Show1 (Servant.Types.SourceT.SourceT m)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Base.Applicative m, Data.Functor.Classes.Show1 m) => Data.Functor.Classes.Show1 (Servant.Types.SourceT.StepT m)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Base.Applicative m, Data.Functor.Classes.Show1 m, GHC.Show.Show a) => GHC.Show.Show (Servant.Types.SourceT.SourceT m a)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Base.Applicative m, Data.Functor.Classes.Show1 m, GHC.Show.Show a) => GHC.Show.Show (Servant.Types.SourceT.StepT m a)")
+           "",
+         _×_
+           (KeyIns
+              "(Test.QuickCheck.Arbitrary.Arbitrary a, GHC.Base.Monad m) => Test.QuickCheck.Arbitrary.Arbitrary (Servant.Types.SourceT.SourceT m a)")
+           "",
+         _×_
+           (KeyIns
+              "(Test.QuickCheck.Arbitrary.Arbitrary a, GHC.Base.Monad m) => Test.QuickCheck.Arbitrary.Arbitrary (Servant.Types.SourceT.StepT m a)")
+           "",
+         _×_
+           (KeyIns
+              "Control.Monad.Morph.MFunctor Servant.Types.SourceT.SourceT")
+           "",
+         _×_
+           (KeyIns "Control.Monad.Morph.MFunctor Servant.Types.SourceT.StepT")
+           "",
+         _×_
+           (KeyIns
+              "Control.Monad.Trans.Class.MonadTrans Servant.Types.SourceT.StepT")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Functor m => GHC.Base.Functor (Servant.Types.SourceT.SourceT m)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Functor m => GHC.Base.Functor (Servant.Types.SourceT.StepT m)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Functor m => GHC.Base.Monoid (Servant.Types.SourceT.SourceT m a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Functor m => GHC.Base.Monoid (Servant.Types.SourceT.StepT m a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Functor m => GHC.Base.Semigroup (Servant.Types.SourceT.SourceT m a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Functor m => GHC.Base.Semigroup (Servant.Types.SourceT.StepT m a)")
+           "",
+         _×_ (KeyNew "SourceT") "m a",
+         _×_ (KeyFun "Effect") "m (StepT m a) -> StepT m a",
+         _×_ (KeyFun "Error") "String -> StepT m a",
+         _×_ (KeyFun "Skip") "StepT m a -> StepT m a",
+         _×_
+           (KeyFun "SourceT")
+           "(forall b. (StepT m a -> m b) -> m b) -> SourceT m a",
+         _×_ (KeyFun "Stop") "StepT m a",
+         _×_ (KeyFun "Yield") "a -> StepT m a -> StepT m a",
+         _×_
+           (KeyFun "[unSourceT]")
+           "SourceT m a -> forall b. (StepT m a -> m b) -> m b",
+         _×_
+           (KeyFun "foreach")
+           "Monad m => (String -> m ()) -> (a -> m ()) -> SourceT m a -> m ()",
+         _×_
+           (KeyFun "foreachStep")
+           "Monad m => (String -> m ()) -> (a -> m ()) -> StepT m a -> m ()",
+         _×_
+           (KeyFun "fromAction")
+           "Functor m => (a -> Bool) -> m a -> SourceT m a",
+         _×_
+           (KeyFun "fromActionStep")
+           "Functor m => (a -> Bool) -> m a -> StepT m a",
+         _×_ (KeyFun "fromStepT") "StepT m a -> SourceT m a",
+         _×_
+           (KeyFun "mapMaybe")
+           "Functor m => (a -> Maybe b) -> SourceT m a -> SourceT m b",
+         _×_
+           (KeyFun "mapMaybeStep")
+           "Functor m => (a -> Maybe b) -> StepT m a -> StepT m b",
+         _×_
+           (KeyFun "mapStepT")
+           "(StepT m a -> StepT m b) -> SourceT m a -> SourceT m b",
+         _×_ (KeyFun "readFile") "FilePath -> SourceT IO ByteString",
+         _×_
+           (KeyFun "runSourceT")
+           "Monad m => SourceT m a -> ExceptT String m [a]",
+         _×_
+           (KeyFun "runStepT") "Monad m => StepT m a -> ExceptT String m [a]",
+         _×_ (KeyFun "source") "[a] -> SourceT m a",
+         _×_
+           (KeyFun "transformStepWithAtto")
+           "forall a m. Monad m => Parser a -> StepT m ByteString -> StepT m a",
+         _×_
+           (KeyFun "transformWithAtto")
+           "Monad m => Parser a -> SourceT m ByteString -> SourceT m a"]),
+   _×_ (ModuleName "Servant.Utils.Links") (Map.fromList [])]

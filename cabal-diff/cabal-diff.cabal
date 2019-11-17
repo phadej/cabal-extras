@@ -1,0 +1,103 @@
+cabal-version:      2.4
+name:               cabal-diff
+version:            0.1
+synopsis:           Compare API of cabal packages
+category:           Development
+description:
+  Compare API of cabal packages. Like @hackage-diff@ but uses
+  @cabal v2-build@ functionality.
+
+license:            GPL-2.0-or-later
+license-file:       LICENSE
+author:             Oleg Grenrus <oleg.grenrus@iki.fi>
+maintainer:         Oleg Grenrus <oleg.grenrus@iki.fi>
+tested-with:        GHC ==8.2.2 || ==8.4.4 || ==8.6.5 || ==8.8.1
+extra-source-files:
+  Changelog.md
+  fixtures/*.golden
+  fixtures/*.txt
+
+source-repository head
+  type:     git
+  location: https://github.com/phadej/cabal-extras.git
+
+library cabal-diff-internal
+  default-language: Haskell2010
+  hs-source-dirs:   src
+  ghc-options:      -Wall
+  exposed-modules:
+    CabalDiff.Diff
+    CabalDiff.Hoogle
+    CabalDiff.Main
+
+  other-modules:    Paths_cabal_diff
+  autogen-modules:  Paths_cabal_diff
+
+  -- ghc-boot dependencies
+  build-depends:
+    , base        ^>=4.10.1.0 || ^>=4.11.0.0 || ^>=4.12.0.0 || ^>=4.13.0.0
+    , bytestring  ^>=0.10.8.2
+    , containers  ^>=0.5.10.2 || ^>=0.6.0.1
+    , deepseq     ^>=1.4.3.0
+    , directory   ^>=1.3.0.2
+    , filepath    ^>=1.4.1.2
+    , mtl         ^>=2.2.2
+    , parsec      ^>=3.1.13.0
+    , process     ^>=1.6.1.0
+    , text        ^>=1.2.3.0
+
+  -- We use Cabal-3.0
+  build-depends:    Cabal ^>=3.0
+
+  -- dependencies in library
+  build-depends:
+    , ansi-terminal
+    , async
+    , cabal-install-parsers
+    , cabal-plan
+    , concurrent-output
+    , Glob                   ^>=0.10.0
+    , peura
+    , pretty                 ^>=1.1.3.3
+    , process-extras
+    , semialign              ^>=1.1
+    , split
+    , stm
+    , temporary              ^>=1.3
+    , these                  ^>=1
+    , unliftio-core
+
+  -- extra dependencies
+  build-depends:    optparse-applicative >=0.14.3.0 && <0.16
+
+executable cabal-diff
+  default-language: Haskell2010
+  hs-source-dirs:   cli
+  main-is:          Main.hs
+  ghc-options:      -Wall -threaded -rtsopts -with-rtsopts=-N2
+  build-depends:
+    , base
+    , cabal-diff-internal
+
+test-suite cabal-diff-golden
+  default-language: Haskell2010
+  type:             exitcode-stdio-1.0
+  main-is:          Golden.hs
+  hs-source-dirs:   test
+
+  -- inherited constraints
+  build-depends:
+    , base
+    , bytestring
+    , Cabal
+    , cabal-diff-internal
+    , containers
+    , directory
+    , filepath
+
+  -- dependencies needing explicit constraints
+  build-depends:
+    , ansi-terminal  ^>=0.10
+    , tasty          ^>=1.2.3
+    , tasty-golden   ^>=2.3.1.1
+    , tree-diff      ^>=0.1

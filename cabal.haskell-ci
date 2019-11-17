@@ -1,0 +1,3 @@
+distribution: bionic
+branches: master
+installed: +all -Cabal

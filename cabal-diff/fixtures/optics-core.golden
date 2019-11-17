@@ -1,0 +1,2485 @@
+Map.fromList
+  [_×_
+     (ModuleName "Data.Either.Optics")
+     (Map.fromList
+        [_×_ (KeyFun "_Left") "Prism (Either a b) (Either c b) a c",
+         _×_ (KeyFun "_Right") "Prism (Either a b) (Either a c) b c"]),
+   _×_
+     (ModuleName "Data.IntMap.Optics")
+     (Map.fromList
+        [_×_ (KeyFun "ge") "Int -> IxAffineTraversal' Int (IntMap v) v",
+         _×_ (KeyFun "gt") "Int -> IxAffineTraversal' Int (IntMap v) v",
+         _×_ (KeyFun "le") "Int -> IxAffineTraversal' Int (IntMap v) v",
+         _×_ (KeyFun "lt") "Int -> IxAffineTraversal' Int (IntMap v) v",
+         _×_
+           (KeyFun "toMapOf")
+           "(Is k A_Fold, is `HasSingleIndex` Int) => Optic' k is s a -> s -> IntMap a"]),
+   _×_
+     (ModuleName "Data.IntSet.Optics")
+     (Map.fromList
+        [_×_ (KeyFun "members") "Fold IntSet Int",
+         _×_
+           (KeyFun "setOf") "Is k A_Fold => Optic' k is s Int -> s -> IntSet",
+         _×_ (KeyFun "setmapped") "Setter' IntSet Int"]),
+   _×_
+     (ModuleName "Data.List.Optics")
+     (Map.fromList
+        [_×_ (KeyFun "prefixed") "Eq a => [a] -> Prism' [a] [a]",
+         _×_ (KeyFun "suffixed") "Eq a => [a] -> Prism' [a] [a]"]),
+   _×_
+     (ModuleName "Data.Map.Optics")
+     (Map.fromList
+        [_×_
+           (KeyFun "ge") "Ord k => k -> IxAffineTraversal' k (Map k v) v",
+         _×_ (KeyFun "gt") "Ord k => k -> IxAffineTraversal' k (Map k v) v",
+         _×_ (KeyFun "le") "Ord k => k -> IxAffineTraversal' k (Map k v) v",
+         _×_ (KeyFun "lt") "Ord k => k -> IxAffineTraversal' k (Map k v) v",
+         _×_
+           (KeyFun "toMapOf")
+           "(Is k A_Fold, is `HasSingleIndex` i, Ord i) => Optic' k is s a -> s -> Map i a"]),
+   _×_
+     (ModuleName "Data.Maybe.Optics")
+     (Map.fromList
+        [_×_ (KeyFun "_Just") "Prism (Maybe a) (Maybe b) a b",
+         _×_ (KeyFun "_Nothing") "Prism' (Maybe a) ()"]),
+   _×_
+     (ModuleName "Data.Sequence.Optics")
+     (Map.fromList
+        [_×_
+           (KeyFun "seqOf") "Is k A_Fold => Optic' k is s a -> s -> Seq a",
+         _×_ (KeyFun "sliced") "Int -> Int -> IxTraversal' Int (Seq a) a",
+         _×_ (KeyFun "slicedFrom") "Int -> IxTraversal' Int (Seq a) a",
+         _×_ (KeyFun "slicedTo") "Int -> IxTraversal' Int (Seq a) a",
+         _×_ (KeyFun "viewL") "Iso (Seq a) (Seq b) (ViewL a) (ViewL b)",
+         _×_ (KeyFun "viewR") "Iso (Seq a) (Seq b) (ViewR a) (ViewR b)"]),
+   _×_
+     (ModuleName "Data.Set.Optics")
+     (Map.fromList
+        [_×_
+           (KeyFun "setOf")
+           "(Is k A_Fold, Ord a) => Optic' k is s a -> s -> Set a",
+         _×_ (KeyFun "setmapped") "Ord b => Setter (Set a) (Set b) a b"]),
+   _×_
+     (ModuleName "Data.Tree.Optics")
+     (Map.fromList
+        [_×_ (KeyFun "branches") "Lens' (Tree a) [Tree a]",
+         _×_ (KeyFun "root") "Lens' (Tree a) a"]),
+   _×_
+     (ModuleName "Data.Tuple.Optics")
+     (Map.fromList
+        [_×_
+           (KeyCls "Field1 s t a b | s -> a, t -> b, s b -> t, t a -> s") "",
+         _×_
+           (KeyCls "Field2 s t a b | s -> a, t -> b, s b -> t, t a -> s") "",
+         _×_
+           (KeyCls "Field3 s t a b | s -> a, t -> b, s b -> t, t a -> s") "",
+         _×_
+           (KeyCls "Field4 s t a b | s -> a, t -> b, s b -> t, t a -> s") "",
+         _×_
+           (KeyCls "Field5 s t a b | s -> a, t -> b, s b -> t, t a -> s") "",
+         _×_
+           (KeyCls "Field6 s t a b | s -> a, t -> b, s b -> t, t a -> s") "",
+         _×_
+           (KeyCls "Field7 s t a b | s -> a, t -> b, s b -> t, t a -> s") "",
+         _×_
+           (KeyCls "Field8 s t a b | s -> a, t -> b, s b -> t, t a -> s") "",
+         _×_
+           (KeyCls "Field9 s t a b | s -> a, t -> b, s b -> t, t a -> s") "",
+         _×_
+           (KeyIns
+              "(Data.Tuple.Optics.GT (Data.Tuple.Optics.GSize s) n Data.Type.Equality.~ Data.Tuple.Optics.F, n' Data.Type.Equality.~ Data.Tuple.Optics.Subtract (Data.Tuple.Optics.GSize s) n, Data.Tuple.Optics.GIxed n' s' t' a b) => Data.Tuple.Optics.GIxed' Data.Tuple.Optics.F n s s' s t' a b")
+           "",
+         _×_
+           (KeyIns
+              "(Data.Tuple.Optics.GT (Data.Tuple.Optics.GSize s) n Data.Type.Equality.~ Data.Tuple.Optics.T, Data.Tuple.Optics.GT (Data.Tuple.Optics.GSize t) n Data.Type.Equality.~ Data.Tuple.Optics.T, Data.Tuple.Optics.GIxed n s t a b) => Data.Tuple.Optics.GIxed' Data.Tuple.Optics.T n s s' t s' a b")
+           "",
+         _×_
+           (KeyIns
+              "(p Data.Type.Equality.~ Data.Tuple.Optics.GT (Data.Tuple.Optics.GSize s) n, p Data.Type.Equality.~ Data.Tuple.Optics.GT (Data.Tuple.Optics.GSize t) n, Data.Tuple.Optics.GIxed' p n s s' t t' a b) => Data.Tuple.Optics.GIxed n (s GHC.Generics.:*: s') (t GHC.Generics.:*: t') a b")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field1 ((GHC.Generics.:*:) f g p) ((GHC.Generics.:*:) f' g p) (f p) (f' p)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field1 (Data.Functor.Identity.Identity a) (Data.Functor.Identity.Identity b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field1 (Data.Functor.Product.Product f g a) (Data.Functor.Product.Product f' g a) (f a) (f' a)")
+           "",
+         _×_ (KeyIns "Data.Tuple.Optics.Field1 (a, b) (a', b) a a'") "",
+         _×_
+           (KeyIns "Data.Tuple.Optics.Field1 (a, b, c) (a', b, c) a a'") "",
+         _×_
+           (KeyIns "Data.Tuple.Optics.Field1 (a, b, c, d) (a', b, c, d) a a'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field1 (a, b, c, d, e) (a', b, c, d, e) a a'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field1 (a, b, c, d, e, f) (a', b, c, d, e, f) a a'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field1 (a, b, c, d, e, f, g) (a', b, c, d, e, f, g) a a'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field1 (a, b, c, d, e, f, g, h) (a', b, c, d, e, f, g, h) a a'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field1 (a, b, c, d, e, f, g, h, i) (a', b, c, d, e, f, g, h, i) a a'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field2 ((GHC.Generics.:*:) f g p) ((GHC.Generics.:*:) f g' p) (g p) (g' p)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field2 (Data.Functor.Product.Product f g a) (Data.Functor.Product.Product f g' a) (g a) (g' a)")
+           "",
+         _×_ (KeyIns "Data.Tuple.Optics.Field2 (a, b) (a, b') b b'") "",
+         _×_
+           (KeyIns "Data.Tuple.Optics.Field2 (a, b, c) (a, b', c) b b'") "",
+         _×_
+           (KeyIns "Data.Tuple.Optics.Field2 (a, b, c, d) (a, b', c, d) b b'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field2 (a, b, c, d, e) (a, b', c, d, e) b b'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field2 (a, b, c, d, e, f) (a, b', c, d, e, f) b b'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field2 (a, b, c, d, e, f, g) (a, b', c, d, e, f, g) b b'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field2 (a, b, c, d, e, f, g, h) (a, b', c, d, e, f, g, h) b b'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field2 (a, b, c, d, e, f, g, h, i) (a, b', c, d, e, f, g, h, i) b b'")
+           "",
+         _×_
+           (KeyIns "Data.Tuple.Optics.Field3 (a, b, c) (a, b, c') c c'") "",
+         _×_
+           (KeyIns "Data.Tuple.Optics.Field3 (a, b, c, d) (a, b, c', d) c c'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field3 (a, b, c, d, e) (a, b, c', d, e) c c'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field3 (a, b, c, d, e, f) (a, b, c', d, e, f) c c'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field3 (a, b, c, d, e, f, g) (a, b, c', d, e, f, g) c c'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field3 (a, b, c, d, e, f, g, h) (a, b, c', d, e, f, g, h) c c'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field3 (a, b, c, d, e, f, g, h, i) (a, b, c', d, e, f, g, h, i) c c'")
+           "",
+         _×_
+           (KeyIns "Data.Tuple.Optics.Field4 (a, b, c, d) (a, b, c, d') d d'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field4 (a, b, c, d, e) (a, b, c, d', e) d d'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field4 (a, b, c, d, e, f) (a, b, c, d', e, f) d d'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field4 (a, b, c, d, e, f, g) (a, b, c, d', e, f, g) d d'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field4 (a, b, c, d, e, f, g, h) (a, b, c, d', e, f, g, h) d d'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field4 (a, b, c, d, e, f, g, h, i) (a, b, c, d', e, f, g, h, i) d d'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field5 (a, b, c, d, e) (a, b, c, d, e') e e'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field5 (a, b, c, d, e, f) (a, b, c, d, e', f) e e'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field5 (a, b, c, d, e, f, g) (a, b, c, d, e', f, g) e e'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field5 (a, b, c, d, e, f, g, h) (a, b, c, d, e', f, g, h) e e'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field5 (a, b, c, d, e, f, g, h, i) (a, b, c, d, e', f, g, h, i) e e'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field6 (a, b, c, d, e, f) (a, b, c, d, e, f') f f'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field6 (a, b, c, d, e, f, g) (a, b, c, d, e, f', g) f f'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field6 (a, b, c, d, e, f, g, h) (a, b, c, d, e, f', g, h) f f'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field6 (a, b, c, d, e, f, g, h, i) (a, b, c, d, e, f', g, h, i) f f'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field7 (a, b, c, d, e, f, g) (a, b, c, d, e, f, g') g g'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field7 (a, b, c, d, e, f, g, h) (a, b, c, d, e, f, g', h) g g'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field7 (a, b, c, d, e, f, g, h, i) (a, b, c, d, e, f, g', h, i) g g'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field8 (a, b, c, d, e, f, g, h) (a, b, c, d, e, f, g, h') h h'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field8 (a, b, c, d, e, f, g, h, i) (a, b, c, d, e, f, g, h', i) h h'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.Field9 (a, b, c, d, e, f, g, h, i) (a, b, c, d, e, f, g, h, i') i i'")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.GIxed Data.Tuple.Optics.N0 (GHC.Generics.K1 i a) (GHC.Generics.K1 i b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Data.Tuple.Optics.GIxed n s t a b => Data.Tuple.Optics.GIxed n (GHC.Generics.M1 i c s) (GHC.Generics.M1 i c t) a b")
+           "",
+         _×_
+           (KeyFun "_1")
+           "(Field1 s t a b, Generic s, Generic t, GIxed N0 (Rep s) (Rep t) a b) => Lens s t a b",
+         _×_ (KeyFun "_1'") "Field1 s t a b => Lens s t a b",
+         _×_
+           (KeyFun "_2")
+           "(Field2 s t a b, Generic s, Generic t, GIxed N1 (Rep s) (Rep t) a b) => Lens s t a b",
+         _×_ (KeyFun "_2'") "Field2 s t a b => Lens s t a b",
+         _×_
+           (KeyFun "_3")
+           "(Field3 s t a b, Generic s, Generic t, GIxed N2 (Rep s) (Rep t) a b) => Lens s t a b",
+         _×_ (KeyFun "_3'") "Field3 s t a b => Lens s t a b",
+         _×_
+           (KeyFun "_4")
+           "(Field4 s t a b, Generic s, Generic t, GIxed N3 (Rep s) (Rep t) a b) => Lens s t a b",
+         _×_ (KeyFun "_4'") "Field4 s t a b => Lens s t a b",
+         _×_
+           (KeyFun "_5")
+           "(Field5 s t a b, Generic s, Generic t, GIxed N4 (Rep s) (Rep t) a b) => Lens s t a b",
+         _×_ (KeyFun "_5'") "Field5 s t a b => Lens s t a b",
+         _×_
+           (KeyFun "_6")
+           "(Field6 s t a b, Generic s, Generic t, GIxed N5 (Rep s) (Rep t) a b) => Lens s t a b",
+         _×_ (KeyFun "_6'") "Field6 s t a b => Lens s t a b",
+         _×_
+           (KeyFun "_7")
+           "(Field7 s t a b, Generic s, Generic t, GIxed N6 (Rep s) (Rep t) a b) => Lens s t a b",
+         _×_ (KeyFun "_7'") "Field7 s t a b => Lens s t a b",
+         _×_
+           (KeyFun "_8")
+           "(Field8 s t a b, Generic s, Generic t, GIxed N7 (Rep s) (Rep t) a b) => Lens s t a b",
+         _×_ (KeyFun "_8'") "Field8 s t a b => Lens s t a b",
+         _×_
+           (KeyFun "_9")
+           "(Field9 s t a b, Generic s, Generic t, GIxed N8 (Rep s) (Rep t) a b) => Lens s t a b",
+         _×_ (KeyFun "_9'") "Field9 s t a b => Lens s t a b"]),
+   _×_
+     (ModuleName "Data.Typeable.Optics")
+     (Map.fromList
+        [_×_
+           (KeyFun "_cast")
+           "(Typeable s, Typeable a) => AffineTraversal' s a",
+         _×_
+           (KeyFun "_gcast")
+           "(Typeable s, Typeable a) => AffineTraversal' (c s) (c a)"]),
+   _×_
+     (ModuleName "GHC.Generics.Optics")
+     (Map.fromList
+        [_×_ (KeyFun "_K1") "Iso (K1 i c p) (K1 j d q) c d",
+         _×_ (KeyFun "_L1") "Prism ((a :+: c) t) ((b :+: c) t) (a t) (b t)",
+         _×_ (KeyFun "_M1") "Iso (M1 i c f p) (M1 j d g q) (f p) (g q)",
+         _×_ (KeyFun "_Par1") "Iso (Par1 p) (Par1 q) p q",
+         _×_ (KeyFun "_R1") "Prism ((c :+: a) t) ((c :+: b) t) (a t) (b t)",
+         _×_ (KeyFun "_Rec1") "Iso (Rec1 f p) (Rec1 g q) (f p) (g q)",
+         _×_ (KeyFun "_U1") "Iso (U1 p) (U1 q) () ()",
+         _×_ (KeyFun "_V1") "Lens (V1 s) (V1 t) a b",
+         _×_
+           (KeyFun "generic")
+           "(Generic a, Generic b) => Iso a b (Rep a c) (Rep b c)",
+         _×_
+           (KeyFun "generic1")
+           "(Generic1 f, Generic1 g) => Iso (f a) (g b) (Rep1 f a) (Rep1 g b)"]),
+   _×_
+     (ModuleName "Numeric.Optics")
+     (Map.fromList
+        [_×_
+           (KeyPat "Integral :: forall a. Integral a => a -> Integer") "",
+         _×_ (KeyFun "adding") "Num a => a -> Iso' a a",
+         _×_
+           (KeyFun "base")
+           "(HasCallStack, Integral a) => Int -> Prism' String a",
+         _×_ (KeyFun "binary") "Integral a => Prism' String a",
+         _×_ (KeyFun "decimal") "Integral a => Prism' String a",
+         _×_ (KeyFun "dividing") "(Fractional a, Eq a) => a -> Iso' a a",
+         _×_
+           (KeyFun "exponentiating") "(Floating a, Eq a) => a -> Iso' a a",
+         _×_ (KeyFun "hex") "Integral a => Prism' String a",
+         _×_
+           (KeyFun "integral")
+           "(Integral a, Integral b) => Prism Integer Integer a b",
+         _×_ (KeyFun "multiplying") "(Fractional a, Eq a) => a -> Iso' a a",
+         _×_ (KeyFun "negated") "Num a => Iso' a a",
+         _×_ (KeyFun "octal") "Integral a => Prism' String a",
+         _×_ (KeyFun "subtracting") "Num a => a -> Iso' a a"]),
+   _×_
+     (ModuleName "Optics.AffineFold")
+     (Map.fromList
+        [_×_ (KeyDat "An_AffineFold") ":: OpticKind",
+         _×_ (KeyInL "3 `afailing`") "",
+         _×_ (KeyTyp "AffineFold") "s a = Optic' An_AffineFold NoIx s a",
+         _×_
+           (KeyFun "afailing")
+           "(Is k An_AffineFold, Is l An_AffineFold) => Optic' k is s a -> Optic' l js s a -> AffineFold s a",
+         _×_ (KeyFun "afolding") "(s -> Maybe a) -> AffineFold s a",
+         _×_ (KeyFun "filtered") "(a -> Bool) -> AffineFold a a",
+         _×_
+           (KeyFun "isn't")
+           "Is k An_AffineFold => Optic' k is s a -> s -> Bool",
+         _×_
+           (KeyFun "preview")
+           "Is k An_AffineFold => Optic' k is s a -> s -> Maybe a",
+         _×_
+           (KeyFun "previews")
+           "Is k An_AffineFold => Optic' k is s a -> (a -> r) -> s -> Maybe r"]),
+   _×_
+     (ModuleName "Optics.AffineTraversal")
+     (Map.fromList
+        [_×_ (KeyDat "An_AffineTraversal") ":: OpticKind",
+         _×_
+           (KeyTyp "AffineTraversal")
+           "s t a b = Optic An_AffineTraversal NoIx s t a b",
+         _×_
+           (KeyTyp "AffineTraversal'")
+           "s a = Optic' An_AffineTraversal NoIx s a",
+         _×_
+           (KeyTyp "AffineTraversalVL")
+           "s t a b = forall f. Functor f => (forall r. r -> f r) -> (a -> f b) -> s -> f t",
+         _×_
+           (KeyTyp "AffineTraversalVL'") "s a = AffineTraversalVL s s a a",
+         _×_
+           (KeyFun "atraversal")
+           "(s -> Either t a) -> (s -> b -> t) -> AffineTraversal s t a b",
+         _×_
+           (KeyFun "atraversalVL")
+           "AffineTraversalVL s t a b -> AffineTraversal s t a b",
+         _×_
+           (KeyFun "matching")
+           "Is k An_AffineTraversal => Optic k is s t a b -> s -> Either t a",
+         _×_
+           (KeyFun "toAtraversalVL")
+           "Is k An_AffineTraversal => Optic k is s t a b -> AffineTraversalVL s t a b",
+         _×_
+           (KeyFun "unsafeFiltered") "(a -> Bool) -> AffineTraversal' a a",
+         _×_
+           (KeyFun "withAffineTraversal")
+           "Is k An_AffineTraversal => Optic k is s t a b -> ((s -> Either t a) -> (s -> b -> t) -> r) -> r"]),
+   _×_
+     (ModuleName "Optics.Arrow")
+     (Map.fromList
+        [_×_ (KeyCls "Arrow arr => ArrowOptic k arr") "",
+         _×_
+           (KeyIns
+              "Control.Arrow.Arrow arr => Optics.Arrow.ArrowOptic Optics.Internal.Optic.Types.A_Lens arr")
+           "",
+         _×_
+           (KeyIns
+              "Control.Arrow.Arrow arr => Optics.Arrow.ArrowOptic Optics.Internal.Optic.Types.An_Iso arr")
+           "",
+         _×_
+           (KeyIns
+              "Control.Arrow.Arrow p => Control.Arrow.Arrow (Optics.Arrow.WrappedArrow p i)")
+           "",
+         _×_
+           (KeyIns
+              "Control.Arrow.Arrow p => Data.Profunctor.Indexed.Profunctor (Optics.Arrow.WrappedArrow p)")
+           "",
+         _×_
+           (KeyIns
+              "Control.Arrow.Arrow p => Data.Profunctor.Indexed.Strong (Optics.Arrow.WrappedArrow p)")
+           "",
+         _×_
+           (KeyIns
+              "Control.Arrow.ArrowChoice arr => Optics.Arrow.ArrowOptic Optics.Internal.Optic.Types.A_Prism arr")
+           "",
+         _×_
+           (KeyIns
+              "Control.Arrow.ArrowChoice arr => Optics.Arrow.ArrowOptic Optics.Internal.Optic.Types.An_AffineTraversal arr")
+           "",
+         _×_
+           (KeyIns
+              "Control.Arrow.ArrowChoice p => Data.Profunctor.Indexed.Choice (Optics.Arrow.WrappedArrow p)")
+           "",
+         _×_
+           (KeyIns
+              "Control.Arrow.ArrowChoice p => Data.Profunctor.Indexed.Visiting (Optics.Arrow.WrappedArrow p)")
+           "",
+         _×_
+           (KeyIns
+              "Control.Category.Category p => Control.Category.Category (Optics.Arrow.WrappedArrow p i)")
+           "",
+         _×_
+           (KeyFun "assignA")
+           "(Is k A_Setter, Arrow arr) => Optic k is s t a b -> arr s b -> arr s t",
+         _×_
+           (KeyFun "overA")
+           "ArrowOptic k arr => Optic k is s t a b -> arr a b -> arr s t"]),
+   _×_
+     (ModuleName "Optics.At.Core")
+     (Map.fromList
+        [_×_ (KeyCls "(Ixed m, IxKind m ~ An_AffineTraversal) => At m") "",
+         _×_ (KeyCls "Contains m") "",
+         _×_
+           (KeyCls "Ixed m where ")
+           " type family IxKind (m :: Type) :: OpticKind; type IxKind m = An_AffineTraversal; ",
+         _×_
+           (KeyIns
+              "(Data.Array.Base.IArray Data.Array.Base.UArray e, GHC.Arr.Ix i) => Optics.At.Core.Ixed (Data.Array.Base.UArray i e)")
+           "",
+         _×_
+           (KeyIns
+              "(a0 Data.Type.Equality.~ a1) => Optics.At.Core.Ixed (a0, a1)")
+           "",
+         _×_
+           (KeyIns
+              "(a0 Data.Type.Equality.~ a1, a0 Data.Type.Equality.~ a2) => Optics.At.Core.Ixed (a0, a1, a2)")
+           "",
+         _×_
+           (KeyIns
+              "(a0 Data.Type.Equality.~ a1, a0 Data.Type.Equality.~ a2, a0 Data.Type.Equality.~ a3) => Optics.At.Core.Ixed (a0, a1, a2, a3)")
+           "",
+         _×_
+           (KeyIns
+              "(a0 Data.Type.Equality.~ a1, a0 Data.Type.Equality.~ a2, a0 Data.Type.Equality.~ a3, a0 Data.Type.Equality.~ a4) => Optics.At.Core.Ixed (a0, a1, a2, a3, a4)")
+           "",
+         _×_
+           (KeyIns
+              "(a0 Data.Type.Equality.~ a1, a0 Data.Type.Equality.~ a2, a0 Data.Type.Equality.~ a3, a0 Data.Type.Equality.~ a4, a0 Data.Type.Equality.~ a5) => Optics.At.Core.Ixed (a0, a1, a2, a3, a4, a5)")
+           "",
+         _×_
+           (KeyIns
+              "(a0 Data.Type.Equality.~ a1, a0 Data.Type.Equality.~ a2, a0 Data.Type.Equality.~ a3, a0 Data.Type.Equality.~ a4, a0 Data.Type.Equality.~ a5, a0 Data.Type.Equality.~ a6) => Optics.At.Core.Ixed (a0, a1, a2, a3, a4, a5, a6)")
+           "",
+         _×_
+           (KeyIns
+              "(a0 Data.Type.Equality.~ a1, a0 Data.Type.Equality.~ a2, a0 Data.Type.Equality.~ a3, a0 Data.Type.Equality.~ a4, a0 Data.Type.Equality.~ a5, a0 Data.Type.Equality.~ a6, a0 Data.Type.Equality.~ a7) => Optics.At.Core.Ixed (a0, a1, a2, a3, a4, a5, a6, a7)")
+           "",
+         _×_
+           (KeyIns
+              "(a0 Data.Type.Equality.~ a1, a0 Data.Type.Equality.~ a2, a0 Data.Type.Equality.~ a3, a0 Data.Type.Equality.~ a4, a0 Data.Type.Equality.~ a5, a0 Data.Type.Equality.~ a6, a0 Data.Type.Equality.~ a7, a0 Data.Type.Equality.~ a8) => Optics.At.Core.Ixed (a0, a1, a2, a3, a4, a5, a6, a7, a8)")
+           "",
+         _×_
+           (KeyIns "GHC.Arr.Ix i => Optics.At.Core.Ixed (GHC.Arr.Array i e)")
+           "",
+         _×_ (KeyIns "GHC.Classes.Eq e => Optics.At.Core.Ixed (e -> a)") "",
+         _×_
+           (KeyIns
+              "GHC.Classes.Ord a => Optics.At.Core.Contains (Data.Set.Internal.Set a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Classes.Ord k => Optics.At.Core.At (Data.Map.Internal.Map k a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Classes.Ord k => Optics.At.Core.At (Data.Set.Internal.Set k)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Classes.Ord k => Optics.At.Core.Ixed (Data.Map.Internal.Map k a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Classes.Ord k => Optics.At.Core.Ixed (Data.Set.Internal.Set k)")
+           "",
+         _×_
+           (KeyIns "Optics.At.Core.At (Data.IntMap.Internal.IntMap a)") "",
+         _×_ (KeyIns "Optics.At.Core.At (GHC.Maybe.Maybe a)") "",
+         _×_ (KeyIns "Optics.At.Core.At Data.IntSet.Internal.IntSet") "",
+         _×_
+           (KeyIns "Optics.At.Core.Contains Data.IntSet.Internal.IntSet") "",
+         _×_
+           (KeyIns "Optics.At.Core.Ixed (Data.Functor.Identity.Identity a)")
+           "",
+         _×_
+           (KeyIns "Optics.At.Core.Ixed (Data.IntMap.Internal.IntMap a)") "",
+         _×_
+           (KeyIns "Optics.At.Core.Ixed (Data.Sequence.Internal.Seq a)") "",
+         _×_ (KeyIns "Optics.At.Core.Ixed (Data.Tree.Tree a)") "",
+         _×_ (KeyIns "Optics.At.Core.Ixed (GHC.Base.NonEmpty a)") "",
+         _×_ (KeyIns "Optics.At.Core.Ixed (GHC.Maybe.Maybe a)") "",
+         _×_ (KeyIns "Optics.At.Core.Ixed Data.IntSet.Internal.IntSet") "",
+         _×_ (KeyIns "Optics.At.Core.Ixed [a]") "",
+         _×_ (KeyTyF "Index") "(s :: Type) :: Type",
+         _×_ (KeyTyF "IxValue") "(m :: Type) :: Type",
+         _×_ (KeyFun "at") "At m => Index m -> Lens' m (Maybe (IxValue m))",
+         _×_
+           (KeyFun "at'") "At m => Index m -> Lens' m (Maybe (IxValue m))",
+         _×_ (KeyFun "contains") "Contains m => Index m -> Lens' m Bool",
+         _×_
+           (KeyFun "ix")
+           "(Ixed m, At m, IxKind m ~ An_AffineTraversal) => Index m -> Optic' (IxKind m) NoIx m (IxValue m)",
+         _×_
+           (KeyFun "ixAt")
+           "At m => Index m -> AffineTraversal' m (IxValue m)",
+         _×_ (KeyFun "sans") "At m => Index m -> m -> m"]),
+   _×_
+     (ModuleName "Optics.Coerce")
+     (Map.fromList
+        [_×_
+           (KeyFun "coerceA")
+           "Coercible a a' => Optic k is s t a b -> Optic k is s t a' b",
+         _×_
+           (KeyFun "coerceB")
+           "Coercible b b' => Optic k is s t a b -> Optic k is s t a b'",
+         _×_
+           (KeyFun "coerceS")
+           "Coercible s s' => Optic k is s t a b -> Optic k is s' t a b",
+         _×_
+           (KeyFun "coerceT")
+           "Coercible t t' => Optic k is s t a b -> Optic k is s t' a b"]),
+   _×_
+     (ModuleName "Optics.Cons.Core")
+     (Map.fromList
+        [_×_
+           (KeyCls "Cons s t a b | s -> a, t -> b, s b -> t, t a -> s") "",
+         _×_
+           (KeyCls "Snoc s t a b | s -> a, t -> b, s b -> t, t a -> s") "",
+         _×_ (KeyInL "5 :>") "",
+         _×_ (KeyInL "5 `snoc`") "",
+         _×_ (KeyInL "5 |>") "",
+         _×_ (KeyInR "5 :<") "",
+         _×_ (KeyInR "5 <|") "",
+         _×_ (KeyInR "5 `cons`") "",
+         _×_
+           (KeyIns
+              "Optics.Cons.Core.Cons (Control.Applicative.ZipList a) (Control.Applicative.ZipList b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Cons.Core.Cons (Data.Sequence.Internal.Seq a) (Data.Sequence.Internal.Seq b) a b")
+           "",
+         _×_ (KeyIns "Optics.Cons.Core.Cons [a] [b] a b") "",
+         _×_
+           (KeyIns
+              "Optics.Cons.Core.Snoc (Control.Applicative.ZipList a) (Control.Applicative.ZipList b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Cons.Core.Snoc (Data.Sequence.Internal.Seq a) (Data.Sequence.Internal.Seq b) a b")
+           "",
+         _×_ (KeyIns "Optics.Cons.Core.Snoc [a] [b] a b") "",
+         _×_ (KeyPat "(:<) :: forall s a. Cons s s a a => a -> s -> s") "",
+         _×_ (KeyPat "(:>) :: forall s a. Snoc s s a a => s -> a -> s") "",
+         _×_ (KeyFun "(<|)") "Cons s s a a => a -> s -> s",
+         _×_ (KeyFun "(|>)") "Snoc s s a a => s -> a -> s",
+         _×_ (KeyFun "_Cons") "Cons s t a b => Prism s t (a, s) (b, t)",
+         _×_ (KeyFun "_Snoc") "Snoc s t a b => Prism s t (s, a) (t, b)",
+         _×_ (KeyFun "_head") "Cons s s a a => AffineTraversal' s a",
+         _×_ (KeyFun "_init") "Snoc s s a a => AffineTraversal' s s",
+         _×_ (KeyFun "_last") "Snoc s s a a => AffineTraversal' s a",
+         _×_ (KeyFun "_tail") "Cons s s a a => AffineTraversal' s s",
+         _×_ (KeyFun "cons") "Cons s s a a => a -> s -> s",
+         _×_ (KeyFun "snoc") "Snoc s s a a => s -> a -> s",
+         _×_ (KeyFun "uncons") "Cons s s a a => s -> Maybe (a, s)",
+         _×_ (KeyFun "unsnoc") "Snoc s s a a => s -> Maybe (s, a)"]),
+   _×_ (ModuleName "Optics.Core") (Map.fromList []),
+   _×_
+     (ModuleName "Optics.Each.Core")
+     (Map.fromList
+        [_×_
+           (KeyCls "Each i s t a b | s -> i a, t -> i b, s b -> t, t a -> s")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Arr.Ix i, i Data.Type.Equality.~ j) => Optics.Each.Core.Each i (GHC.Arr.Array i a) (GHC.Arr.Array j b) a b")
+           "",
+         _×_
+           (KeyIns
+              "(a Data.Type.Equality.~ a', b Data.Type.Equality.~ b') => Optics.Each.Core.Each (Data.Either.Either () ()) (Data.Either.Either a a') (Data.Either.Either b b') a b")
+           "",
+         _×_
+           (KeyIns
+              "(a Data.Type.Equality.~ a1, a Data.Type.Equality.~ a2, a Data.Type.Equality.~ a3, a Data.Type.Equality.~ a4, a Data.Type.Equality.~ a5, a Data.Type.Equality.~ a6, a Data.Type.Equality.~ a7, a Data.Type.Equality.~ a8, a Data.Type.Equality.~ a9, b Data.Type.Equality.~ b1, b Data.Type.Equality.~ b2, b Data.Type.Equality.~ b3, b Data.Type.Equality.~ b4, b Data.Type.Equality.~ b5, b Data.Type.Equality.~ b6, b Data.Type.Equality.~ b7, b Data.Type.Equality.~ b8, b Data.Type.Equality.~ b9) => Optics.Each.Core.Each GHC.Types.Int (a, a1, a2, a3, a4, a5, a6, a7, a8, a9) (b, b1, b2, b3, b4, b5, b6, b7, b8, b9) a b")
+           "",
+         _×_
+           (KeyIns
+              "(a Data.Type.Equality.~ a1, a Data.Type.Equality.~ a2, a Data.Type.Equality.~ a3, a Data.Type.Equality.~ a4, a Data.Type.Equality.~ a5, a Data.Type.Equality.~ a6, a Data.Type.Equality.~ a7, a Data.Type.Equality.~ a8, b Data.Type.Equality.~ b1, b Data.Type.Equality.~ b2, b Data.Type.Equality.~ b3, b Data.Type.Equality.~ b4, b Data.Type.Equality.~ b5, b Data.Type.Equality.~ b6, b Data.Type.Equality.~ b7, b Data.Type.Equality.~ b8) => Optics.Each.Core.Each GHC.Types.Int (a, a1, a2, a3, a4, a5, a6, a7, a8) (b, b1, b2, b3, b4, b5, b6, b7, b8) a b")
+           "",
+         _×_
+           (KeyIns
+              "(a Data.Type.Equality.~ a1, a Data.Type.Equality.~ a2, a Data.Type.Equality.~ a3, a Data.Type.Equality.~ a4, a Data.Type.Equality.~ a5, a Data.Type.Equality.~ a6, a Data.Type.Equality.~ a7, b Data.Type.Equality.~ b1, b Data.Type.Equality.~ b2, b Data.Type.Equality.~ b3, b Data.Type.Equality.~ b4, b Data.Type.Equality.~ b5, b Data.Type.Equality.~ b6, b Data.Type.Equality.~ b7) => Optics.Each.Core.Each GHC.Types.Int (a, a1, a2, a3, a4, a5, a6, a7) (b, b1, b2, b3, b4, b5, b6, b7) a b")
+           "",
+         _×_
+           (KeyIns
+              "(a Data.Type.Equality.~ a1, a Data.Type.Equality.~ a2, a Data.Type.Equality.~ a3, a Data.Type.Equality.~ a4, a Data.Type.Equality.~ a5, a Data.Type.Equality.~ a6, b Data.Type.Equality.~ b1, b Data.Type.Equality.~ b2, b Data.Type.Equality.~ b3, b Data.Type.Equality.~ b4, b Data.Type.Equality.~ b5, b Data.Type.Equality.~ b6) => Optics.Each.Core.Each GHC.Types.Int (a, a1, a2, a3, a4, a5, a6) (b, b1, b2, b3, b4, b5, b6) a b")
+           "",
+         _×_
+           (KeyIns
+              "(a Data.Type.Equality.~ a1, a Data.Type.Equality.~ a2, a Data.Type.Equality.~ a3, a Data.Type.Equality.~ a4, a Data.Type.Equality.~ a5, b Data.Type.Equality.~ b1, b Data.Type.Equality.~ b2, b Data.Type.Equality.~ b3, b Data.Type.Equality.~ b4, b Data.Type.Equality.~ b5) => Optics.Each.Core.Each GHC.Types.Int (a, a1, a2, a3, a4, a5) (b, b1, b2, b3, b4, b5) a b")
+           "",
+         _×_
+           (KeyIns
+              "(a Data.Type.Equality.~ a1, a Data.Type.Equality.~ a2, a Data.Type.Equality.~ a3, a Data.Type.Equality.~ a4, b Data.Type.Equality.~ b1, b Data.Type.Equality.~ b2, b Data.Type.Equality.~ b3, b Data.Type.Equality.~ b4) => Optics.Each.Core.Each GHC.Types.Int (a, a1, a2, a3, a4) (b, b1, b2, b3, b4) a b")
+           "",
+         _×_
+           (KeyIns
+              "(a Data.Type.Equality.~ a1, a Data.Type.Equality.~ a2, a Data.Type.Equality.~ a3, b Data.Type.Equality.~ b1, b Data.Type.Equality.~ b2, b Data.Type.Equality.~ b3) => Optics.Each.Core.Each GHC.Types.Int (a, a1, a2, a3) (b, b1, b2, b3) a b")
+           "",
+         _×_
+           (KeyIns
+              "(a Data.Type.Equality.~ a1, a Data.Type.Equality.~ a2, b Data.Type.Equality.~ b1, b Data.Type.Equality.~ b2) => Optics.Each.Core.Each GHC.Types.Int (a, a1, a2) (b, b1, b2) a b")
+           "",
+         _×_
+           (KeyIns
+              "(a Data.Type.Equality.~ a1, b Data.Type.Equality.~ b1) => Optics.Each.Core.Each GHC.Types.Int (a, a1) (b, b1) a b")
+           "",
+         _×_
+           (KeyIns
+              "(k Data.Type.Equality.~ k') => Optics.Each.Core.Each k (Data.Map.Internal.Map k a) (Data.Map.Internal.Map k' b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Each.Core.Each () (Data.Functor.Identity.Identity a) (Data.Functor.Identity.Identity b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Each.Core.Each () (GHC.Maybe.Maybe a) (GHC.Maybe.Maybe b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Each.Core.Each (Data.Either.Either () ()) (Data.Complex.Complex a) (Data.Complex.Complex b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Each.Core.Each GHC.Types.Int (Data.IntMap.Internal.IntMap a) (Data.IntMap.Internal.IntMap b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Each.Core.Each GHC.Types.Int (Data.Sequence.Internal.Seq a) (Data.Sequence.Internal.Seq b) a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Each.Core.Each GHC.Types.Int (GHC.Base.NonEmpty a) (GHC.Base.NonEmpty b) a b")
+           "",
+         _×_ (KeyIns "Optics.Each.Core.Each GHC.Types.Int [a] [b] a b") "",
+         _×_
+           (KeyIns
+              "Optics.Each.Core.Each [GHC.Types.Int] (Data.Tree.Tree a) (Data.Tree.Tree b) a b")
+           "",
+         _×_
+           (KeyFun "each")
+           "(Each i s t a b, TraversableWithIndex i g, s ~ g a, t ~ g b) => IxTraversal i s t a b"]),
+   _×_
+     (ModuleName "Optics.Empty.Core")
+     (Map.fromList
+        [_×_ (KeyCls "AsEmpty a") "",
+         _×_
+           (KeyIns
+              "(GHC.Classes.Eq a, GHC.Num.Num a) => Optics.Empty.Core.AsEmpty (Data.Semigroup.Internal.Product a)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Classes.Eq a, GHC.Num.Num a) => Optics.Empty.Core.AsEmpty (Data.Semigroup.Internal.Sum a)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Empty.Core.AsEmpty a, Optics.Empty.Core.AsEmpty b) => Optics.Empty.Core.AsEmpty (a, b)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Empty.Core.AsEmpty a, Optics.Empty.Core.AsEmpty b, Optics.Empty.Core.AsEmpty c) => Optics.Empty.Core.AsEmpty (a, b, c)")
+           "",
+         _×_ (KeyIns "Optics.Empty.Core.AsEmpty ()") "",
+         _×_
+           (KeyIns
+              "Optics.Empty.Core.AsEmpty (Control.Applicative.ZipList a)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Empty.Core.AsEmpty (Data.IntMap.Internal.IntMap a)")
+           "",
+         _×_
+           (KeyIns "Optics.Empty.Core.AsEmpty (Data.Map.Internal.Map k a)")
+           "",
+         _×_ (KeyIns "Optics.Empty.Core.AsEmpty (Data.Monoid.First a)") "",
+         _×_ (KeyIns "Optics.Empty.Core.AsEmpty (Data.Monoid.Last a)") "",
+         _×_
+           (KeyIns "Optics.Empty.Core.AsEmpty (Data.Sequence.Internal.Seq a)")
+           "",
+         _×_
+           (KeyIns "Optics.Empty.Core.AsEmpty (Data.Set.Internal.Set a)") "",
+         _×_ (KeyIns "Optics.Empty.Core.AsEmpty (GHC.Maybe.Maybe a)") "",
+         _×_
+           (KeyIns "Optics.Empty.Core.AsEmpty Data.IntSet.Internal.IntSet")
+           "",
+         _×_
+           (KeyIns "Optics.Empty.Core.AsEmpty Data.Semigroup.Internal.All")
+           "",
+         _×_
+           (KeyIns "Optics.Empty.Core.AsEmpty Data.Semigroup.Internal.Any")
+           "",
+         _×_
+           (KeyIns "Optics.Empty.Core.AsEmpty GHC.Event.Internal.Event") "",
+         _×_ (KeyIns "Optics.Empty.Core.AsEmpty GHC.Types.Ordering") "",
+         _×_ (KeyIns "Optics.Empty.Core.AsEmpty [a]") "",
+         _×_
+           (KeyIns
+              "Optics.Empty.Core.AsEmpty a => Optics.Empty.Core.AsEmpty (Data.Semigroup.Internal.Dual a)")
+           "",
+         _×_ (KeyPat "Empty :: forall a. AsEmpty a => a") "",
+         _×_
+           (KeyFun "_Empty") "(AsEmpty a, Monoid a, Eq a) => Prism' a ()"]),
+   _×_
+     (ModuleName "Optics.Fold")
+     (Map.fromList
+        [_×_ (KeyDat "A_Fold") ":: OpticKind",
+         _×_ (KeyInL "3 `failing`") "",
+         _×_ (KeyInR "6 `summing`") "",
+         _×_ (KeyTyp "Fold") "s a = Optic' A_Fold NoIx s a",
+         _×_
+           (KeyFun "allOf")
+           "Is k A_Fold => Optic' k is s a -> (a -> Bool) -> s -> Bool",
+         _×_
+           (KeyFun "andOf") "Is k A_Fold => Optic' k is s Bool -> s -> Bool",
+         _×_
+           (KeyFun "anyOf")
+           "Is k A_Fold => Optic' k is s a -> (a -> Bool) -> s -> Bool",
+         _×_
+           (KeyFun "asumOf")
+           "(Is k A_Fold, Alternative f) => Optic' k is s (f a) -> s -> f a",
+         _×_
+           (KeyFun "backwards_") "Is k A_Fold => Optic' k is s a -> Fold s a",
+         _×_
+           (KeyFun "elemOf")
+           "(Is k A_Fold, Eq a) => Optic' k is s a -> a -> s -> Bool",
+         _×_
+           (KeyFun "failing")
+           "(Is k A_Fold, Is l A_Fold) => Optic' k is s a -> Optic' l js s a -> Fold s a",
+         _×_
+           (KeyFun "findMOf")
+           "(Is k A_Fold, Monad m) => Optic' k is s a -> (a -> m Bool) -> s -> m (Maybe a)",
+         _×_
+           (KeyFun "findOf")
+           "Is k A_Fold => Optic' k is s a -> (a -> Bool) -> s -> Maybe a",
+         _×_
+           (KeyFun "foldMapOf")
+           "(Is k A_Fold, Monoid m) => Optic' k is s a -> (a -> m) -> s -> m",
+         _×_
+           (KeyFun "foldOf")
+           "(Is k A_Fold, Monoid a) => Optic' k is s a -> s -> a",
+         _×_
+           (KeyFun "foldVL")
+           "(forall f. Applicative f => (a -> f u) -> s -> f v) -> Fold s a",
+         _×_ (KeyFun "folded") "Foldable f => Fold (f a) a",
+         _×_ (KeyFun "folding") "Foldable f => (s -> f a) -> Fold s a",
+         _×_
+           (KeyFun "foldlOf'")
+           "Is k A_Fold => Optic' k is s a -> (r -> a -> r) -> r -> s -> r",
+         _×_
+           (KeyFun "foldrOf")
+           "Is k A_Fold => Optic' k is s a -> (a -> r -> r) -> r -> s -> r",
+         _×_
+           (KeyFun "foldring")
+           "(forall f. Applicative f => (a -> f u -> f u) -> f v -> s -> f w) -> Fold s a",
+         _×_
+           (KeyFun "forOf_")
+           "(Is k A_Fold, Applicative f) => Optic' k is s a -> s -> (a -> f r) -> f ()",
+         _×_ (KeyFun "has") "Is k A_Fold => Optic' k is s a -> s -> Bool",
+         _×_
+           (KeyFun "hasn't") "Is k A_Fold => Optic' k is s a -> s -> Bool",
+         _×_
+           (KeyFun "headOf") "Is k A_Fold => Optic' k is s a -> s -> Maybe a",
+         _×_
+           (KeyFun "lastOf") "Is k A_Fold => Optic' k is s a -> s -> Maybe a",
+         _×_
+           (KeyFun "lengthOf") "Is k A_Fold => Optic' k is s a -> s -> Int",
+         _×_
+           (KeyFun "lookupOf")
+           "(Is k A_Fold, Eq a) => Optic' k is s (a, v) -> a -> s -> Maybe v",
+         _×_
+           (KeyFun "maximumByOf")
+           "Is k A_Fold => Optic' k is s a -> (a -> a -> Ordering) -> s -> Maybe a",
+         _×_
+           (KeyFun "maximumOf")
+           "(Is k A_Fold, Ord a) => Optic' k is s a -> s -> Maybe a",
+         _×_
+           (KeyFun "minimumByOf")
+           "Is k A_Fold => Optic' k is s a -> (a -> a -> Ordering) -> s -> Maybe a",
+         _×_
+           (KeyFun "minimumOf")
+           "(Is k A_Fold, Ord a) => Optic' k is s a -> s -> Maybe a",
+         _×_
+           (KeyFun "msumOf")
+           "(Is k A_Fold, MonadPlus m) => Optic' k is s (m a) -> s -> m a",
+         _×_
+           (KeyFun "noneOf")
+           "Is k A_Fold => Optic' k is s a -> (a -> Bool) -> s -> Bool",
+         _×_
+           (KeyFun "notElemOf")
+           "(Is k A_Fold, Eq a) => Optic' k is s a -> a -> s -> Bool",
+         _×_
+           (KeyFun "orOf") "Is k A_Fold => Optic' k is s Bool -> s -> Bool",
+         _×_
+           (KeyFun "pre") "Is k A_Fold => Optic' k is s a -> AffineFold s a",
+         _×_
+           (KeyFun "productOf")
+           "(Is k A_Fold, Num a) => Optic' k is s a -> s -> a",
+         _×_
+           (KeyFun "sequenceOf_")
+           "(Is k A_Fold, Applicative f) => Optic' k is s (f a) -> s -> f ()",
+         _×_
+           (KeyFun "sumOf")
+           "(Is k A_Fold, Num a) => Optic' k is s a -> s -> a",
+         _×_
+           (KeyFun "summing")
+           "(Is k A_Fold, Is l A_Fold) => Optic' k is s a -> Optic' l js s a -> Fold s a",
+         _×_
+           (KeyFun "toListOf") "Is k A_Fold => Optic' k is s a -> s -> [a]",
+         _×_
+           (KeyFun "traverseOf_")
+           "(Is k A_Fold, Applicative f) => Optic' k is s a -> (a -> f r) -> s -> f ()",
+         _×_ (KeyFun "unfolded") "(s -> Maybe (a, s)) -> Fold s a"]),
+   _×_
+     (ModuleName "Optics.Getter")
+     (Map.fromList
+        [_×_ (KeyDat "A_Getter") ":: OpticKind",
+         _×_ (KeyTyp "Getter") "s a = Optic' A_Getter NoIx s a",
+         _×_ (KeyFun "to") "(s -> a) -> Getter s a",
+         _×_ (KeyFun "view") "Is k A_Getter => Optic' k is s a -> s -> a",
+         _×_
+           (KeyFun "views")
+           "Is k A_Getter => Optic' k is s a -> (a -> r) -> s -> r"]),
+   _×_
+     (ModuleName "Optics.Indexed.Core")
+     (Map.fromList
+        [_×_
+           (KeyCls
+              "(FoldableWithIndex i t, Traversable t) => TraversableWithIndex i t | t -> i")
+           "",
+         _×_
+           (KeyCls
+              "(FunctorWithIndex i f, Foldable f) => FoldableWithIndex i f | f -> i")
+           "",
+         _×_ (KeyCls "Functor f => FunctorWithIndex i f | f -> i") "",
+         _×_ (KeyCls "IxOptic k s t a b") "",
+         _×_ (KeyInL "9 %") "",
+         _×_ (KeyInL "9 %>") "",
+         _×_ (KeyInL "9 <%") "",
+         _×_ (KeyInL "9 <%>") "",
+         _×_
+           (KeyIns
+              "(s Data.Type.Equality.~ t, a Data.Type.Equality.~ b) => Optics.Indexed.Core.IxOptic Optics.Internal.Optic.Types.A_Fold s t a b")
+           "",
+         _×_
+           (KeyIns
+              "(s Data.Type.Equality.~ t, a Data.Type.Equality.~ b) => Optics.Indexed.Core.IxOptic Optics.Internal.Optic.Types.A_Getter s t a b")
+           "",
+         _×_
+           (KeyIns
+              "(s Data.Type.Equality.~ t, a Data.Type.Equality.~ b) => Optics.Indexed.Core.IxOptic Optics.Internal.Optic.Types.An_AffineFold s t a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Indexed.Core.IxOptic Optics.Internal.Optic.Types.A_Lens s t a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Indexed.Core.IxOptic Optics.Internal.Optic.Types.A_Setter s t a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Indexed.Core.IxOptic Optics.Internal.Optic.Types.A_Traversal s t a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Indexed.Core.IxOptic Optics.Internal.Optic.Types.An_AffineTraversal s t a b")
+           "",
+         _×_
+           (KeyFun "(%)")
+           "(Is k m, Is l m, m ~ Join k l, ks ~ Append is js) => Optic k is s t u v -> Optic l js u v a b -> Optic m ks s t a b",
+         _×_
+           (KeyFun "(%>)")
+           "(m ~ Join k l, Is k m, Is l m, IxOptic k s t u v, NonEmptyIndices is) => Optic k is s t u v -> Optic l js u v a b -> Optic m js s t a b",
+         _×_
+           (KeyFun "(<%)")
+           "(m ~ Join k l, Is l m, Is k m, IxOptic l u v a b, NonEmptyIndices js) => Optic k is s t u v -> Optic l js u v a b -> Optic m is s t a b",
+         _×_
+           (KeyFun "(<%>)")
+           "(m ~ Join k l, Is k m, Is l m, IxOptic m s t a b, is `HasSingleIndex` i, js `HasSingleIndex` j) => Optic k is s t u v -> Optic l js u v a b -> Optic m (WithIx (i, j)) s t a b",
+         _×_
+           (KeyFun "conjoined")
+           "is `HasSingleIndex` i => Optic k NoIx s t a b -> Optic k is s t a b -> Optic k is s t a b",
+         _×_
+           (KeyFun "icompose")
+           "(i -> j -> ix) -> Optic k '[i, j] s t a b -> Optic k (WithIx ix) s t a b",
+         _×_
+           (KeyFun "icompose3")
+           "(i1 -> i2 -> i3 -> ix) -> Optic k '[i1, i2, i3] s t a b -> Optic k (WithIx ix) s t a b",
+         _×_
+           (KeyFun "icompose4")
+           "(i1 -> i2 -> i3 -> i4 -> ix) -> Optic k '[i1, i2, i3, i4] s t a b -> Optic k (WithIx ix) s t a b",
+         _×_
+           (KeyFun "icompose5")
+           "(i1 -> i2 -> i3 -> i4 -> i5 -> ix) -> Optic k '[i1, i2, i3, i4, i5] s t a b -> Optic k (WithIx ix) s t a b",
+         _×_
+           (KeyFun "icomposeN")
+           "forall k i is s t a b. (CurryCompose is, NonEmptyIndices is) => Curry is i -> Optic k is s t a b -> Optic k (WithIx i) s t a b",
+         _×_
+           (KeyFun "ifoldMap")
+           "(FoldableWithIndex i f, TraversableWithIndex i f, Monoid m) => (i -> a -> m) -> f a -> m",
+         _×_
+           (KeyFun "ifoldl'")
+           "FoldableWithIndex i f => (i -> b -> a -> b) -> b -> f a -> b",
+         _×_
+           (KeyFun "ifoldr")
+           "FoldableWithIndex i f => (i -> a -> b -> b) -> b -> f a -> b",
+         _×_
+           (KeyFun "ifor")
+           "(TraversableWithIndex i t, Applicative f) => t a -> (i -> a -> f b) -> f (t b)",
+         _×_
+           (KeyFun "ifor_")
+           "(FoldableWithIndex i t, Applicative f) => t a -> (i -> a -> f b) -> f ()",
+         _×_
+           (KeyFun "imap")
+           "(FunctorWithIndex i f, TraversableWithIndex i f) => (i -> a -> b) -> f a -> f b",
+         _×_
+           (KeyFun "itraverse")
+           "(TraversableWithIndex i t, Applicative f) => (i -> a -> f b) -> t a -> f (t b)",
+         _×_
+           (KeyFun "itraverse_")
+           "(FoldableWithIndex i t, Applicative f) => (i -> a -> f b) -> t a -> f ()",
+         _×_
+           (KeyFun "noIx")
+           "(IxOptic k s t a b, NonEmptyIndices is) => Optic k is s t a b -> Optic k NoIx s t a b",
+         _×_
+           (KeyFun "reindexed")
+           "is `HasSingleIndex` i => (i -> j) -> Optic k is s t a b -> Optic k (WithIx j) s t a b"]),
+   _×_
+     (ModuleName "Optics.Internal.Bi")
+     (Map.fromList
+        [_×_ (KeyCls "Bicontravariant p") "",
+         _×_ (KeyCls "Bifunctor p") "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Bi.Bicontravariant (Data.Profunctor.Indexed.Forget r)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Bi.Bicontravariant (Data.Profunctor.Indexed.ForgetM r)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Bi.Bicontravariant (Data.Profunctor.Indexed.IxForget r)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Bi.Bicontravariant (Data.Profunctor.Indexed.IxForgetM r)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Bi.Bifunctor Data.Profunctor.Indexed.Tagged")
+           "",
+         _×_
+           (KeyFun "bimap")
+           "Bifunctor p => (a -> b) -> (c -> d) -> p i a c -> p i b d",
+         _×_
+           (KeyFun "contrabimap")
+           "Bicontravariant p => (b -> a) -> (d -> c) -> p i a c -> p i b d",
+         _×_
+           (KeyFun "contrafirst")
+           "Bicontravariant p => (b -> a) -> p i a c -> p i b c",
+         _×_
+           (KeyFun "contrasecond")
+           "Bicontravariant p => (c -> b) -> p i a b -> p i a c",
+         _×_
+           (KeyFun "first") "Bifunctor p => (a -> b) -> p i a c -> p i b c",
+         _×_
+           (KeyFun "lphantom")
+           "(Profunctor p, Bifunctor p) => p i a c -> p i b c",
+         _×_
+           (KeyFun "rphantom")
+           "(Profunctor p, Bicontravariant p) => p i c a -> p i c b",
+         _×_
+           (KeyFun "second")
+           "Bifunctor p => (c -> d) -> p i a c -> p i a d"]),
+   _×_
+     (ModuleName "Optics.Internal.Fold")
+     (Map.fromList
+        [_×_ (KeyDat "Leftmost") "a",
+         _×_ (KeyDat "Rightmost") "a",
+         _×_
+           (KeyIns "GHC.Base.Monoid (Optics.Internal.Fold.Leftmost a)") "",
+         _×_
+           (KeyIns "GHC.Base.Monoid (Optics.Internal.Fold.Rightmost a)") "",
+         _×_
+           (KeyIns "GHC.Base.Semigroup (Optics.Internal.Fold.Leftmost a)") "",
+         _×_
+           (KeyIns "GHC.Base.Semigroup (Optics.Internal.Fold.Rightmost a)")
+           "",
+         _×_ (KeyFun "LLeaf") "a -> Leftmost a",
+         _×_ (KeyFun "LPure") "Leftmost a",
+         _×_ (KeyFun "LStep") "Leftmost a -> Leftmost a",
+         _×_ (KeyFun "RLeaf") "a -> Rightmost a",
+         _×_ (KeyFun "RPure") "Rightmost a",
+         _×_ (KeyFun "RStep") "Rightmost a -> Rightmost a",
+         _×_
+           (KeyFun "foldVL__")
+           "(Bicontravariant p, Traversing p) => (forall f. Applicative f => (a -> f u) -> s -> f v) -> Optic__ p i i s t a b",
+         _×_
+           (KeyFun "folded__")
+           "(Bicontravariant p, Traversing p, Foldable f) => Optic__ p i i (f a) (f b) a b",
+         _×_
+           (KeyFun "foldring__")
+           "(Bicontravariant p, Traversing p) => (forall f. Applicative f => (a -> f u -> f u) -> f v -> s -> f w) -> Optic__ p i i s t a b",
+         _×_ (KeyFun "getLeftmost") "Leftmost a -> Maybe a",
+         _×_ (KeyFun "getRightmost") "Rightmost a -> Maybe a"]),
+   _×_
+     (ModuleName "Optics.Internal.Indexed")
+     (Map.fromList
+        [_×_
+           (KeyCls
+              "(FoldableWithIndex i t, Traversable t) => TraversableWithIndex i t | t -> i")
+           "",
+         _×_
+           (KeyCls
+              "(FunctorWithIndex i f, Foldable f) => FoldableWithIndex i f | f -> i")
+           "",
+         _×_ (KeyCls "Functor f => FunctorWithIndex i f | f -> i") "",
+         _×_ (KeyCls "NonEmptyIndices (is :: IxList)") "",
+         _×_
+           (KeyCls "is ~ '[i] => HasSingleIndex (is :: IxList) (i :: Type)")
+           "",
+         _×_
+           (KeyCls
+              "is ~ NoIx => AcceptsEmptyIndices (f :: Symbol) (is :: IxList)")
+           "",
+         _×_ (KeyDat "IntT") "f a",
+         _×_
+           (KeyIns
+              "((TypeError ...), '[] Data.Type.Equality.~ '[i]) => Optics.Internal.Indexed.HasSingleIndex '[] i")
+           "",
+         _×_
+           (KeyIns
+              "((TypeError ...), (x : xs) Data.Type.Equality.~ Optics.Internal.Optic.TypeLevel.NoIx) => Optics.Internal.Indexed.AcceptsEmptyIndices f (x : xs)")
+           "",
+         _×_
+           (KeyIns
+              "((TypeError ...), is Data.Type.Equality.~ '[i1, i2, i3, i4, i5], is Data.Type.Equality.~ '[i]) => Optics.Internal.Indexed.HasSingleIndex '[i1, i2, i3, i4, i5] i")
+           "",
+         _×_
+           (KeyIns
+              "((TypeError ...), is Data.Type.Equality.~ '[i1, i2, i3, i4], is Data.Type.Equality.~ '[i]) => Optics.Internal.Indexed.HasSingleIndex '[i1, i2, i3, i4] i")
+           "",
+         _×_
+           (KeyIns
+              "((TypeError ...), is Data.Type.Equality.~ '[i1, i2, i3], is Data.Type.Equality.~ '[i]) => Optics.Internal.Indexed.HasSingleIndex '[i1, i2, i3] i")
+           "",
+         _×_
+           (KeyIns
+              "((TypeError ...), is Data.Type.Equality.~ '[i1, i2], is Data.Type.Equality.~ '[i]) => Optics.Internal.Indexed.HasSingleIndex '[i1, i2] i")
+           "",
+         _×_
+           (KeyIns
+              "((TypeError ...), is Data.Type.Equality.~ (i1 : i2 : i3 : i4 : i5 : i6 : is'), is Data.Type.Equality.~ '[i]) => Optics.Internal.Indexed.HasSingleIndex (i1 : i2 : i3 : i4 : i5 : i6 : is') i")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FoldableWithIndex i f, Optics.Internal.Indexed.FoldableWithIndex j g) => Optics.Internal.Indexed.FoldableWithIndex (Data.Either.Either i j) (Data.Functor.Product.Product f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FoldableWithIndex i f, Optics.Internal.Indexed.FoldableWithIndex j g) => Optics.Internal.Indexed.FoldableWithIndex (Data.Either.Either i j) (Data.Functor.Sum.Sum f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FoldableWithIndex i f, Optics.Internal.Indexed.FoldableWithIndex j g) => Optics.Internal.Indexed.FoldableWithIndex (Data.Either.Either i j) (f GHC.Generics.:*: g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FoldableWithIndex i f, Optics.Internal.Indexed.FoldableWithIndex j g) => Optics.Internal.Indexed.FoldableWithIndex (Data.Either.Either i j) (f GHC.Generics.:+: g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FoldableWithIndex i f, Optics.Internal.Indexed.FoldableWithIndex j g) => Optics.Internal.Indexed.FoldableWithIndex (i, j) (Data.Functor.Compose.Compose f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FoldableWithIndex i f, Optics.Internal.Indexed.FoldableWithIndex j g) => Optics.Internal.Indexed.FoldableWithIndex (i, j) (f GHC.Generics.:.: g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FunctorWithIndex i f, Optics.Internal.Indexed.FunctorWithIndex j g) => Optics.Internal.Indexed.FunctorWithIndex (Data.Either.Either i j) (Data.Functor.Product.Product f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FunctorWithIndex i f, Optics.Internal.Indexed.FunctorWithIndex j g) => Optics.Internal.Indexed.FunctorWithIndex (Data.Either.Either i j) (Data.Functor.Sum.Sum f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FunctorWithIndex i f, Optics.Internal.Indexed.FunctorWithIndex j g) => Optics.Internal.Indexed.FunctorWithIndex (Data.Either.Either i j) (f GHC.Generics.:*: g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FunctorWithIndex i f, Optics.Internal.Indexed.FunctorWithIndex j g) => Optics.Internal.Indexed.FunctorWithIndex (Data.Either.Either i j) (f GHC.Generics.:+: g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FunctorWithIndex i f, Optics.Internal.Indexed.FunctorWithIndex j g) => Optics.Internal.Indexed.FunctorWithIndex (i, j) (Data.Functor.Compose.Compose f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.FunctorWithIndex i f, Optics.Internal.Indexed.FunctorWithIndex j g) => Optics.Internal.Indexed.FunctorWithIndex (i, j) (f GHC.Generics.:.: g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.TraversableWithIndex i f, Optics.Internal.Indexed.TraversableWithIndex j g) => Optics.Internal.Indexed.TraversableWithIndex (Data.Either.Either i j) (Data.Functor.Product.Product f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.TraversableWithIndex i f, Optics.Internal.Indexed.TraversableWithIndex j g) => Optics.Internal.Indexed.TraversableWithIndex (Data.Either.Either i j) (Data.Functor.Sum.Sum f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.TraversableWithIndex i f, Optics.Internal.Indexed.TraversableWithIndex j g) => Optics.Internal.Indexed.TraversableWithIndex (Data.Either.Either i j) (f GHC.Generics.:*: g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.TraversableWithIndex i f, Optics.Internal.Indexed.TraversableWithIndex j g) => Optics.Internal.Indexed.TraversableWithIndex (Data.Either.Either i j) (f GHC.Generics.:+: g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.TraversableWithIndex i f, Optics.Internal.Indexed.TraversableWithIndex j g) => Optics.Internal.Indexed.TraversableWithIndex (i, j) (Data.Functor.Compose.Compose f g)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Indexed.TraversableWithIndex i f, Optics.Internal.Indexed.TraversableWithIndex j g) => Optics.Internal.Indexed.TraversableWithIndex (i, j) (f GHC.Generics.:.: g)")
+           "",
+         _×_
+           (KeyIns
+              "(TypeError ...) => Optics.Internal.Indexed.NonEmptyIndices '[]")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Arr.Ix i => Optics.Internal.Indexed.FoldableWithIndex i (GHC.Arr.Array i)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Arr.Ix i => Optics.Internal.Indexed.FunctorWithIndex i (GHC.Arr.Array i)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Arr.Ix i => Optics.Internal.Indexed.TraversableWithIndex i (GHC.Arr.Array i)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Applicative f => GHC.Base.Applicative (Optics.Internal.Indexed.Indexing f)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Functor f => GHC.Base.Functor (Optics.Internal.Indexed.Indexing f)")
+           "",
+         _×_
+           (KeyIns "Optics.Internal.Indexed.AcceptsEmptyIndices f '[]") "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex () Data.Functor.Identity.Identity")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex () GHC.Generics.Par1")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex () GHC.Maybe.Maybe")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex Data.Void.Void (GHC.Generics.K1 i c)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex Data.Void.Void Data.Proxy.Proxy")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex Data.Void.Void GHC.Generics.U1")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex Data.Void.Void GHC.Generics.V1")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex GHC.Types.Int Control.Applicative.ZipList")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex GHC.Types.Int Data.IntMap.Internal.IntMap")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex GHC.Types.Int Data.Sequence.Internal.Seq")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex GHC.Types.Int GHC.Base.NonEmpty")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex GHC.Types.Int []")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex [GHC.Types.Int] Data.Tree.Tree")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex i f => Optics.Internal.Indexed.FoldableWithIndex i (Control.Applicative.Backwards.Backwards f)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex i f => Optics.Internal.Indexed.FoldableWithIndex i (Data.Functor.Reverse.Reverse f)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex i f => Optics.Internal.Indexed.FoldableWithIndex i (GHC.Generics.Rec1 f)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex i m => Optics.Internal.Indexed.FoldableWithIndex i (Control.Monad.Trans.Identity.IdentityT m)")
+           "",
+         _×_
+           (KeyIns "Optics.Internal.Indexed.FoldableWithIndex k ((,) k)") "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FoldableWithIndex k (Data.Map.Internal.Map k)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex () Data.Functor.Identity.Identity")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex () GHC.Generics.Par1")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex () GHC.Maybe.Maybe")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex Data.Void.Void (GHC.Generics.K1 i c)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex Data.Void.Void Data.Proxy.Proxy")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex Data.Void.Void GHC.Generics.U1")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex Data.Void.Void GHC.Generics.V1")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex GHC.Types.Int Control.Applicative.ZipList")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex GHC.Types.Int Data.IntMap.Internal.IntMap")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex GHC.Types.Int Data.Sequence.Internal.Seq")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex GHC.Types.Int GHC.Base.NonEmpty")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex GHC.Types.Int []")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex [GHC.Types.Int] Data.Tree.Tree")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex i f => Optics.Internal.Indexed.FunctorWithIndex i (Control.Applicative.Backwards.Backwards f)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex i f => Optics.Internal.Indexed.FunctorWithIndex i (Data.Functor.Reverse.Reverse f)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex i f => Optics.Internal.Indexed.FunctorWithIndex i (GHC.Generics.Rec1 f)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex i m => Optics.Internal.Indexed.FunctorWithIndex (e, i) (Control.Monad.Trans.Reader.ReaderT e m)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex i m => Optics.Internal.Indexed.FunctorWithIndex i (Control.Monad.Trans.Identity.IdentityT m)")
+           "",
+         _×_
+           (KeyIns "Optics.Internal.Indexed.FunctorWithIndex k ((,) k)") "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.FunctorWithIndex k (Data.Map.Internal.Map k)")
+           "",
+         _×_
+           (KeyIns "Optics.Internal.Indexed.FunctorWithIndex r ((->) r)") "",
+         _×_ (KeyIns "Optics.Internal.Indexed.HasSingleIndex '[i] i") "",
+         _×_ (KeyIns "Optics.Internal.Indexed.NonEmptyIndices (x : xs)") "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex () Data.Functor.Identity.Identity")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex () GHC.Generics.Par1")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex () GHC.Maybe.Maybe")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex Data.Void.Void (GHC.Generics.K1 i c)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex Data.Void.Void Data.Proxy.Proxy")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex Data.Void.Void GHC.Generics.U1")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex Data.Void.Void GHC.Generics.V1")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex GHC.Types.Int Control.Applicative.ZipList")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex GHC.Types.Int Data.IntMap.Internal.IntMap")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex GHC.Types.Int Data.Sequence.Internal.Seq")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex GHC.Types.Int GHC.Base.NonEmpty")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex GHC.Types.Int []")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex [GHC.Types.Int] Data.Tree.Tree")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex i f => Optics.Internal.Indexed.TraversableWithIndex i (Control.Applicative.Backwards.Backwards f)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex i f => Optics.Internal.Indexed.TraversableWithIndex i (Data.Functor.Reverse.Reverse f)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex i f => Optics.Internal.Indexed.TraversableWithIndex i (GHC.Generics.Rec1 f)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex i m => Optics.Internal.Indexed.TraversableWithIndex i (Control.Monad.Trans.Identity.IdentityT m)")
+           "",
+         _×_
+           (KeyIns "Optics.Internal.Indexed.TraversableWithIndex k ((,) k)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Indexed.TraversableWithIndex k (Data.Map.Internal.Map k)")
+           "",
+         _×_ (KeyNew "Indexing") "f a",
+         _×_ (KeyTyF "ShowTypes") "(types :: [Type]) :: ErrorMessage",
+         _×_ (KeyFun "Indexing") "(Int -> IntT f a) -> Indexing f a",
+         _×_ (KeyFun "IntT") "{-# UNPACK #-} !Int -> f a -> IntT f a",
+         _×_ (KeyFun "[runIndexing]") "Indexing f a -> Int -> IntT f a",
+         _×_
+           (KeyFun "conjoined")
+           "is `HasSingleIndex` i => Optic k NoIx s t a b -> Optic k is s t a b -> Optic k is s t a b",
+         _×_
+           (KeyFun "ifoldMap")
+           "(FoldableWithIndex i f, TraversableWithIndex i f, Monoid m) => (i -> a -> m) -> f a -> m",
+         _×_
+           (KeyFun "ifoldl'")
+           "FoldableWithIndex i f => (i -> b -> a -> b) -> b -> f a -> b",
+         _×_
+           (KeyFun "ifoldr")
+           "FoldableWithIndex i f => (i -> a -> b -> b) -> b -> f a -> b",
+         _×_
+           (KeyFun "ifor")
+           "(TraversableWithIndex i t, Applicative f) => t a -> (i -> a -> f b) -> f (t b)",
+         _×_
+           (KeyFun "ifor_")
+           "(FoldableWithIndex i t, Applicative f) => t a -> (i -> a -> f b) -> f ()",
+         _×_
+           (KeyFun "imap")
+           "(FunctorWithIndex i f, TraversableWithIndex i f) => (i -> a -> b) -> f a -> f b",
+         _×_
+           (KeyFun "indexing")
+           "((a -> Indexing f b) -> s -> Indexing f t) -> (Int -> a -> f b) -> s -> f t",
+         _×_
+           (KeyFun "itraverse")
+           "(TraversableWithIndex i t, Applicative f) => (i -> a -> f b) -> t a -> f (t b)",
+         _×_
+           (KeyFun "itraverse_")
+           "(FoldableWithIndex i t, Applicative f) => (i -> a -> f b) -> t a -> f ()",
+         _×_ (KeyFun "unIntT") "IntT f a -> f a"]),
+   _×_
+     (ModuleName "Optics.Internal.IxFold")
+     (Map.fromList
+        [_×_
+           (KeyFun "ifoldVL__")
+           "(Bicontravariant p, Traversing p) => (forall f. Applicative f => (i -> a -> f u) -> s -> f v) -> Optic__ p j (i -> j) s t a b",
+         _×_
+           (KeyFun "ifolded__")
+           "(Bicontravariant p, Traversing p, FoldableWithIndex i f) => Optic__ p j (i -> j) (f a) t a b",
+         _×_
+           (KeyFun "ifoldring__")
+           "(Bicontravariant p, Traversing p) => (forall f. Applicative f => (i -> a -> f u -> f u) -> f v -> s -> f w) -> Optic__ p j (i -> j) s t a b"]),
+   _×_
+     (ModuleName "Optics.Internal.IxSetter")
+     (Map.fromList
+        [_×_
+           (KeyFun "imapped__")
+           "(Mapping p, FunctorWithIndex i f) => Optic__ p j (i -> j) (f a) (f b) a b"]),
+   _×_
+     (ModuleName "Optics.Internal.IxTraversal")
+     (Map.fromList
+        [_×_
+           (KeyFun "itraversed__")
+           "(Traversing p, TraversableWithIndex i f) => Optic__ p j (i -> j) (f a) (f b) a b"]),
+   _×_
+     (ModuleName "Optics.Internal.Optic")
+     (Map.fromList
+        [_×_
+           (KeyCls
+              "LabelOptic (name :: Symbol) k s t a b | name s -> k a, name t -> k b, name s b -> t, name t a -> s")
+           "",
+         _×_
+           (KeyDat "IsProxy")
+           "(k :: Type) (l :: Type) (p :: Type -> Type -> Type -> Type)",
+         _×_ (KeyInL "9 %") "",
+         _×_ (KeyInL "9 %%") "",
+         _×_ (KeyInL "9 %&") "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Optic.LabelOptic name k s t a b, (TypeError ...)) => Optics.Internal.Optic.LabelOptic name k s t a b")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Optic.LabelOptic name k s t a b, is Data.Type.Equality.~ Optics.Internal.Optic.TypeLevel.NoIx) => GHC.OverloadedLabels.IsLabel name (Optics.Internal.Optic.Optic k is s t a b)")
+           "",
+         _×_
+           (KeyIns
+              "(Optics.Internal.Optic.TypeLevel.Append (x : xs) ys Data.Type.Equality.~ (x : zs), Optics.Internal.Optic.AppendProof xs ys zs) => Optics.Internal.Optic.AppendProof (x : xs) ys (x : zs)")
+           "",
+         _×_
+           (KeyIns
+              "(ys Data.Type.Equality.~ zs) => Optics.Internal.Optic.AppendProof '[] ys zs")
+           "",
+         _×_ (KeyNew "Optic") "(k :: OpticKind) (is :: IxList) s t a b",
+         _×_
+           (KeyTyp "LabelOptic'") "name k s a = LabelOptic name k s s a a",
+         _×_ (KeyTyp "Optic'") "k is s a = Optic k is s s a a",
+         _×_
+           (KeyTyp "Optic_")
+           "k p i j s t a b = Constraints k p => Optic__ p i j s t a b",
+         _×_ (KeyTyp "Optic__") "p i j s t a b = p i a b -> p j s t",
+         _×_
+           (KeyFun "(%%)")
+           "forall k is js ks s t u v a b. ks ~ Append is js => Optic k is s t u v -> Optic k js u v a b -> Optic k ks s t a b",
+         _×_
+           (KeyFun "(%&)")
+           "Optic k is s t a b -> (Optic k is s t a b -> Optic l js s' t' a' b') -> Optic l js s' t' a' b'",
+         _×_
+           (KeyFun "(%)")
+           "(Is k m, Is l m, m ~ Join k l, ks ~ Append is js) => Optic k is s t u v -> Optic l js u v a b -> Optic m ks s t a b",
+         _×_ (KeyFun "IsProxy") "IsProxy",
+         _×_
+           (KeyFun "Optic")
+           "(forall p i. Profunctor p => Optic_ k p i (Curry is i) s t a b) -> Optic s t a b",
+         _×_
+           (KeyFun "[getOptic]")
+           "Optic s t a b -> forall p i. Profunctor p => Optic_ k p i (Curry is i) s t a b",
+         _×_
+           (KeyFun "castOptic")
+           "forall destKind srcKind is s t a b. Is srcKind destKind => Optic srcKind is s t a b -> Optic destKind is s t a b",
+         _×_
+           (KeyFun "labelOptic")
+           "LabelOptic name k s t a b => Optic k NoIx s t a b"]),
+   _×_
+     (ModuleName "Optics.Internal.Optic.Subtyping")
+     (Map.fromList
+        [_×_ (KeyCls "Is k l") "",
+         _×_
+           (KeyIns
+              "(TypeError ...) => Optics.Internal.Optic.Subtyping.Is k l")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Getter Optics.Internal.Optic.Types.A_Fold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Getter Optics.Internal.Optic.Types.An_AffineFold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Lens Optics.Internal.Optic.Types.A_Fold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Lens Optics.Internal.Optic.Types.A_Getter")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Lens Optics.Internal.Optic.Types.A_Setter")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Lens Optics.Internal.Optic.Types.A_Traversal")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Lens Optics.Internal.Optic.Types.An_AffineFold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Lens Optics.Internal.Optic.Types.An_AffineTraversal")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Prism Optics.Internal.Optic.Types.A_Fold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Prism Optics.Internal.Optic.Types.A_Review")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Prism Optics.Internal.Optic.Types.A_Setter")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Prism Optics.Internal.Optic.Types.A_Traversal")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Prism Optics.Internal.Optic.Types.An_AffineFold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Prism Optics.Internal.Optic.Types.An_AffineTraversal")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_ReversedLens Optics.Internal.Optic.Types.A_Review")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_ReversedPrism Optics.Internal.Optic.Types.A_Fold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_ReversedPrism Optics.Internal.Optic.Types.A_Getter")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_ReversedPrism Optics.Internal.Optic.Types.An_AffineFold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Traversal Optics.Internal.Optic.Types.A_Fold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.A_Traversal Optics.Internal.Optic.Types.A_Setter")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_AffineFold Optics.Internal.Optic.Types.A_Fold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_AffineTraversal Optics.Internal.Optic.Types.A_Fold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_AffineTraversal Optics.Internal.Optic.Types.A_Setter")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_AffineTraversal Optics.Internal.Optic.Types.A_Traversal")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_AffineTraversal Optics.Internal.Optic.Types.An_AffineFold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_Iso Optics.Internal.Optic.Types.A_Fold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_Iso Optics.Internal.Optic.Types.A_Getter")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_Iso Optics.Internal.Optic.Types.A_Lens")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_Iso Optics.Internal.Optic.Types.A_Prism")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_Iso Optics.Internal.Optic.Types.A_ReversedLens")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_Iso Optics.Internal.Optic.Types.A_ReversedPrism")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_Iso Optics.Internal.Optic.Types.A_Review")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_Iso Optics.Internal.Optic.Types.A_Setter")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_Iso Optics.Internal.Optic.Types.A_Traversal")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_Iso Optics.Internal.Optic.Types.An_AffineFold")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.Subtyping.Is Optics.Internal.Optic.Types.An_Iso Optics.Internal.Optic.Types.An_AffineTraversal")
+           "",
+         _×_ (KeyIns "Optics.Internal.Optic.Subtyping.Is k k") "",
+         _×_ (KeyTyF "Join") "(k :: OpticKind) (l :: OpticKind)",
+         _×_
+           (KeyFun "implies")
+           "Is k l => proxy k l p -> (Constraints k p => r) -> Constraints l p => r"]),
+   _×_
+     (ModuleName "Optics.Internal.Optic.TypeLevel")
+     (Map.fromList
+        [_×_ (KeyCls "CurryCompose xs") "",
+         _×_ (KeyIns "Optics.Internal.Optic.TypeLevel.CurryCompose '[]") "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Optic.TypeLevel.CurryCompose xs => Optics.Internal.Optic.TypeLevel.CurryCompose (x : xs)")
+           "",
+         _×_ (KeyTyF "Append") "(xs :: IxList) (ys :: IxList) :: IxList",
+         _×_ (KeyTyF "Curry") "(xs :: IxList) (y :: Type) :: Type",
+         _×_ (KeyTyF "QuoteType") "(x :: Type) :: ErrorMessage",
+         _×_ (KeyTyp "IxList") "= [Type]",
+         _×_ (KeyTyp "NoIx") "= ('[] :: IxList)",
+         _×_ (KeyTyp "WithIx") "i = ('[i] :: IxList)",
+         _×_
+           (KeyFun "composeN")
+           "CurryCompose xs => (i -> j) -> Curry xs i -> Curry xs j"]),
+   _×_
+     (ModuleName "Optics.Internal.Optic.Types")
+     (Map.fromList
+        [_×_ (KeyDat "A_Fold") ":: OpticKind",
+         _×_ (KeyDat "A_Getter") ":: OpticKind",
+         _×_ (KeyDat "A_Lens") ":: OpticKind",
+         _×_ (KeyDat "A_Prism") ":: OpticKind",
+         _×_ (KeyDat "A_ReversedLens") ":: OpticKind",
+         _×_ (KeyDat "A_ReversedPrism") ":: OpticKind",
+         _×_ (KeyDat "A_Review") ":: OpticKind",
+         _×_ (KeyDat "A_Setter") ":: OpticKind",
+         _×_ (KeyDat "A_Traversal") ":: OpticKind",
+         _×_ (KeyDat "An_AffineFold") ":: OpticKind",
+         _×_ (KeyDat "An_AffineTraversal") ":: OpticKind",
+         _×_ (KeyDat "An_Iso") ":: OpticKind",
+         _×_
+           (KeyTyF "Constraints")
+           "(k :: OpticKind) (p :: Type -> Type -> Type -> Type) :: Constraint",
+         _×_ (KeyTyp "OpticKind") "= Type"]),
+   _×_
+     (ModuleName "Optics.Internal.Setter")
+     (Map.fromList
+        [_×_
+           (KeyFun "mapped__")
+           "(Mapping p, Functor f) => Optic__ p i i (f a) (f b) a b"]),
+   _×_
+     (ModuleName "Optics.Internal.Traversal")
+     (Map.fromList
+        [_×_
+           (KeyFun "traversed__")
+           "(Traversing p, Traversable f) => Optic__ p i i (f a) (f b) a b"]),
+   _×_
+     (ModuleName "Optics.Internal.Utils")
+     (Map.fromList
+        [_×_ (KeyDat "Identity'") "a",
+         _×_ (KeyDat "OrT") "f a",
+         _×_
+           (KeyIns
+              "Data.Profunctor.Indexed.Mapping (Data.Profunctor.Indexed.IxStar Optics.Internal.Utils.Identity')")
+           "",
+         _×_
+           (KeyIns
+              "Data.Profunctor.Indexed.Mapping (Data.Profunctor.Indexed.Star Optics.Internal.Utils.Identity')")
+           "",
+         _×_
+           (KeyIns "GHC.Base.Applicative Optics.Internal.Utils.Identity'") "",
+         _×_
+           (KeyIns
+              "GHC.Base.Applicative f => GHC.Base.Applicative (Optics.Internal.Utils.OrT f)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Applicative f => GHC.Base.Monoid (Optics.Internal.Utils.Traversed f a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Base.Applicative f => GHC.Base.Semigroup (Optics.Internal.Utils.Traversed f a)")
+           "",
+         _×_ (KeyIns "GHC.Base.Functor Optics.Internal.Utils.Identity'") "",
+         _×_
+           (KeyIns
+              "GHC.Base.Functor f => GHC.Base.Functor (Optics.Internal.Utils.OrT f)")
+           "",
+         _×_ (KeyNew "Traversed") "f a",
+         _×_
+           (KeyFun "(#.)") "Coercible b c => (b -> c) -> (a -> b) -> a -> c",
+         _×_
+           (KeyFun "(.#)") "Coercible a b => (b -> c) -> (a -> b) -> a -> c",
+         _×_ (KeyFun "Identity'") "{-# UNPACK #-} !() -> a -> Identity' a",
+         _×_ (KeyFun "OrT") "!Bool -> f a -> OrT f a",
+         _×_ (KeyFun "Traversed") "f a -> Traversed f a",
+         _×_ (KeyFun "runTraversed") "Functor f => Traversed f a -> f ()",
+         _×_ (KeyFun "unwrapIdentity'") "Identity' a -> a",
+         _×_ (KeyFun "wrapIdentity'") "a -> Identity' a",
+         _×_ (KeyFun "wrapOrT") "f a -> OrT f a"]),
+   _×_
+     (ModuleName "Optics.Iso")
+     (Map.fromList
+        [_×_ (KeyCls "Bifunctor p => Swapped p") "",
+         _×_ (KeyDat "An_Iso") ":: OpticKind",
+         _×_ (KeyIns "Optics.Iso.Swapped (,)") "",
+         _×_ (KeyIns "Optics.Iso.Swapped Data.Either.Either") "",
+         _×_ (KeyTyp "Iso") "s t a b = Optic An_Iso NoIx s t a b",
+         _×_ (KeyTyp "Iso'") "s a = Optic' An_Iso NoIx s a",
+         _×_ (KeyFun "anon") "a -> (a -> Bool) -> Iso' (Maybe a) a",
+         _×_
+           (KeyFun "au")
+           "Functor f => Iso s t a b -> ((b -> t) -> f s) -> f a",
+         _×_
+           (KeyFun "coerced") "(Coercible s a, Coercible t b) => Iso s t a b",
+         _×_
+           (KeyFun "coerced1")
+           "forall f s a. (Coercible s (f s), Coercible a (f a)) => Iso (f s) (f a) s a",
+         _×_ (KeyFun "coercedTo") "forall a s. Coercible s a => Iso' s a",
+         _×_
+           (KeyFun "curried")
+           "Iso ((a, b) -> c) ((d, e) -> f) (a -> b -> c) (d -> e -> f)",
+         _×_ (KeyFun "equality") "(s ~ a, t ~ b) => Iso s t a b",
+         _×_
+           (KeyFun "flipped")
+           "Iso (a -> b -> c) (a' -> b' -> c') (b -> a -> c) (b' -> a' -> c')",
+         _×_ (KeyFun "involuted") "(a -> a) -> Iso' a a",
+         _×_ (KeyFun "iso") "(s -> a) -> (b -> t) -> Iso s t a b",
+         _×_
+           (KeyFun "mapping")
+           "(Functor f, Functor g) => Iso s t a b -> Iso (f s) (g t) (f a) (g b)",
+         _×_ (KeyFun "non") "Eq a => a -> Iso' (Maybe a) a",
+         _×_ (KeyFun "non'") "Prism' a () -> Iso' (Maybe a) a",
+         _×_ (KeyFun "simple") "Iso' a a",
+         _×_
+           (KeyFun "swapped")
+           "Swapped p => Iso (p a b) (p c d) (p b a) (p d c)",
+         _×_
+           (KeyFun "uncurried")
+           "Iso (a -> b -> c) (d -> e -> f) ((a, b) -> c) ((d, e) -> f)",
+         _×_ (KeyFun "under") "Iso s t a b -> (t -> s) -> b -> a",
+         _×_
+           (KeyFun "withIso")
+           "Iso s t a b -> ((s -> a) -> (b -> t) -> r) -> r"]),
+   _×_
+     (ModuleName "Optics.IxAffineFold")
+     (Map.fromList
+        [_×_ (KeyDat "An_AffineFold") ":: OpticKind",
+         _×_ (KeyInL "3 `iafailing`") "",
+         _×_
+           (KeyTyp "IxAffineFold")
+           "i s a = Optic' An_AffineFold (WithIx i) s a",
+         _×_
+           (KeyFun "iafailing")
+           "(Is k An_AffineFold, Is l An_AffineFold, is1 `HasSingleIndex` i, is2 `HasSingleIndex` i) => Optic' k is1 s a -> Optic' l is2 s a -> IxAffineFold i s a",
+         _×_
+           (KeyFun "iafolding") "(s -> Maybe (i, a)) -> IxAffineFold i s a",
+         _×_
+           (KeyFun "ipreview")
+           "(Is k An_AffineFold, is `HasSingleIndex` i) => Optic' k is s a -> s -> Maybe (i, a)",
+         _×_
+           (KeyFun "ipreviews")
+           "(Is k An_AffineFold, is `HasSingleIndex` i) => Optic' k is s a -> (i -> a -> r) -> s -> Maybe r"]),
+   _×_
+     (ModuleName "Optics.IxAffineTraversal")
+     (Map.fromList
+        [_×_ (KeyDat "An_AffineTraversal") ":: OpticKind",
+         _×_
+           (KeyTyp "IxAffineTraversal")
+           "i s t a b = Optic An_AffineTraversal (WithIx i) s t a b",
+         _×_
+           (KeyTyp "IxAffineTraversal'")
+           "i s a = Optic' An_AffineTraversal (WithIx i) s a",
+         _×_
+           (KeyTyp "IxAffineTraversalVL")
+           "i s t a b = forall f. Functor f => (forall r. r -> f r) -> (i -> a -> f b) -> s -> f t",
+         _×_
+           (KeyTyp "IxAffineTraversalVL'")
+           "i s a = IxAffineTraversalVL i s s a a",
+         _×_
+           (KeyFun "iatraversal")
+           "(s -> Either t (i, a)) -> (s -> b -> t) -> IxAffineTraversal i s t a b",
+         _×_
+           (KeyFun "iatraversalVL")
+           "IxAffineTraversalVL i s t a b -> IxAffineTraversal i s t a b",
+         _×_
+           (KeyFun "toIxAtraversalVL")
+           "(Is k An_AffineTraversal, is `HasSingleIndex` i) => Optic k is s t a b -> IxAffineTraversalVL i s t a b"]),
+   _×_
+     (ModuleName "Optics.IxFold")
+     (Map.fromList
+        [_×_
+           (KeyCls
+              "(FunctorWithIndex i f, Foldable f) => FoldableWithIndex i f | f -> i")
+           "",
+         _×_ (KeyDat "A_Fold") ":: OpticKind",
+         _×_ (KeyInL "3 `ifailing`") "",
+         _×_ (KeyInR "6 `isumming`") "",
+         _×_ (KeyTyp "IxFold") "i s a = Optic' A_Fold (WithIx i) s a",
+         _×_
+           (KeyFun "iallOf")
+           "(Is k A_Fold, is `HasSingleIndex` i) => Optic' k is s a -> (i -> a -> Bool) -> s -> Bool",
+         _×_
+           (KeyFun "ianyOf")
+           "(Is k A_Fold, is `HasSingleIndex` i) => Optic' k is s a -> (i -> a -> Bool) -> s -> Bool",
+         _×_
+           (KeyFun "ibackwards_")
+           "(Is k A_Fold, is `HasSingleIndex` i) => Optic' k is s a -> IxFold i s a",
+         _×_
+           (KeyFun "ifailing")
+           "(Is k A_Fold, Is l A_Fold, is1 `HasSingleIndex` i, is2 `HasSingleIndex` i) => Optic' k is1 s a -> Optic' l is2 s a -> IxFold i s a",
+         _×_
+           (KeyFun "ifiltered")
+           "(Is k A_Fold, is `HasSingleIndex` i) => (i -> a -> Bool) -> Optic' k is s a -> IxFold i s a",
+         _×_
+           (KeyFun "ifindMOf")
+           "(Is k A_Fold, Monad m, is `HasSingleIndex` i) => Optic' k is s a -> (i -> a -> m Bool) -> s -> m (Maybe (i, a))",
+         _×_
+           (KeyFun "ifindOf")
+           "(Is k A_Fold, is `HasSingleIndex` i) => Optic' k is s a -> (i -> a -> Bool) -> s -> Maybe (i, a)",
+         _×_
+           (KeyFun "ifoldMap")
+           "(FoldableWithIndex i f, TraversableWithIndex i f, Monoid m) => (i -> a -> m) -> f a -> m",
+         _×_
+           (KeyFun "ifoldMapOf")
+           "(Is k A_Fold, Monoid m, is `HasSingleIndex` i) => Optic' k is s a -> (i -> a -> m) -> s -> m",
+         _×_
+           (KeyFun "ifoldVL")
+           "(forall f. Applicative f => (i -> a -> f u) -> s -> f v) -> IxFold i s a",
+         _×_ (KeyFun "ifolded") "FoldableWithIndex i f => IxFold i (f a) a",
+         _×_
+           (KeyFun "ifolding")
+           "FoldableWithIndex i f => (s -> f a) -> IxFold i s a",
+         _×_
+           (KeyFun "ifoldl'")
+           "FoldableWithIndex i f => (i -> b -> a -> b) -> b -> f a -> b",
+         _×_
+           (KeyFun "ifoldlOf'")
+           "(Is k A_Fold, is `HasSingleIndex` i) => Optic' k is s a -> (i -> r -> a -> r) -> r -> s -> r",
+         _×_
+           (KeyFun "ifoldr")
+           "FoldableWithIndex i f => (i -> a -> b -> b) -> b -> f a -> b",
+         _×_
+           (KeyFun "ifoldrOf")
+           "(Is k A_Fold, is `HasSingleIndex` i) => Optic' k is s a -> (i -> a -> r -> r) -> r -> s -> r",
+         _×_
+           (KeyFun "ifoldring")
+           "(forall f. Applicative f => (i -> a -> f u -> f u) -> f v -> s -> f w) -> IxFold i s a",
+         _×_
+           (KeyFun "iforOf_")
+           "(Is k A_Fold, Applicative f, is `HasSingleIndex` i) => Optic' k is s a -> s -> (i -> a -> f r) -> f ()",
+         _×_
+           (KeyFun "iheadOf")
+           "(Is k A_Fold, is `HasSingleIndex` i) => Optic' k is s a -> s -> Maybe (i, a)",
+         _×_
+           (KeyFun "ilastOf")
+           "(Is k A_Fold, is `HasSingleIndex` i) => Optic' k is s a -> s -> Maybe (i, a)",
+         _×_
+           (KeyFun "inoneOf")
+           "(Is k A_Fold, is `HasSingleIndex` i) => Optic' k is s a -> (i -> a -> Bool) -> s -> Bool",
+         _×_
+           (KeyFun "ipre")
+           "(Is k A_Fold, is `HasSingleIndex` i) => Optic' k is s a -> IxAffineFold i s a",
+         _×_
+           (KeyFun "isumming")
+           "(Is k A_Fold, Is l A_Fold, is1 `HasSingleIndex` i, is2 `HasSingleIndex` i) => Optic' k is1 s a -> Optic' l is2 s a -> IxFold i s a",
+         _×_
+           (KeyFun "itoListOf")
+           "(Is k A_Fold, is `HasSingleIndex` i) => Optic' k is s a -> s -> [(i, a)]",
+         _×_
+           (KeyFun "itraverseOf_")
+           "(Is k A_Fold, Applicative f, is `HasSingleIndex` i) => Optic' k is s a -> (i -> a -> f r) -> s -> f ()"]),
+   _×_
+     (ModuleName "Optics.IxGetter")
+     (Map.fromList
+        [_×_ (KeyDat "A_Getter") ":: OpticKind",
+         _×_ (KeyTyp "IxGetter") "i s a = Optic' A_Getter (WithIx i) s a",
+         _×_ (KeyFun "ito") "(s -> (i, a)) -> IxGetter i s a",
+         _×_
+           (KeyFun "iview")
+           "(Is k A_Getter, is `HasSingleIndex` i) => Optic' k is s a -> s -> (i, a)",
+         _×_
+           (KeyFun "iviews")
+           "(Is k A_Getter, is `HasSingleIndex` i) => Optic' k is s a -> (i -> a -> r) -> s -> r",
+         _×_ (KeyFun "selfIndex") "IxGetter a a a"]),
+   _×_
+     (ModuleName "Optics.IxLens")
+     (Map.fromList
+        [_×_ (KeyDat "A_Lens") ":: OpticKind",
+         _×_
+           (KeyTyp "IxLens") "i s t a b = Optic A_Lens (WithIx i) s t a b",
+         _×_ (KeyTyp "IxLens'") "i s a = Optic' A_Lens (WithIx i) s a",
+         _×_
+           (KeyTyp "IxLensVL")
+           "i s t a b = forall f. Functor f => (i -> a -> f b) -> s -> f t",
+         _×_ (KeyTyp "IxLensVL'") "i s a = IxLensVL i s s a a",
+         _×_ (KeyFun "devoid") "IxLens' i Void a",
+         _×_
+           (KeyFun "ilens")
+           "(s -> (i, a)) -> (s -> b -> t) -> IxLens i s t a b",
+         _×_ (KeyFun "ilensVL") "IxLensVL i s t a b -> IxLens i s t a b",
+         _×_
+           (KeyFun "toIxLensVL")
+           "(Is k A_Lens, is `HasSingleIndex` i) => Optic k is s t a b -> IxLensVL i s t a b",
+         _×_
+           (KeyFun "withIxLensVL")
+           "(Is k A_Lens, is `HasSingleIndex` i) => Optic k is s t a b -> (IxLensVL i s t a b -> r) -> r"]),
+   _×_
+     (ModuleName "Optics.IxSetter")
+     (Map.fromList
+        [_×_ (KeyCls "Functor f => FunctorWithIndex i f | f -> i") "",
+         _×_ (KeyDat "A_Setter") ":: OpticKind",
+         _×_
+           (KeyTyp "IxSetter")
+           "i s t a b = Optic A_Setter (WithIx i) s t a b",
+         _×_ (KeyTyp "IxSetter'") "i s a = Optic' A_Setter (WithIx i) s a",
+         _×_
+           (KeyFun "imap")
+           "(FunctorWithIndex i f, TraversableWithIndex i f) => (i -> a -> b) -> f a -> f b",
+         _×_
+           (KeyFun "imapped")
+           "FunctorWithIndex i f => IxSetter i (f a) (f b) a b",
+         _×_
+           (KeyFun "iover")
+           "(Is k A_Setter, is `HasSingleIndex` i) => Optic k is s t a b -> (i -> a -> b) -> s -> t",
+         _×_
+           (KeyFun "iover'")
+           "(Is k A_Setter, is `HasSingleIndex` i) => Optic k is s t a b -> (i -> a -> b) -> s -> t",
+         _×_
+           (KeyFun "iset")
+           "(Is k A_Setter, is `HasSingleIndex` i) => Optic k is s t a b -> (i -> b) -> s -> t",
+         _×_
+           (KeyFun "iset'")
+           "(Is k A_Setter, is `HasSingleIndex` i) => Optic k is s t a b -> (i -> b) -> s -> t",
+         _×_
+           (KeyFun "isets")
+           "((i -> a -> b) -> s -> t) -> IxSetter i s t a b"]),
+   _×_
+     (ModuleName "Optics.IxTraversal")
+     (Map.fromList
+        [_×_
+           (KeyCls
+              "(FoldableWithIndex i t, Traversable t) => TraversableWithIndex i t | t -> i")
+           "",
+         _×_ (KeyDat "A_Traversal") ":: OpticKind",
+         _×_
+           (KeyTyp "IxTraversal")
+           "i s t a b = Optic A_Traversal (WithIx i) s t a b",
+         _×_
+           (KeyTyp "IxTraversal'")
+           "i s a = Optic' A_Traversal (WithIx i) s a",
+         _×_
+           (KeyTyp "IxTraversalVL")
+           "i s t a b = forall f. Applicative f => (i -> a -> f b) -> s -> f t",
+         _×_ (KeyTyp "IxTraversalVL'") "i s a = IxTraversalVL i s s a a",
+         _×_
+           (KeyFun "element")
+           "Traversable f => Int -> IxTraversal' Int (f a) a",
+         _×_
+           (KeyFun "elementOf")
+           "Is k A_Traversal => Optic k is s t a a -> Int -> IxTraversal Int s t a a",
+         _×_
+           (KeyFun "elements")
+           "Traversable f => (Int -> Bool) -> IxTraversal' Int (f a) a",
+         _×_
+           (KeyFun "elementsOf")
+           "Is k A_Traversal => Optic k is s t a a -> (Int -> Bool) -> IxTraversal Int s t a a",
+         _×_
+           (KeyFun "ibackwards")
+           "(Is k A_Traversal, is `HasSingleIndex` i) => Optic k is s t a b -> IxTraversal i s t a b",
+         _×_
+           (KeyFun "ifailover")
+           "(Is k A_Traversal, is `HasSingleIndex` i) => Optic k is s t a b -> (i -> a -> b) -> s -> Maybe t",
+         _×_
+           (KeyFun "ifailover'")
+           "(Is k A_Traversal, is `HasSingleIndex` i) => Optic k is s t a b -> (i -> a -> b) -> s -> Maybe t",
+         _×_
+           (KeyFun "iforOf")
+           "(Is k A_Traversal, Applicative f, is `HasSingleIndex` i) => Optic k is s t a b -> s -> (i -> a -> f b) -> f t",
+         _×_ (KeyFun "ignored") "IxTraversal i s s a b",
+         _×_
+           (KeyFun "imapAccumLOf")
+           "(Is k A_Traversal, is `HasSingleIndex` i) => Optic k is s t a b -> (i -> acc -> a -> (b, acc)) -> acc -> s -> (t, acc)",
+         _×_
+           (KeyFun "imapAccumROf")
+           "(Is k A_Traversal, is `HasSingleIndex` i) => Optic k is s t a b -> (i -> acc -> a -> (b, acc)) -> acc -> s -> (t, acc)",
+         _×_
+           (KeyFun "indices")
+           "(Is k A_Traversal, is `HasSingleIndex` i) => (i -> Bool) -> Optic k is s t a a -> IxTraversal i s t a a",
+         _×_
+           (KeyFun "ipartsOf")
+           "forall k is i s t a. (Is k A_Traversal, is `HasSingleIndex` i) => Optic k is s t a a -> IxLens [i] s t [a] [a]",
+         _×_
+           (KeyFun "iscanl1Of")
+           "(Is k A_Traversal, is `HasSingleIndex` i) => Optic k is s t a a -> (i -> a -> a -> a) -> s -> t",
+         _×_
+           (KeyFun "iscanr1Of")
+           "(Is k A_Traversal, is `HasSingleIndex` i) => Optic k is s t a a -> (i -> a -> a -> a) -> s -> t",
+         _×_
+           (KeyFun "itraversalVL")
+           "IxTraversalVL i s t a b -> IxTraversal i s t a b",
+         _×_
+           (KeyFun "itraverse")
+           "(TraversableWithIndex i t, Applicative f) => (i -> a -> f b) -> t a -> f (t b)",
+         _×_
+           (KeyFun "itraverseOf")
+           "(Is k A_Traversal, Applicative f, is `HasSingleIndex` i) => Optic k is s t a b -> (i -> a -> f b) -> s -> f t",
+         _×_
+           (KeyFun "itraversed")
+           "TraversableWithIndex i f => IxTraversal i (f a) (f b) a b"]),
+   _×_
+     (ModuleName "Optics.Label")
+     (Map.fromList
+        [_×_
+           (KeyCls
+              "LabelOptic (name :: Symbol) k s t a b | name s -> k a, name t -> k b, name s b -> t, name t a -> s")
+           "",
+         _×_
+           (KeyTyp "LabelOptic'") "name k s a = LabelOptic name k s s a a",
+         _×_
+           (KeyFun "labelOptic")
+           "LabelOptic name k s t a b => Optic k NoIx s t a b"]),
+   _×_
+     (ModuleName "Optics.Lens")
+     (Map.fromList
+        [_×_ (KeyDat "A_Lens") ":: OpticKind",
+         _×_ (KeyTyp "Lens") "s t a b = Optic A_Lens NoIx s t a b",
+         _×_ (KeyTyp "Lens'") "s a = Optic' A_Lens NoIx s a",
+         _×_
+           (KeyTyp "LensVL")
+           "s t a b = forall f. Functor f => (a -> f b) -> s -> f t",
+         _×_ (KeyTyp "LensVL'") "s a = LensVL s s a a",
+         _×_
+           (KeyFun "alongside")
+           "(Is k A_Lens, Is l A_Lens) => Optic k is s t a b -> Optic l js s' t' a' b' -> Lens (s, s') (t, t') (a, a') (b, b')",
+         _×_ (KeyFun "chosen") "Lens (Either a a) (Either b b) a b",
+         _×_ (KeyFun "equality'") "Lens a b a b",
+         _×_ (KeyFun "lens") "(s -> a) -> (s -> b -> t) -> Lens s t a b",
+         _×_ (KeyFun "lensVL") "LensVL s t a b -> Lens s t a b",
+         _×_
+           (KeyFun "toLensVL")
+           "Is k A_Lens => Optic k is s t a b -> LensVL s t a b",
+         _×_ (KeyFun "united") "Lens' a ()",
+         _×_
+           (KeyFun "withLens")
+           "Is k A_Lens => Optic k is s t a b -> ((s -> a) -> (s -> b -> t) -> r) -> r",
+         _×_
+           (KeyFun "withLensVL")
+           "Is k A_Lens => Optic k is s t a b -> (LensVL s t a b -> r) -> r"]),
+   _×_
+     (ModuleName "Optics.Operators")
+     (Map.fromList
+        [_×_ (KeyInL "8 ^.") "",
+         _×_ (KeyInL "8 ^..") "",
+         _×_ (KeyInL "8 ^?") "",
+         _×_ (KeyInR "4 !~") "",
+         _×_ (KeyInR "4 %!~") "",
+         _×_ (KeyInR "4 %~") "",
+         _×_ (KeyInR "4 .~") "",
+         _×_ (KeyInR "4 ?!~") "",
+         _×_ (KeyInR "4 ?~") "",
+         _×_ (KeyInR "8 #") "",
+         _×_
+           (KeyFun "(!~)")
+           "Is k A_Setter => Optic k is s t a b -> b -> s -> t",
+         _×_ (KeyFun "(#)") "Is k A_Review => Optic' k is t b -> b -> t",
+         _×_
+           (KeyFun "(%!~)")
+           "Is k A_Setter => Optic k is s t a b -> (a -> b) -> s -> t",
+         _×_
+           (KeyFun "(%~)")
+           "Is k A_Setter => Optic k is s t a b -> (a -> b) -> s -> t",
+         _×_
+           (KeyFun "(.~)")
+           "Is k A_Setter => Optic k is s t a b -> b -> s -> t",
+         _×_
+           (KeyFun "(?!~)")
+           "Is k A_Setter => Optic k is s t a (Maybe b) -> b -> s -> t",
+         _×_
+           (KeyFun "(?~)")
+           "Is k A_Setter => Optic k is s t a (Maybe b) -> b -> s -> t",
+         _×_ (KeyFun "(^.)") "Is k A_Getter => s -> Optic' k is s a -> a",
+         _×_ (KeyFun "(^..)") "Is k A_Fold => s -> Optic' k is s a -> [a]",
+         _×_
+           (KeyFun "(^?)")
+           "Is k An_AffineFold => s -> Optic' k is s a -> Maybe a"]),
+   _×_
+     (ModuleName "Optics.Optic")
+     (Map.fromList
+        [_×_ (KeyCls "Is k l") "",
+         _×_ (KeyCls "NonEmptyIndices (is :: IxList)") "",
+         _×_
+           (KeyCls "is ~ '[i] => HasSingleIndex (is :: IxList) (i :: Type)")
+           "",
+         _×_
+           (KeyCls
+              "is ~ NoIx => AcceptsEmptyIndices (f :: Symbol) (is :: IxList)")
+           "",
+         _×_ (KeyDat "Optic") "(k :: OpticKind) (is :: IxList) s t a b",
+         _×_ (KeyInL "1 &") "",
+         _×_ (KeyInL "1 <&>") "",
+         _×_ (KeyInL "9 %") "",
+         _×_ (KeyInL "9 %%") "",
+         _×_ (KeyInL "9 %&") "",
+         _×_ (KeyTyF "Append") "(xs :: IxList) (ys :: IxList) :: IxList",
+         _×_ (KeyTyF "Join") "(k :: OpticKind) (l :: OpticKind)",
+         _×_ (KeyTyp "IxList") "= [Type]",
+         _×_ (KeyTyp "NoIx") "= ('[] :: IxList)",
+         _×_ (KeyTyp "Optic'") "k is s a = Optic k is s s a a",
+         _×_ (KeyTyp "OpticKind") "= Type",
+         _×_ (KeyTyp "WithIx") "i = ('[i] :: IxList)",
+         _×_
+           (KeyFun "(%%)")
+           "forall k is js ks s t u v a b. ks ~ Append is js => Optic k is s t u v -> Optic k js u v a b -> Optic k ks s t a b",
+         _×_
+           (KeyFun "(%&)")
+           "Optic k is s t a b -> (Optic k is s t a b -> Optic l js s' t' a' b') -> Optic l js s' t' a' b'",
+         _×_
+           (KeyFun "(%)")
+           "(Is k m, Is l m, m ~ Join k l, ks ~ Append is js) => Optic k is s t u v -> Optic l js u v a b -> Optic m ks s t a b",
+         _×_ (KeyFun "(&)") "() => a -> (a -> b) -> b",
+         _×_ (KeyFun "(<&>)") "Functor f => f a -> (a -> b) -> f b",
+         _×_
+           (KeyFun "castOptic")
+           "forall destKind srcKind is s t a b. Is srcKind destKind => Optic srcKind is s t a b -> Optic destKind is s t a b"]),
+   _×_
+     (ModuleName "Optics.Prism")
+     (Map.fromList
+        [_×_ (KeyDat "A_Prism") ":: OpticKind",
+         _×_ (KeyTyp "Prism") "s t a b = Optic A_Prism NoIx s t a b",
+         _×_ (KeyTyp "Prism'") "s a = Optic' A_Prism NoIx s a",
+         _×_
+           (KeyFun "aside")
+           "Is k A_Prism => Optic k is s t a b -> Prism (e, s) (e, t) (e, a) (e, b)",
+         _×_
+           (KeyFun "below")
+           "(Is k A_Prism, Traversable f) => Optic' k is s a -> Prism' (f s) (f a)",
+         _×_ (KeyFun "nearly") "a -> (a -> Bool) -> Prism' a ()",
+         _×_ (KeyFun "only") "Eq a => a -> Prism' a ()",
+         _×_
+           (KeyFun "prism") "(b -> t) -> (s -> Either t a) -> Prism s t a b",
+         _×_
+           (KeyFun "prism'") "(b -> s) -> (s -> Maybe a) -> Prism s s a b",
+         _×_
+           (KeyFun "withPrism")
+           "Is k A_Prism => Optic k is s t a b -> ((b -> t) -> (s -> Either t a) -> r) -> r",
+         _×_
+           (KeyFun "without")
+           "(Is k A_Prism, Is l A_Prism) => Optic k is s t a b -> Optic l is u v c d -> Prism (Either s u) (Either t v) (Either a c) (Either b d)"]),
+   _×_
+     (ModuleName "Optics.Re")
+     (Map.fromList
+        [_×_
+           (KeyCls "ReversibleOptic k where ")
+           " type family ReversedOptic k = r | r -> k; ",
+         _×_
+           (KeyIns
+              "Data.Profunctor.Indexed.Choice p => Data.Profunctor.Indexed.Cochoice (Optics.Re.Re p s t)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Profunctor.Indexed.Cochoice p => Data.Profunctor.Indexed.Choice (Optics.Re.Re p s t)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Profunctor.Indexed.Costrong p => Data.Profunctor.Indexed.Strong (Optics.Re.Re p s t)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Profunctor.Indexed.Profunctor p => Data.Profunctor.Indexed.Profunctor (Optics.Re.Re p s t)")
+           "",
+         _×_
+           (KeyIns
+              "Data.Profunctor.Indexed.Strong p => Data.Profunctor.Indexed.Costrong (Optics.Re.Re p s t)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Bi.Bicontravariant p => Optics.Internal.Bi.Bifunctor (Optics.Re.Re p s t)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Internal.Bi.Bifunctor p => Optics.Internal.Bi.Bicontravariant (Optics.Re.Re p s t)")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Re.ReversibleOptic Optics.Internal.Optic.Types.A_Getter")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Re.ReversibleOptic Optics.Internal.Optic.Types.A_Lens")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Re.ReversibleOptic Optics.Internal.Optic.Types.A_Prism")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Re.ReversibleOptic Optics.Internal.Optic.Types.A_ReversedLens")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Re.ReversibleOptic Optics.Internal.Optic.Types.A_ReversedPrism")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Re.ReversibleOptic Optics.Internal.Optic.Types.A_Review")
+           "",
+         _×_
+           (KeyIns
+              "Optics.Re.ReversibleOptic Optics.Internal.Optic.Types.An_Iso")
+           "",
+         _×_
+           (KeyFun "re")
+           "(ReversibleOptic k, \"re\" `AcceptsEmptyIndices` is) => Optic k is s t a b -> Optic (ReversedOptic k) is b a t s"]),
+   _×_
+     (ModuleName "Optics.ReadOnly")
+     (Map.fromList
+        [_×_ (KeyCls "ToReadOnly k s t a b") "",
+         _×_
+           (KeyIns
+              "(s Data.Type.Equality.~ t, a Data.Type.Equality.~ b) => Optics.ReadOnly.ToReadOnly Optics.Internal.Optic.Types.A_Fold s t a b")
+           "",
+         _×_
+           (KeyIns
+              "(s Data.Type.Equality.~ t, a Data.Type.Equality.~ b) => Optics.ReadOnly.ToReadOnly Optics.Internal.Optic.Types.A_Getter s t a b")
+           "",
+         _×_
+           (KeyIns
+              "(s Data.Type.Equality.~ t, a Data.Type.Equality.~ b) => Optics.ReadOnly.ToReadOnly Optics.Internal.Optic.Types.An_AffineFold s t a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.ReadOnly.ToReadOnly Optics.Internal.Optic.Types.A_Lens s t a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.ReadOnly.ToReadOnly Optics.Internal.Optic.Types.A_Prism s t a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.ReadOnly.ToReadOnly Optics.Internal.Optic.Types.A_ReversedPrism s t a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.ReadOnly.ToReadOnly Optics.Internal.Optic.Types.A_Traversal s t a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.ReadOnly.ToReadOnly Optics.Internal.Optic.Types.An_AffineTraversal s t a b")
+           "",
+         _×_
+           (KeyIns
+              "Optics.ReadOnly.ToReadOnly Optics.Internal.Optic.Types.An_Iso s t a b")
+           "",
+         _×_
+           (KeyFun "getting")
+           "ToReadOnly k s t a b => Optic k is s t a b -> Optic' (Join A_Getter k) is s a"]),
+   _×_
+     (ModuleName "Optics.ReversedLens")
+     (Map.fromList
+        [_×_ (KeyDat "A_ReversedLens") ":: OpticKind",
+         _×_
+           (KeyTyp "ReversedLens")
+           "s t a b = Optic A_ReversedLens NoIx s t a b",
+         _×_
+           (KeyTyp "ReversedLens'") "t b = Optic' A_ReversedLens NoIx t b"]),
+   _×_
+     (ModuleName "Optics.ReversedPrism")
+     (Map.fromList
+        [_×_ (KeyDat "A_ReversedPrism") ":: OpticKind",
+         _×_
+           (KeyTyp "ReversedPrism")
+           "s t a b = Optic A_ReversedPrism NoIx s t a b",
+         _×_
+           (KeyTyp "ReversedPrism'")
+           "s a = Optic' A_ReversedPrism NoIx s a"]),
+   _×_
+     (ModuleName "Optics.Review")
+     (Map.fromList
+        [_×_ (KeyDat "A_Review") ":: OpticKind",
+         _×_ (KeyTyp "Review") "t b = Optic' A_Review NoIx t b",
+         _×_ (KeyFun "review") "Is k A_Review => Optic' k is t b -> b -> t",
+         _×_ (KeyFun "unto") "(b -> t) -> Review t b"]),
+   _×_
+     (ModuleName "Optics.Setter")
+     (Map.fromList
+        [_×_ (KeyDat "A_Setter") ":: OpticKind",
+         _×_ (KeyTyp "Setter") "s t a b = Optic A_Setter NoIx s t a b",
+         _×_ (KeyTyp "Setter'") "s a = Optic' A_Setter NoIx s a",
+         _×_ (KeyFun "mapped") "Functor f => Setter (f a) (f b) a b",
+         _×_
+           (KeyFun "over")
+           "Is k A_Setter => Optic k is s t a b -> (a -> b) -> s -> t",
+         _×_
+           (KeyFun "over'")
+           "Is k A_Setter => Optic k is s t a b -> (a -> b) -> s -> t",
+         _×_
+           (KeyFun "set")
+           "Is k A_Setter => Optic k is s t a b -> b -> s -> t",
+         _×_
+           (KeyFun "set'")
+           "Is k A_Setter => Optic k is s t a b -> b -> s -> t",
+         _×_ (KeyFun "sets") "((a -> b) -> s -> t) -> Setter s t a b"]),
+   _×_
+     (ModuleName "Optics.Traversal")
+     (Map.fromList
+        [_×_ (KeyDat "A_Traversal") ":: OpticKind",
+         _×_
+           (KeyTyp "Traversal") "s t a b = Optic A_Traversal NoIx s t a b",
+         _×_ (KeyTyp "Traversal'") "s a = Optic' A_Traversal NoIx s a",
+         _×_
+           (KeyTyp "TraversalVL")
+           "s t a b = forall f. Applicative f => (a -> f b) -> s -> f t",
+         _×_ (KeyTyp "TraversalVL'") "s a = TraversalVL s s a a",
+         _×_
+           (KeyFun "backwards")
+           "Is k A_Traversal => Optic k is s t a b -> Traversal s t a b",
+         _×_
+           (KeyFun "failover")
+           "Is k A_Traversal => Optic k is s t a b -> (a -> b) -> s -> Maybe t",
+         _×_
+           (KeyFun "failover'")
+           "Is k A_Traversal => Optic k is s t a b -> (a -> b) -> s -> Maybe t",
+         _×_
+           (KeyFun "forOf")
+           "(Is k A_Traversal, Applicative f) => Optic k is s t a b -> s -> (a -> f b) -> f t",
+         _×_
+           (KeyFun "mapAccumLOf")
+           "Is k A_Traversal => Optic k is s t a b -> (acc -> a -> (b, acc)) -> acc -> s -> (t, acc)",
+         _×_
+           (KeyFun "mapAccumROf")
+           "Is k A_Traversal => Optic k is s t a b -> (acc -> a -> (b, acc)) -> acc -> s -> (t, acc)",
+         _×_
+           (KeyFun "partsOf")
+           "forall k is s t a. Is k A_Traversal => Optic k is s t a a -> Lens s t [a] [a]",
+         _×_
+           (KeyFun "scanl1Of")
+           "Is k A_Traversal => Optic k is s t a a -> (a -> a -> a) -> s -> t",
+         _×_
+           (KeyFun "scanr1Of")
+           "Is k A_Traversal => Optic k is s t a a -> (a -> a -> a) -> s -> t",
+         _×_
+           (KeyFun "sequenceOf")
+           "(Is k A_Traversal, Applicative f) => Optic k is s t (f b) b -> s -> f t",
+         _×_
+           (KeyFun "transposeOf")
+           "Is k A_Traversal => Optic k is s t [a] a -> s -> [t]",
+         _×_
+           (KeyFun "traversalVL") "TraversalVL s t a b -> Traversal s t a b",
+         _×_
+           (KeyFun "traverseOf")
+           "(Is k A_Traversal, Applicative f) => Optic k is s t a b -> (a -> f b) -> s -> f t",
+         _×_
+           (KeyFun "traversed")
+           "Traversable t => Traversal (t a) (t b) a b"])]

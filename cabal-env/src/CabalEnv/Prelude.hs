@@ -1,0 +1,26 @@
+module CabalEnv.Prelude (
+module A,
+) where
+
+import Control.Applicative            as A (many, optional, (<**>), (<|>))
+import Control.Monad                  as A (unless, when)
+import Data.ByteString                as A (ByteString)
+import Data.Char                      as A (isAlphaNum)
+import Data.Foldable                  as A (for_, traverse_)
+import Data.List                      as A (intercalate, isPrefixOf, sort)
+import Data.List.Split                as A (splitOn)
+import Data.Map                       as A (Map)
+import Data.Maybe                     as A (mapMaybe)
+import Distribution.Parsec            as A (eitherParsec, explicitEitherParsec)
+import Distribution.Pretty            as A (prettyShow)
+import Distribution.Simple.Utils      as A (fromUTF8BS)
+import Distribution.Types.Dependency  as A (Dependency (..))
+import Distribution.Types.PackageId   as A (PackageId, PackageIdentifier (..))
+import Distribution.Types.PackageName as A (PackageName, mkPackageName)
+import Distribution.Version           as A (Version, VersionRange)
+import System.Exit                    as A (ExitCode (..), exitFailure)
+import System.FilePath                as A ((</>))
+import System.IO                      as A (hPutStrLn, stderr)
+import System.IO.Error                as A (IOError)
+import Text.PrettyPrint               as A ((<+>))
+import Text.Read                      as A (readMaybe)

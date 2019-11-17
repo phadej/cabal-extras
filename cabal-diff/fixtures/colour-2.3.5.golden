@@ -1,0 +1,390 @@
+Map.fromList
+  [_×_
+     (ModuleName "Data.Colour")
+     (Map.fromList
+        [_×_ (KeyCls "AffineSpace f") "",
+         _×_ (KeyCls "ColourOps f") "",
+         _×_ (KeyDat "AlphaColour") "a",
+         _×_ (KeyDat "Colour") "a",
+         _×_
+           (KeyIns
+              "(GHC.Real.Fractional a, GHC.Read.Read a) => GHC.Read.Read (Data.Colour.Internal.AlphaColour a)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Real.Fractional a, GHC.Read.Read a) => GHC.Read.Read (Data.Colour.Internal.Colour a)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Real.Fractional a, GHC.Show.Show a) => GHC.Show.Show (Data.Colour.Internal.Colour a)")
+           "",
+         _×_
+           (KeyIns
+              "(GHC.Real.Fractional a, GHC.Show.Show a, GHC.Classes.Eq a) => GHC.Show.Show (Data.Colour.Internal.AlphaColour a)")
+           "",
+         _×_
+           (KeyFun "affineCombo")
+           "(AffineSpace f, Num a) => [(a, f a)] -> f a -> f a",
+         _×_ (KeyFun "alphaChannel") "AlphaColour a -> a",
+         _×_
+           (KeyFun "alphaColourConvert")
+           "(Fractional b, Real a) => AlphaColour a -> AlphaColour b",
+         _×_
+           (KeyFun "atop")
+           "Fractional a => AlphaColour a -> AlphaColour a -> AlphaColour a",
+         _×_ (KeyFun "black") "Num a => Colour a",
+         _×_
+           (KeyFun "blend")
+           "(Num a, AffineSpace f) => a -> f a -> f a -> f a",
+         _×_
+           (KeyFun "colourConvert")
+           "(Fractional b, Real a) => Colour a -> Colour b",
+         _×_ (KeyFun "darken") "(ColourOps f, Num a) => a -> f a -> f a",
+         _×_
+           (KeyFun "dissolve") "Num a => a -> AlphaColour a -> AlphaColour a",
+         _×_ (KeyFun "opaque") "Num a => Colour a -> AlphaColour a",
+         _×_
+           (KeyFun "over")
+           "(ColourOps f, Num a) => AlphaColour a -> f a -> f a",
+         _×_ (KeyFun "transparent") "Num a => AlphaColour a",
+         _×_
+           (KeyFun "withOpacity") "Num a => Colour a -> a -> AlphaColour a"]),
+   _×_
+     (ModuleName "Data.Colour.CIE")
+     (Map.fromList
+        [_×_ (KeyDat "Chromaticity") "a",
+         _×_ (KeyDat "Colour") "a",
+         _×_
+           (KeyIns
+              "Data.Colour.Internal.AffineSpace Data.Colour.CIE.Chromaticity.Chromaticity")
+           "",
+         _×_
+           (KeyFun "chromaColour")
+           "Fractional a => Chromaticity a -> a -> Colour a",
+         _×_
+           (KeyFun "chromaConvert")
+           "(Fractional b, Real a) => Chromaticity a -> Chromaticity b",
+         _×_
+           (KeyFun "chromaCoords")
+           "Fractional a => Chromaticity a -> (a, a, a)",
+         _×_ (KeyFun "chromaX") "Fractional a => Chromaticity a -> a",
+         _×_ (KeyFun "chromaY") "Fractional a => Chromaticity a -> a",
+         _×_ (KeyFun "chromaZ") "Fractional a => Chromaticity a -> a",
+         _×_
+           (KeyFun "cieLAB")
+           "(Ord a, Floating a) => Chromaticity a -> a -> a -> a -> Colour a",
+         _×_
+           (KeyFun "cieLABView")
+           "(Ord a, Floating a) => Chromaticity a -> Colour a -> (a, a, a)",
+         _×_ (KeyFun "cieXYZ") "Fractional a => a -> a -> a -> Colour a",
+         _×_ (KeyFun "cieXYZView") "Fractional a => Colour a -> (a, a, a)",
+         _×_
+           (KeyFun "lightness")
+           "(Ord a, Floating a) => Chromaticity a -> Colour a -> a",
+         _×_ (KeyFun "luminance") "Fractional a => Colour a -> a",
+         _×_
+           (KeyFun "mkChromaticity")
+           "Fractional a => a -> a -> Chromaticity a",
+         _×_ (KeyFun "toCIEXYZ") "Fractional a => Colour a -> (a, a, a)"]),
+   _×_
+     (ModuleName "Data.Colour.CIE.Illuminant")
+     (Map.fromList
+        [_×_ (KeyFun "a") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "b") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "c") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "d50") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "d55") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "d65") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "d75") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "e") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f1") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f10") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f11") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f12") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f2") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f3") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f4") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f5") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f6") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f7") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f8") "Fractional a => Chromaticity a",
+         _×_ (KeyFun "f9") "Fractional a => Chromaticity a"]),
+   _×_
+     (ModuleName "Data.Colour.Names")
+     (Map.fromList
+        [_×_ (KeyFun "aliceblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "antiquewhite") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "aqua") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "aquamarine") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "azure") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "beige") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "bisque") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "black") "Num a => Colour a",
+         _×_ (KeyFun "blanchedalmond") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "blue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "blueviolet") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "brown") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "burlywood") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "cadetblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "chartreuse") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "chocolate") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "coral") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "cornflowerblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "cornsilk") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "crimson") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "cyan") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkcyan") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkgoldenrod") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkgray") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkgreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkgrey") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkkhaki") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkmagenta") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkolivegreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkorange") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkorchid") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkred") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darksalmon") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkseagreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkslateblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkslategray") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkslategrey") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkturquoise") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "darkviolet") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "deeppink") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "deepskyblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "dimgray") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "dimgrey") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "dodgerblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "firebrick") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "floralwhite") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "forestgreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "fuchsia") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "gainsboro") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "ghostwhite") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "gold") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "goldenrod") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "gray") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "green") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "greenyellow") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "grey") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "honeydew") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "hotpink") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "indianred") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "indigo") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "ivory") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "khaki") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lavender") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lavenderblush") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lawngreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lemonchiffon") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightcoral") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightcyan") "(Ord a, Floating a) => Colour a",
+         _×_
+           (KeyFun "lightgoldenrodyellow") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightgray") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightgreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightgrey") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightpink") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightsalmon") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightseagreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightskyblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightslategray") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightslategrey") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightsteelblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lightyellow") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "lime") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "limegreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "linen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "magenta") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "maroon") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "mediumaquamarine") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "mediumblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "mediumorchid") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "mediumpurple") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "mediumseagreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "mediumslateblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "mediumspringgreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "mediumturquoise") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "mediumvioletred") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "midnightblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "mintcream") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "mistyrose") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "moccasin") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "navajowhite") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "navy") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "oldlace") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "olive") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "olivedrab") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "orange") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "orangered") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "orchid") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "palegoldenrod") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "palegreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "paleturquoise") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "palevioletred") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "papayawhip") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "peachpuff") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "peru") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "pink") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "plum") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "powderblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "purple") "(Ord a, Floating a) => Colour a",
+         _×_
+           (KeyFun "readColourName")
+           "(MonadFail m, Monad m, Ord a, Floating a) => String -> m (Colour a)",
+         _×_ (KeyFun "red") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "rosybrown") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "royalblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "saddlebrown") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "salmon") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "sandybrown") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "seagreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "seashell") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "sienna") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "silver") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "skyblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "slateblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "slategray") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "slategrey") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "snow") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "springgreen") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "steelblue") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "tan") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "teal") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "thistle") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "tomato") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "turquoise") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "violet") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "wheat") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "white") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "whitesmoke") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "yellow") "(Ord a, Floating a) => Colour a",
+         _×_ (KeyFun "yellowgreen") "(Ord a, Floating a) => Colour a"]),
+   _×_
+     (ModuleName "Data.Colour.RGBSpace")
+     (Map.fromList
+        [_×_ (KeyDat "Colour") "a",
+         _×_ (KeyDat "RGB") "a",
+         _×_
+           (KeyDat "RGBGamut")
+           "-- | An RGB gamut is specified by three primary colours (red, green, and",
+         _×_ (KeyDat "RGBSpace") "a",
+         _×_ (KeyDat "TransferFunction") "a",
+         _×_
+           (KeyIns
+              "GHC.Num.Num a => GHC.Base.Monoid (Data.Colour.RGBSpace.TransferFunction a)")
+           "",
+         _×_
+           (KeyIns
+              "GHC.Num.Num a => GHC.Base.Semigroup (Data.Colour.RGBSpace.TransferFunction a)")
+           "",
+         _×_ (KeyFun "RGB") "!a -> !a -> !a -> RGB a",
+         _×_
+           (KeyFun "TransferFunction")
+           "(a -> a) -> (a -> a) -> a -> TransferFunction a",
+         _×_ (KeyFun "[channelBlue]") "RGB a -> !a",
+         _×_ (KeyFun "[channelGreen]") "RGB a -> !a",
+         _×_ (KeyFun "[channelRed]") "RGB a -> !a",
+         _×_ (KeyFun "[transferGamma]") "TransferFunction a -> a",
+         _×_ (KeyFun "[transferInverse]") "TransferFunction a -> a -> a",
+         _×_ (KeyFun "[transfer]") "TransferFunction a -> a -> a",
+         _×_ (KeyFun "curryRGB") "(RGB a -> b) -> a -> a -> a -> b",
+         _×_ (KeyFun "gamut") "RGBSpace a -> RGBGamut",
+         _×_
+           (KeyFun "inGamut")
+           "(Ord a, Fractional a) => RGBGamut -> Colour a -> Bool",
+         _×_
+           (KeyFun "inverseTransferFunction")
+           "Fractional a => TransferFunction a -> TransferFunction a",
+         _×_ (KeyFun "linearRGBSpace") "Num a => RGBGamut -> RGBSpace a",
+         _×_
+           (KeyFun "linearTransferFunction") "Num a => TransferFunction a",
+         _×_
+           (KeyFun "mkRGBGamut")
+           "RGB (Chromaticity Rational) -> Chromaticity Rational -> RGBGamut",
+         _×_
+           (KeyFun "mkRGBSpace")
+           "RGBGamut -> TransferFunction a -> RGBSpace a",
+         _×_
+           (KeyFun "powerTransferFunction")
+           "Floating a => a -> TransferFunction a",
+         _×_ (KeyFun "primaries") "RGBGamut -> RGB (Chromaticity Rational)",
+         _×_
+           (KeyFun "rgbUsingSpace")
+           "Fractional a => RGBSpace a -> a -> a -> a -> Colour a",
+         _×_
+           (KeyFun "toRGBUsingSpace")
+           "Fractional a => RGBSpace a -> Colour a -> RGB a",
+         _×_ (KeyFun "transferFunction") "RGBSpace a -> TransferFunction a",
+         _×_ (KeyFun "uncurryRGB") "(a -> a -> a -> b) -> RGB a -> b",
+         _×_ (KeyFun "whitePoint") "RGBGamut -> Chromaticity Rational"]),
+   _×_
+     (ModuleName "Data.Colour.RGBSpace.HSL")
+     (Map.fromList
+        [_×_ (KeyDat "RGB") "a",
+         _×_ (KeyFun "hsl") "(RealFrac a, Ord a) => a -> a -> a -> RGB a",
+         _×_
+           (KeyFun "hslView") "(Fractional a, Ord a) => RGB a -> (a, a, a)",
+         _×_ (KeyFun "hue") "(Fractional a, Ord a) => RGB a -> a",
+         _×_ (KeyFun "lightness") "(Fractional a, Ord a) => RGB a -> a",
+         _×_ (KeyFun "saturation") "(Fractional a, Ord a) => RGB a -> a"]),
+   _×_
+     (ModuleName "Data.Colour.RGBSpace.HSV")
+     (Map.fromList
+        [_×_ (KeyDat "RGB") "a",
+         _×_ (KeyFun "hsv") "(RealFrac a, Ord a) => a -> a -> a -> RGB a",
+         _×_
+           (KeyFun "hsvView") "(Fractional a, Ord a) => RGB a -> (a, a, a)",
+         _×_ (KeyFun "hue") "(Fractional a, Ord a) => RGB a -> a",
+         _×_ (KeyFun "saturation") "(Fractional a, Ord a) => RGB a -> a",
+         _×_ (KeyFun "value") "(Fractional a, Ord a) => RGB a -> a"]),
+   _×_
+     (ModuleName "Data.Colour.SRGB")
+     (Map.fromList
+        [_×_ (KeyDat "Colour") "a",
+         _×_ (KeyDat "RGB") "a",
+         _×_ (KeyFun "RGB") "!a -> !a -> !a -> RGB a",
+         _×_ (KeyFun "[channelBlue]") "RGB a -> !a",
+         _×_ (KeyFun "[channelGreen]") "RGB a -> !a",
+         _×_ (KeyFun "[channelRed]") "RGB a -> !a",
+         _×_
+           (KeyFun "sRGB") "(Ord b, Floating b) => b -> b -> b -> Colour b",
+         _×_
+           (KeyFun "sRGB24")
+           "(Ord b, Floating b) => Word8 -> Word8 -> Word8 -> Colour b",
+         _×_
+           (KeyFun "sRGB24read") "(Ord b, Floating b) => String -> Colour b",
+         _×_
+           (KeyFun "sRGB24reads") "(Ord b, Floating b) => ReadS (Colour b)",
+         _×_
+           (KeyFun "sRGB24show")
+           "(RealFrac b, Floating b) => Colour b -> String",
+         _×_
+           (KeyFun "sRGB24shows")
+           "(RealFrac b, Floating b) => Colour b -> ShowS",
+         _×_
+           (KeyFun "sRGBBounded")
+           "(Ord b, Floating b, Integral a, Bounded a) => a -> a -> a -> Colour b",
+         _×_ (KeyFun "sRGBSpace") "(Ord a, Floating a) => RGBSpace a",
+         _×_ (KeyFun "toSRGB") "(Ord b, Floating b) => Colour b -> RGB b",
+         _×_
+           (KeyFun "toSRGB24")
+           "(RealFrac b, Floating b) => Colour b -> RGB Word8",
+         _×_
+           (KeyFun "toSRGBBounded")
+           "(RealFrac b, Floating b, Integral a, Bounded a) => Colour b -> RGB a"]),
+   _×_
+     (ModuleName "Data.Colour.SRGB.Linear")
+     (Map.fromList
+        [_×_ (KeyDat "Colour") "a",
+         _×_ (KeyDat "RGB") "a",
+         _×_ (KeyFun "RGB") "!a -> !a -> !a -> RGB a",
+         _×_ (KeyFun "[channelBlue]") "RGB a -> !a",
+         _×_ (KeyFun "[channelGreen]") "RGB a -> !a",
+         _×_ (KeyFun "[channelRed]") "RGB a -> !a",
+         _×_ (KeyFun "rgb") "Fractional a => a -> a -> a -> Colour a",
+         _×_ (KeyFun "sRGBGamut") "RGBGamut",
+         _×_ (KeyFun "toRGB") "Fractional a => Colour a -> RGB a"])]
