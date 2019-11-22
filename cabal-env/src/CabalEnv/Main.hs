@@ -8,41 +8,45 @@ module CabalEnv.Main (main) where
 
 import Peura
 
-import Cabal.Plan
-       (SearchPlanJson (InBuildDir), findAndDecodePlanJson)
 import Control.Applicative           ((<**>))
-import Data.Char                     (isAlphaNum)
-import Data.List
-       (intercalate, isPrefixOf, lines, lookup, sort)
-import Data.List.Split               (splitOn)
+import Data.List                     (lines, sort)
 import Data.Semigroup                (Semigroup (..))
+import Data.Set                      (Set)
 import Data.Version                  (showVersion)
-import Distribution.Parsec           (eitherParsec, explicitEitherParsec)
+import Distribution.Parsec           (eitherParsec)
 import Distribution.Types.Dependency (Dependency (..))
-import Distribution.Version
-       (anyVersion, intersectVersionRanges, nullVersion, thisVersion)
-import System.FilePath.Glob          (glob)
-import Text.Read                     (readMaybe)
+import Distribution.Version          (intersectVersionRanges)
 
-import qualified Data.ByteString.Lazy            as LBS
-import qualified Data.List.NonEmpty              as NE
-import qualified Data.Map.Strict                 as Map
-import qualified Distribution.Compat.CharParsing as P
-import qualified Options.Applicative             as O
+import qualified Data.Aeson                     as A
+import qualified Data.Map.Strict                as Map
+import qualified Data.Set                       as Set
+import qualified Data.Text                      as T
+import qualified Distribution.Pretty            as C
+import qualified Distribution.Types.LibraryName as C
+import qualified Distribution.Version           as C
+import qualified Options.Applicative            as O
+import qualified System.FilePath                as FP
 
+import qualified Cabal.Config as Config
+import qualified Cabal.Plan   as Plan
+
+import CabalEnv.Environment
 import CabalEnv.FakePackage
+import CabalEnv.GHC
+import CabalEnv.Warning
 
 import Paths_cabal_env (version)
 
 main :: IO ()
 main = runPeu () $ do
     opts <- liftIO $ O.execParser optsP'
-    ghcEnvDir <- getGhcEnvDir (optCompiler opts)
+    ghcInfo <- getGhcInfo (optCompiler opts)
 
     case optAction opts of
-        Nothing         -> installAction opts ghcEnvDir
-        Just ActionShow -> showAction opts ghcEnvDir
-        Just ActionList -> listAction opts ghcEnvDir
+        ActionInstall -> installAction opts ghcInfo
+        ActionShow    -> showAction opts ghcInfo
+        ActionList    -> listAction opts ghcInfo
+        ActionHide    -> putError "hide not implemented"
   where
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat
         [ O.fullDesc
@@ -57,194 +61,201 @@ main = runPeu () $ do
 -- List
 -------------------------------------------------------------------------------
 
-listAction :: Opts -> Path Absolute -> Peu r ()
-listAction Opts {..} ghcEnvDir = do
-    when optVerbose $ putInfo $ "Environments available in " ++ toFilePath ghcEnvDir
-    fs <- listDirectory ghcEnvDir
+listAction :: Opts -> GhcInfo -> Peu r ()
+listAction Opts {..} ghcInfo = do
+    let envDir = ghcEnvDir ghcInfo
+    when optVerbose $ putInfo $ "Environments available in " ++ toFilePath envDir
+    fs <- listDirectory envDir
     for_ (sort fs) $ \f ->
-        putInfo $ toUnrootedFilePath f ++ if optVerbose then " " ++ toFilePath (ghcEnvDir </> f) else ""
+        putInfo $ toUnrootedFilePath f ++ if optVerbose then " " ++ toFilePath (envDir </> f) else ""
 
 -------------------------------------------------------------------------------
 -- Show
 -------------------------------------------------------------------------------
 
-showAction :: Opts -> Path Absolute -> Peu r ()
-showAction Opts {..} ghcEnvDir = do
-    (_cmds, pkgIds) <- getEnvironmentContents $ ghcEnvDir </> fromUnrootedFilePath optEnvName
-    when optVerbose $ putInfo $ "Packages in " ++ optEnvName ++ " environment"
-    for_ (sort pkgIds) $ \pkgId ->
-        output $ prettyShow pkgId
+showAction :: Opts -> GhcInfo -> Peu r ()
+showAction Opts {..} ghcInfo = do
+    let envPath = ghcEnvDir ghcInfo </> fromUnrootedFilePath optEnvName
+    withEnvironment envPath $ \env -> do
+        when optVerbose $ putInfo $ "Packages in " ++ optEnvName ++ " environment " ++ toFilePath envPath
+
+        let depsPkgNames :: Set PackageName
+            depsPkgNames = Set.fromList
+                [ pn
+                | Dependency pn _ _ <- envPackages env
+                ]
+
+        for_ (planPkgIds $ envPlan env) $ \pkgId@(PackageIdentifier pkgName _) -> do
+            let shown = envTransitive env || Set.member pkgName depsPkgNames || pkgName == mkPackageName "base"
+            output $ prettyShow pkgId ++ if shown then "" else " (hidden)"
 
 -------------------------------------------------------------------------------
 -- Install
 -------------------------------------------------------------------------------
 
-installAction :: Opts -> Path Absolute -> Peu r ()
-installAction Opts {..} ghcEnvDir = do
-    unless (null optDeps) $ do
-        when optVerbose $ putDebug $ "GHC environment directory: " ++ toFilePath ghcEnvDir
+installAction :: Opts -> GhcInfo -> Peu r ()
+installAction opts@Opts {..} ghcInfo = unless (null optDeps) $ do
+    let envDir = ghcEnvDir ghcInfo
+    putDebug $ "GHC environment directory: " ++ toFilePath envDir
 
-        createDirectoryIfMissing True ghcEnvDir
-        (_cmds, pkgIds) <- getEnvironmentContents $ ghcEnvDir </> fromUnrootedFilePath optEnvName
+    createDirectoryIfMissing True envDir
+    withEnvironmentMaybe (envDir </> fromUnrootedFilePath optEnvName) $ \menv ->
+        case menv of
+            Nothing  -> installActionDo opts
+                optDeps
+                (fromMaybe True optTransitive)
+                ghcInfo
+            Just env -> do
+                let (planBS, plan) = envPlan env
+                let deps = nubDeps $ optDeps ++ envPackages env
+                if all (inThePlan plan) deps
+                then do
+                    putDebug "Everything in plan, regenerating environment file"
+                    generateEnvironment opts deps
+                        (fromMaybe (envTransitive env) optTransitive)
+                        ghcInfo
+                        plan planBS
+                else installActionDo opts deps
+                    (fromMaybe (envTransitive env) optTransitive)
+                    ghcInfo
 
-        when optVerbose $ do
-            putDebug "packages in environment"
-            traverse_ (outputErr . prettyShow) pkgIds
-
-        let cabalFile = fakePackage $ Map.fromListWith intersectVersionRanges $
-                [ (pn, if ver == nullVersion || optAnyVer then anyVersion else thisVersion ver)
-                | PackageIdentifier pn ver <- pkgIds
-                , pn `notElem` [ mkPackageName "rts" ]
-                ] ++
-                [ (pn, vr)
-                | Dependency pn vr _ <- optDeps
-                ]
-
-        when optVerbose $ do
-            putDebug "Generated fake-package.cabal"
-            outputErr cabalFile
-
-        withSystemTempDirectory "cabal-env-fake-package-XXXX" $ \tmpDir -> do
-            writeByteString (tmpDir </> fromUnrootedFilePath "fake-package.cabal") $ toUTF8BS cabalFile
-            writeByteString (tmpDir </> fromUnrootedFilePath "cabal.project") $ toUTF8BS $ unlines
-                [ "packages: ."
-                , "with-compiler: " ++ optCompiler
-                , "documentation: False"
-                , "write-ghc-environment-files: always"
-                , "package *"
-                , "  documentation: False"
-                ]
-
-            ec <- runProcessOutput tmpDir "cabal" $
-                ["v2-build", "all", "--builddir=dist-newstyle"] ++ ["--dry-run" | optDryRun ]
-
-            case ec of
-                ExitFailure _ -> do
-                    putError "ERROR: cabal v2-build failed"
-                    putError "This is might be due inconsistent dependencies (delete package env file, or try -a) or something else"
-                    exitFailure
-
-                ExitSuccess | optDryRun -> return ()
-                ExitSuccess -> do
-                    -- TODO: use cabal-plan to read stuff, better than relying on ghc.environment files, maybe?
-                    -- TODO: remove Glob dependency
-                    _plan <- liftIO $ findAndDecodePlanJson (InBuildDir $ toFilePath $ tmpDir </> fromUnrootedFilePath "dist-newstyle")
-                    -- print plan
-
-                    matches <- liftIO $ glob $ toFilePath $ tmpDir </> fromUnrootedFilePath ".ghc.environment.*-*-*"
-                    case matches of
-                        [envFile'] -> do
-                            envFile <- makeAbsoluteFilePath envFile'
-                            envFileContents <- readByteString envFile
-                            when optVerbose $ do
-                                putDebug "local .ghc.environment file"
-                                outputErr $ fromUTF8BS envFileContents
-
-                            -- strip local stuff
-                            let ls :: [String]
-                                ls = filter (\l -> not $ any (`isPrefixOf` l) ["package-db dist-newstyle", "package-id fake-package-0-inplace"])
-                                   $ lines
-                                   $ fromUTF8BS envFileContents
-
-                            -- (over)write ghc environment file
-                            let newEnvFileContents  :: String
-                                newEnvFileContents = unlines ls
-                            when optVerbose $ do
-                                putDebug "writing environment file"
-                                outputErr newEnvFileContents
-
-                            writeByteString (ghcEnvDir </> fromUnrootedFilePath optEnvName) (toUTF8BS newEnvFileContents)
-
-                        _ -> die "Cannot find .ghc.environment file"
-
--------------------------------------------------------------------------------
--- die
--------------------------------------------------------------------------------
-
-die :: String -> Peu r a
-die str = putError str *> exitFailure
-
--------------------------------------------------------------------------------
--- GHC environment directory
--------------------------------------------------------------------------------
-
-getGhcEnvDir :: FilePath -> Peu r (Path Absolute)
-getGhcEnvDir ghc = do
-    ghcDir   <- getAppUserDataDirectory "ghc"
-
-    infoBS <- LBS.toStrict <$> runProcessCheck ghcDir ghc ["--info"]
-    info <- maybe (die "Cannot parse compilers --info output") return $
-        readMaybe (fromUTF8BS infoBS)
-
-    case lookup ("Project name" :: String) info of
-        Just "The Glorious Glasgow Haskell Compilation System" -> do
-            versionStr <- maybe (die "cannot find Project version in info") return $
-                lookup "Project version" info
-            ver <- case eitherParsec versionStr of
-                Right ver -> return (ver :: Version)
-                Left err  -> die $ "Project version cannot be parsed\n" ++ err
-
-            targetStr <- maybe (die "cannot find Target platform in info") return $
-                lookup "Target platform" info
-            (x,y) <- case splitOn "-" targetStr of
-                [x, _, y] -> return (x, y)
-                _         -> die "Target platform is not triple"
-
-            return $ ghcDir </> fromUnrootedFilePath (x ++ "-" ++ y ++ "-" ++ prettyShow ver) </> fromUnrootedFilePath "environments"
-
-        _ -> die "Your compiler is not GHC"
-
--------------------------------------------------------------------------------
--- Some types
--------------------------------------------------------------------------------
-
-data Command
-    = CmdInstall Dependency  -- ^ install package
-  deriving (Show)
-
-data Environment = Env
-    { envCommands :: [Command]
-    , envPackages :: [PackageIdentifier]
-    }
-  deriving (Show)
-
--------------------------------------------------------------------------------
--- GHC environment file
--------------------------------------------------------------------------------
-
-withEnvironmentFile :: forall r a. a -> ([String] -> a) -> Path Absolute -> Peu r a
-withEnvironmentFile def k fp = handle onIOError $ do
-    contents <- readByteString fp
-    return (k (lines (fromUTF8BS contents)))
+inThePlan :: Plan.PlanJson -> Dependency -> Bool
+inThePlan plan (Dependency pn range _) = case Map.lookup pn pkgIds of
+    Nothing  -> False
+    Just ver -> ver `C.withinRange` range
   where
-    onIOError :: IOException -> Peu r a
-    onIOError _ = return def
+    pkgIds = planPkgIdsMap plan
 
--- TODO: use Environment
-parseEnvironmentContents :: [String] -> ([Command], [PackageIdentifier])
-parseEnvironmentContents ls =
-    ( []
-    , mapMaybe (either (const Nothing) Just . parse) ls
-    )
+installActionDo
+    :: Opts
+    -> [Dependency]  -- ^ dependencies
+    -> Bool          -- ^ transitive
+    -> GhcInfo
+    -> Peu r ()
+installActionDo opts@Opts {..} deps transitive ghcInfo = do
+    let cabalFile :: String
+        cabalFile = fakePackage $ Map.fromListWith intersectVersionRanges $
+            [ (pn, vr)
+            | Dependency pn vr _ <- deps
+            ]
+
+    putDebug "Generated fake-package.cabal"
+    when optVerbose $ outputErr cabalFile
+
+    withSystemTempDirectory "cabal-env-fake-package-XXXX" $ \tmpDir -> do
+        writeByteString (tmpDir </> fromUnrootedFilePath "fake-package.cabal") $ toUTF8BS cabalFile
+        writeByteString (tmpDir </> fromUnrootedFilePath "cabal.project") $ toUTF8BS $ unlines
+            [ "packages: ."
+            , "with-compiler: " ++ optCompiler
+            , "documentation: False"
+            , "write-ghc-environment-files: always"
+            , "package *"
+            , "  documentation: False"
+            ]
+
+        ec <- runProcessOutput tmpDir "cabal" $
+            ["v2-build", "all", "--builddir=dist-newstyle"] ++ ["--dry-run" | optDryRun ]
+
+        case ec of
+            ExitFailure _ -> do
+                putError "ERROR: cabal v2-build failed"
+                putError "This is might be due inconsistent dependencies (delete package env file, or try -a) or something else"
+                exitFailure
+
+            ExitSuccess | optDryRun -> return ()
+            ExitSuccess -> do
+                planPath  <- liftIO $ Plan.findPlanJson (Plan.InBuildDir $ toFilePath $ tmpDir </> fromUnrootedFilePath "dist-newstyle")
+                planPath' <- makeAbsoluteFilePath planPath
+                planBS    <- readByteString planPath'
+                plan      <- case A.eitherDecodeStrict' planBS of
+                    Right x -> return x
+                    Left err -> die err
+
+                generateEnvironment opts deps transitive ghcInfo plan planBS
+
+generateEnvironment
+    :: Opts
+    -> [Dependency]  -- ^ dependencies
+    -> Bool          -- ^ transitive
+    -> GhcInfo
+    -> Plan.PlanJson
+    -> ByteString
+    -> Peu r ()
+generateEnvironment Opts {..} deps transitive ghcInfo plan planBS = do
+    let environment = Environment
+          { envPackages   = deps
+          , envTransitive = transitive
+          , envPlan       = planBS
+          }
+
+    config <- liftIO $ Config.readConfig
+
+    let depsPkgNames :: Set PackageName
+        depsPkgNames = Set.fromList
+            [ pn
+            | Dependency pn _ _ <- deps
+            ]
+
+    let envFileLines :: [String]
+        envFileLines =
+            [ "-- This is GHC environment file written by cabal-env"
+            , "--"
+            , "clear-package-db"
+            , "global-package-db"
+            , "package-db " ++ runIdentity (Config.cfgStoreDir config)
+                FP.</> "ghc-" ++ C.prettyShow (ghcVersion ghcInfo)
+                FP.</>"package.db"
+            ] ++
+            [ "package-id " ++ T.unpack uid
+            | (Plan.UnitId uid, unit) <- Map.toList (Plan.pjUnits plan)
+            , Plan.uType unit `notElem` [ Plan.UnitTypeLocal, Plan.UnitTypeInplace ]
+            , let PackageIdentifier pkgName _ = toCabal (Plan.uPId unit)
+            , transitive || Set.member pkgName depsPkgNames || pkgName == mkPackageName "base"
+            ] ++
+            [ "-- cabal-env " ++ x
+            | x <- lines $ encodeEnvironment environment
+            ]
+
+    -- (over)write ghc environment file
+    let newEnvFileContents  :: String
+        newEnvFileContents = unlines envFileLines
+
+    putDebug "writing environment file"
+    when optVerbose $ outputErr newEnvFileContents
+
+    writeByteString (ghcEnvDir ghcInfo </> fromUnrootedFilePath optEnvName) (toUTF8BS newEnvFileContents)
+
+-------------------------------------------------------------------------------
+-- Dependency extras
+-------------------------------------------------------------------------------
+
+nubDeps :: [Dependency] -> [Dependency]
+nubDeps deps =
+    [ Dependency pn (C.simplifyVersionRange vr) (Set.singleton C.LMainLibName)
+    | (pn, vr) <- Map.toList m
+    ]
   where
-    parse :: String -> Either String PackageIdentifier
-    parse = explicitEitherParsec $ do
-        _ <- P.string "package-id"
-        P.spaces
-        parts <- P.sepByNonEmpty (P.munch1 $ \c -> c == '.' || isAlphaNum c) (P.char '-')
-        either fail return $
-            if isHash (NE.last parts)
-            then parse' (NE.init parts)
-            else parse' (NE.toList parts)
+    m = Map.fromListWith intersectVersionRanges
+        [ (pn, vr)
+        | Dependency pn vr _ <- deps
+        ]
 
-    isHash :: String -> Bool
-    isHash s = length s == 64
+-------------------------------------------------------------------------------
+-- Plan extras
+-------------------------------------------------------------------------------
 
-    parse' :: [String] -> Either String PackageIdentifier
-    parse' = eitherParsec . intercalate "-"
+planPkgIds :: Plan.PlanJson -> Set PackageIdentifier
+planPkgIds plan = Set.fromList
+    [ toCabal $ Plan.uPId unit
+    | unit <- Map.elems (Plan.pjUnits plan)
+    ]
 
-getEnvironmentContents :: Path Absolute -> Peu r ([Command], [PackageIdentifier])
-getEnvironmentContents = withEnvironmentFile mempty parseEnvironmentContents
+planPkgIdsMap :: Plan.PlanJson -> Map PackageName Version
+planPkgIdsMap plan = Map.fromList
+    [ case toCabal $ Plan.uPId unit of
+        PackageIdentifier pn ver -> (pn, ver)
+    | unit <- Map.elems (Plan.pjUnits plan)
+    ]
 
 -------------------------------------------------------------------------------
 -- Options parser
@@ -253,18 +264,21 @@ getEnvironmentContents = withEnvironmentFile mempty parseEnvironmentContents
 -- TODO: commands to list package environments, their contents, delete, copy.
 -- TODO: special . name for "package environment in this directory"
 data Opts = Opts
-    { optCompiler :: FilePath
-    , optEnvName  :: String
-    , optAnyVer   :: Bool
-    , optVerbose  :: Bool
-    , optDryRun   :: Bool
-    , optDeps     :: [Dependency]
-    , optAction   :: Maybe Action
+    { optCompiler   :: FilePath
+    , optEnvName    :: String
+    , optAnyVer     :: Bool -- Todo unused
+    , optVerbose    :: Bool
+    , optDryRun     :: Bool
+    , optTransitive :: Maybe Bool
+    , optDeps       :: [Dependency]
+    , optAction     :: Action
     }
 
 data Action
-    = ActionShow  -- ^ show package environment contents
-    | ActionList  -- ^ list package environments
+    = ActionShow     -- ^ show package environment contents
+    | ActionList     -- ^ list package environments
+    | ActionInstall
+    | ActionHide     -- ^ hide a package
 
 optsP :: O.Parser Opts
 optsP = Opts
@@ -273,28 +287,19 @@ optsP = Opts
     <*> O.switch (O.short 'a' <> O.long "any" <> O.help "Allow any version of existing packages")
     <*> O.switch (O.short 'v' <> O.long "verbose" <> O.help "Print stuff...")
     <*> O.switch (O.short 'd' <> O.long "dry-run" <> O.help "Dry run, don't install anything")
+    <*> optional transitiveP
     <*> many (O.argument (O.eitherReader eitherParsec) (O.metavar "PKG..." <> O.help "packages (with possible bounds)"))
     -- behaviour flags
-    <*> optional actionP
+    <*> actionP
+  where
+    transitiveP = 
+        O.flag' True (O.short 't' <> O.long "transitive" <> O.help "Expose transitive dependencies")
+        <|>
+        O.flag' False (O.long "no-transitive" <> O.help "Don't expose transitive dependencies")
 
 actionP :: O.Parser Action
-actionP = showP <|> listP where
+actionP = installP <|> showP <|> listP <|> hideP <|> pure ActionInstall where
+    installP = O.flag' ActionList (O.short 'i' <> O.long "install" <> O.help "Install / add packages to the environment")
     showP = O.flag' ActionShow (O.short 's' <> O.long "show" <> O.help "Shows the contents of the environment")
     listP = O.flag' ActionList (O.short 'l' <> O.long "list" <> O.help "List package environments")
-
--------------------------------------------------------------------------------
--- Fake project
--------------------------------------------------------------------------------
-
--- TODO: fakeProject :: ...
-
--------------------------------------------------------------------------------
--- cabal.config
--------------------------------------------------------------------------------
-
-newtype CabalConfig = CabalConfig
-    { ccStoreDir :: FilePath
-    }
-
-getCabalConfig :: IO CabalConfig
-getCabalConfig = fail "not implemented"
+    hideP = O.flag' ActionList (O.short 'h' <> O.long "list" <> O.help "Hide packages from an environment")
