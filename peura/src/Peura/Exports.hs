@@ -42,6 +42,8 @@ module Peura.Exports (
     Exception (..),
     IOException,
     SomeException,
+    finally,
+    onException,
     -- * Individual functions
     -- * Control.Applicative
     optional,
@@ -117,7 +119,8 @@ import Control.Exception
        (Exception (..), IOException, SomeException)
 import Control.Monad                   (ap, foldM, unless, when, (<$!>))
 import Control.Monad.Catch
-       (MonadCatch (..), MonadMask (..), MonadThrow (..), bracket, handle)
+       (MonadCatch (..), MonadMask (..), MonadThrow (..), bracket, finally,
+       handle, onException)
 import Control.Monad.Fail              (MonadFail (..))
 import Control.Monad.IO.Class          (MonadIO (..))
 import Control.Monad.IO.Unlift         (MonadUnliftIO (withRunInIO))

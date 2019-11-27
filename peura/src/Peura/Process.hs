@@ -9,7 +9,6 @@ module Peura.Process (
 
 import Control.Concurrent.Async  (wait, withAsync)
 import Foreign.C.Error           (Errno (..), ePIPE)
-import System.Console.Concurrent (lockOutput)
 import System.IO                 (Handle, hClose)
 import System.Process            (cwd, proc)
 
