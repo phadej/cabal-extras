@@ -18,8 +18,10 @@ import Control.Concurrent.STM.TSem (TSem, newTSem, signalTSem, waitTSem)
 import Data.List                   (stripPrefix)
 import Distribution.Parsec         (eitherParsec)
 
-import qualified Data.Binary         as Binary
-import qualified Options.Applicative as O
+import qualified Crypto.Hash.SHA256     as SHA256
+import qualified Data.Binary            as Binary
+import qualified Data.ByteString.Base16 as Base16
+import qualified Options.Applicative    as O
 
 import CabalDiff.Diff
 import CabalDiff.Hoogle
@@ -128,8 +130,7 @@ getLocalHoogleTxt
     -> TSem               -- ^ is someone building dependencies
     -> PackageName
     -> Peu () API
-getLocalHoogleTxt withCompiler buildSem pn = do
-    -- TODO: cache based on sha256 of tarball
+getLocalHoogleTxt gi buildSem pn = do
     cwd <- getCurrentDirectory
     withSystemTempDirectory "cabal-diff" $ \dir -> do
         _ <- runProcessCheck cwd "cabal"
@@ -143,14 +144,35 @@ getLocalHoogleTxt withCompiler buildSem pn = do
         res  <- liftIO $ glob (toFilePath dir ++ "/dist-newstyle/sdist/" ++ prettyShow pn ++ "-*.tar.gz")
         (tarball, pkgId) <- elaborateSdistLocation res
 
-        -- untar
-        _ <- runProcessCheck dir "tar" ["-xzf", toFilePath tarball]
+        -- tarball hash is using for caching, version alone is not enough
+        hash <- calculateHash tarball
 
-        -- directory we expect things got untarred to
-        let dir' = dir </> fromUnrootedFilePath (prettyShow pkgId)
+        -- cache dir
+        cacheDir' <- makeAbsolute $ cacheDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion gi))
+        createDirectoryIfMissing True cacheDir'
 
-        -- build hoogle.txt
-        buildHoogleTxt withCompiler buildSem pkgId dir'
+        let cacheFile = cacheDir' </> fromUnrootedFilePath (prettyShow pkgId ++ "-" ++ hash ++ ".txt")
+
+        exists <- doesFileExist cacheFile
+        if exists
+        then do
+            putInfo $ "Using cached hoogle.txt for local " ++ prettyShow pkgId
+            liftIO $ Binary.decodeFile (toFilePath cacheFile)
+        else do
+            -- untar
+            _ <- runProcessCheck dir "tar" ["-xzf", toFilePath tarball]
+
+            -- directory we expect things got untarred to
+            let dir' = dir </> fromUnrootedFilePath (prettyShow pkgId)
+
+            -- build hoogle.txt
+            api <- buildHoogleTxt gi buildSem pkgId dir'
+
+            -- write cache
+            liftIO $ Binary.encodeFile (toFilePath cacheFile) api
+
+            -- return
+            return api
   where
     elaborateSdistLocation :: [FilePath] -> Peu r (Path Absolute, PackageIdentifier)
     elaborateSdistLocation [fp] = do
@@ -176,6 +198,12 @@ getLocalHoogleTxt withCompiler buildSem pn = do
             Right pkgId -> return pkgId
             Left  err   -> putError err *> exitFailure
 
+calculateHash :: Path Absolute -> Peu () String
+calculateHash f = do
+    lbs <- readLazyByteString f
+    let hash = Base16.encode $ SHA256.hashlazy lbs
+    return (fromUTF8BS hash)
+
 stripSuffix :: Eq a => [a] -> [a] -> Maybe [a]
 stripSuffix sfx str = fmap reverse (stripPrefix (reverse sfx) (reverse str))
 
@@ -188,19 +216,19 @@ getHackageHoogleTxt
     -> TSem               -- ^ is someone building dependencies
     -> PackageIdentifier
     -> Peu () API
-getHackageHoogleTxt gi buildSem pkg = do
+getHackageHoogleTxt gi buildSem pkgId = do
     cacheDir' <- makeAbsolute $ cacheDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion gi))
     createDirectoryIfMissing True cacheDir'
 
-    let cacheFile = cacheDir' </> fromUnrootedFilePath (prettyShow pkg ++ ".txt")
+    let cacheFile = cacheDir' </> fromUnrootedFilePath (prettyShow pkgId ++ ".txt")
 
     exists <- doesFileExist cacheFile
     if exists
     then do
-        putInfo $ "Using cached hoogle.txt for " ++ prettyShow pkg
+        putInfo $ "Using cached hoogle.txt for " ++ prettyShow pkgId
         liftIO $ Binary.decodeFile (toFilePath cacheFile)
     else do
-        api <- getHackageHoogleTxt' gi buildSem pkg
+        api <- getHackageHoogleTxt' gi buildSem pkgId
         liftIO $ Binary.encodeFile (toFilePath cacheFile) api
         return api
 
