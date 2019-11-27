@@ -117,10 +117,9 @@ install:
     echo "packages: cabal-env" >> cabal.project
     echo "packages: peura" >> cabal.project
   - |
-    echo "source-repository-package"                                >> cabal.project
-    echo "  type:     git"                                          >> cabal.project
-    echo "  location: https://github.com/phadej/zinza.git"          >> cabal.project
-    echo "  tag:      37e0c2a8db3fb4e814ebffba1576fa6b4a4950fd"     >> cabal.project
+    echo "constraints: directory     installed"                     >> cabal.project
+    echo "constraints: process       installed"                     >> cabal.project
+    echo "constraints: transformers  installed"                     >> cabal.project
     echo ""                                                         >> cabal.project
     echo "source-repository-package"                                >> cabal.project
     echo "  type:     git"                                          >> cabal.project
@@ -164,10 +163,9 @@ script:
     echo "packages: ${PKGDIR_cabal_env}" >> cabal.project
     echo "packages: ${PKGDIR_peura}" >> cabal.project
   - |
-    echo "source-repository-package"                                >> cabal.project
-    echo "  type:     git"                                          >> cabal.project
-    echo "  location: https://github.com/phadej/zinza.git"          >> cabal.project
-    echo "  tag:      37e0c2a8db3fb4e814ebffba1576fa6b4a4950fd"     >> cabal.project
+    echo "constraints: directory     installed"                     >> cabal.project
+    echo "constraints: process       installed"                     >> cabal.project
+    echo "constraints: transformers  installed"                     >> cabal.project
     echo ""                                                         >> cabal.project
     echo "source-repository-package"                                >> cabal.project
     echo "  type:     git"                                          >> cabal.project
