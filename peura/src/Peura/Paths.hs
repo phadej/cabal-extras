@@ -90,5 +90,11 @@ instance P.FsRoot XdgConfig where
 root :: P.FsRoot root => Path root
 root = Path ""
 
-makeAbsolute :: FsPath -> Peu r (Path Absolute)
-makeAbsolute = liftIO . P.makeAbsolute
+class MakeAbsolute p where
+    makeAbsolute :: p -> Peu r (Path Absolute)
+
+instance MakeAbsolute FsPath where 
+    makeAbsolute = liftIO . P.makeAbsolute
+
+instance P.FsRoot root => MakeAbsolute (Path root) where
+    makeAbsolute = makeAbsolute . P.FsPath

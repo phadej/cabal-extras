@@ -13,6 +13,7 @@ import Peura
 import Prelude ()
 
 import Control.Applicative                 (Alternative (..), optional)
+import Data.Binary                         (Binary)
 import Data.Char                           (isPrint, isSpace)
 import Data.Functor                        (void)
 import Distribution.Compat.CharParsing
@@ -167,6 +168,8 @@ data Key
     | KeyTyp String
     | KeyFun String
   deriving (Eq, Ord, Show, Generic)
+
+instance Binary Key
 
 renderKey :: Key -> String -> String
 renderKey (KeyCls k) rest = unwords ["class", k, rest]
