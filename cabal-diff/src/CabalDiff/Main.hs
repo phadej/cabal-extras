@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveTraversable   #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 -- |
@@ -14,10 +15,13 @@ import System.FilePath.Glob (glob)
 import Control.Applicative         ((<**>))
 import Control.Concurrent.STM      (atomically)
 import Control.Concurrent.STM.TSem (TSem, newTSem, signalTSem, waitTSem)
+import Data.List                   (stripPrefix)
 import Distribution.Parsec         (eitherParsec)
 
-import qualified Data.Binary         as Binary
-import qualified Options.Applicative as O
+import qualified Crypto.Hash.SHA256     as SHA256
+import qualified Data.Binary            as Binary
+import qualified Data.ByteString.Base16 as Base16
+import qualified Options.Applicative    as O
 
 import CabalDiff.Diff
 import CabalDiff.Hoogle
@@ -43,19 +47,43 @@ main = do
 -- Options parser
 -------------------------------------------------------------------------------
 
-data Opts = Opts
-    { _optCompiler :: FilePath
+data Opts c = Opts
+    { _optCompiler :: OneTwo c
     , _optPkgName  :: PackageName
-    , _optVerA     :: Version
-    , _optVerB     :: Version
+    , _optVerA     :: DiffVersion
+    , _optVerB     :: DiffVersion
     }
+  deriving (Show)
 
-optsP :: O.Parser Opts
+data OneTwo a
+    = One a
+    | Two a a
+  deriving (Show, Functor, Foldable, Traversable)
+
+data DiffVersion
+    = HackageVersion Version
+    | LocalVersion
+  deriving (Show)
+
+optsP :: O.Parser (Opts FilePath)
 optsP = Opts
-    <$> O.strOption (O.short 'w' <> O.long "with-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Specify compiler to use")
+    <$> compilerP
     <*> O.argument (O.eitherReader eitherParsec) (O.metavar "PKGNAME" <> O.help "package name")
-    <*> O.argument (O.eitherReader eitherParsec) (O.metavar "OLDVER" <> O.help "new version")
-    <*> O.argument (O.eitherReader eitherParsec) (O.metavar "NEWVER" <> O.help "new package")
+    <*> O.argument readDiffVersion (O.metavar "OLDVER" <> O.help "new version")
+    <*> O.argument readDiffVersion (O.metavar "NEWVER" <> O.help "new package")
+  where
+    compilerP :: O.Parser (OneTwo FilePath)
+    compilerP = one <|> two
+      where
+        one = One <$> O.strOption (O.short 'w' <> O.long "with-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Specify compiler to use")
+        two = Two
+            <$> O.strOption (O.long "old-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Compiler for old version")
+            <*> O.strOption (O.long "new-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Compiler for new version")
+
+readDiffVersion :: O.ReadM DiffVersion
+readDiffVersion = O.eitherReader $ \str -> case str of
+    "." -> Right LocalVersion
+    _   -> HackageVersion <$> eitherParsec str
 
 -------------------------------------------------------------------------------
 -- cache and locking
@@ -64,90 +92,183 @@ optsP = Opts
 cacheDir :: Path XdgCache
 cacheDir = root </> fromUnrootedFilePath "cabal-diff"
 
-{-
-withLukko :: Peu r a -> Peu r a
-withLukko m = do
-    cacheDir' <- makeAbsolute cacheDir
-    let lock = cacheDir' </> fromUnrootedFilePath "lock"
-    bracket (acquire lock) release (const m)
-  where
-    acquire :: Path Absolute -> Peu r Lukko.FD
-    acquire lock = liftIO $ do
-        fd <- Lukko.fdOpen (toFilePath lock)
-        Lukko.fdLock fd Lukko.ExclusiveLock `onException` Lukko.fdClose fd
-        return fd
-
-    release :: Lukko.FD -> Peu r ()
-    release fd = liftIO $ Lukko.fdUnlock fd `finally` Lukko.fdClose fd
--}
-
 -------------------------------------------------------------------------------
 -- Diffing
 -------------------------------------------------------------------------------
 
-doDiff :: Opts -> Peu () ()
+doDiff :: Opts FilePath -> Peu () ()
 doDiff (Opts withCompiler pn pkgVerA pkgVerB) = do
     buildSem <- liftIO $ atomically (newTSem 1)
 
-    dbA' <- async $ getHackageHoogleTxt withCompiler buildSem (PackageIdentifier pn pkgVerA)
-    dbB' <- async $ getHackageHoogleTxt withCompiler buildSem (PackageIdentifier pn pkgVerB)
+    (withCompilerA, withCompilerB) <- getGhcInfos withCompiler
+
+    dbA' <- async $ getHoogleTxt withCompilerA buildSem pn pkgVerA
+    dbB' <- async $ getHoogleTxt withCompilerB buildSem pn pkgVerB
 
     dbA <- wait dbA'
     dbB <- wait dbB'
 
     outputApiDiff (apiDiff dbA dbB)
 
+getGhcInfos :: OneTwo FilePath -> Peu r (GhcInfo, GhcInfo)
+getGhcInfos = fmap toPair . traverse getGhcInfo where
+    toPair (One x)   = (x, x)
+    toPair (Two x y) = (x, y)
+
+getHoogleTxt :: GhcInfo -> TSem -> PackageName -> DiffVersion -> Peu () API
+getHoogleTxt withCompiler buildSem pn LocalVersion =
+    getLocalHoogleTxt withCompiler buildSem pn
+getHoogleTxt withCompiler buildSem pn (HackageVersion ver) =
+    getHackageHoogleTxt withCompiler buildSem (PackageIdentifier pn ver)
+
+-------------------------------------------------------------------------------
+-- Local
+-------------------------------------------------------------------------------
+
+getLocalHoogleTxt
+    :: GhcInfo            -- ^ compiler to use
+    -> TSem               -- ^ is someone building dependencies
+    -> PackageName
+    -> Peu () API
+getLocalHoogleTxt gi buildSem pn = do
+    cwd <- getCurrentDirectory
+    withSystemTempDirectory "cabal-diff" $ \dir -> do
+        _ <- runProcessCheck cwd "cabal"
+            [ "sdist"
+            , "--builddir=" ++ toFilePath (dir </> fromUnrootedFilePath "dist-newstyle")
+            , "pkg:" ++ prettyShow pn
+            ]
+
+        -- we don't know the local package version, so we glob for it.
+        -- Without cabal.project we'd need to glob for *.cabal file anyway.
+        res  <- liftIO $ glob (toFilePath dir ++ "/dist-newstyle/sdist/" ++ prettyShow pn ++ "-*.tar.gz")
+        (tarball, pkgId) <- elaborateSdistLocation res
+
+        -- tarball hash is using for caching, version alone is not enough
+        hash <- calculateHash tarball
+
+        -- cache dir
+        cacheDir' <- makeAbsolute $ cacheDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion gi))
+        createDirectoryIfMissing True cacheDir'
+
+        let cacheFile = cacheDir' </> fromUnrootedFilePath (prettyShow pkgId ++ "-" ++ hash ++ ".txt")
+
+        exists <- doesFileExist cacheFile
+        if exists
+        then do
+            putInfo $ "Using cached hoogle.txt for local " ++ prettyShow pkgId
+            liftIO $ Binary.decodeFile (toFilePath cacheFile)
+        else do
+            -- untar
+            _ <- runProcessCheck dir "tar" ["-xzf", toFilePath tarball]
+
+            -- directory we expect things got untarred to
+            let dir' = dir </> fromUnrootedFilePath (prettyShow pkgId)
+
+            -- build hoogle.txt
+            api <- buildHoogleTxt gi buildSem pkgId dir'
+
+            -- write cache
+            liftIO $ Binary.encodeFile (toFilePath cacheFile) api
+
+            -- return
+            return api
+  where
+    elaborateSdistLocation :: [FilePath] -> Peu r (Path Absolute, PackageIdentifier)
+    elaborateSdistLocation [fp] = do
+        fp' <- makeAbsoluteFilePath fp
+        let fn = toUnrootedFilePath (takeFileName fp')
+        pid <- elaboratePkgId fn
+        return (fp', pid)
+
+    elaborateSdistLocation [] = do
+        putError "Cannot find sdist tarball"
+        exitFailure
+    elaborateSdistLocation fps = do
+        putError $ "Found multiple sdist tarballs " ++ show fps
+        exitFailure
+
+    elaboratePkgId :: String -> Peu r PackageIdentifier
+    elaboratePkgId str = case stripSuffix ".tar.gz" str of
+        Nothing -> do
+            putError $ "tarball path doesn't end with .tar.gz -- " ++ str
+            exitFailure
+
+        Just pfx -> case eitherParsec pfx of
+            Right pkgId -> return pkgId
+            Left  err   -> putError err *> exitFailure
+
+calculateHash :: Path Absolute -> Peu () String
+calculateHash f = do
+    lbs <- readLazyByteString f
+    let hash = Base16.encode $ SHA256.hashlazy lbs
+    return (fromUTF8BS hash)
+
+stripSuffix :: Eq a => [a] -> [a] -> Maybe [a]
+stripSuffix sfx str = fmap reverse (stripPrefix (reverse sfx) (reverse str))
+
 -------------------------------------------------------------------------------
 -- Hackage
 -------------------------------------------------------------------------------
 
 getHackageHoogleTxt
-    :: FilePath           -- ^ compiler to use
+    :: GhcInfo            -- ^ compiler to use
     -> TSem               -- ^ is someone building dependencies
     -> PackageIdentifier
     -> Peu () API
-getHackageHoogleTxt withCompiler buildSem pkg = do
-    cacheDir' <- makeAbsolute cacheDir
-    createDirectoryIfMissing True  cacheDir'
-    let cacheFile = cacheDir' </> fromUnrootedFilePath (prettyShow pkg)
+getHackageHoogleTxt gi buildSem pkgId = do
+    cacheDir' <- makeAbsolute $ cacheDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion gi))
+    createDirectoryIfMissing True cacheDir'
+
+    let cacheFile = cacheDir' </> fromUnrootedFilePath (prettyShow pkgId ++ ".txt")
 
     exists <- doesFileExist cacheFile
     if exists
     then do
-        putInfo $ "Using cached hoogle.txt for " ++ prettyShow pkg
+        putInfo $ "Using cached hoogle.txt for " ++ prettyShow pkgId
         liftIO $ Binary.decodeFile (toFilePath cacheFile)
     else do
-        api <- getHackageHoogleTxt' withCompiler buildSem pkg
+        api <- getHackageHoogleTxt' gi buildSem pkgId
         liftIO $ Binary.encodeFile (toFilePath cacheFile) api
         return api
 
 getHackageHoogleTxt'
-    :: FilePath
+    :: GhcInfo
     -> TSem
     -> PackageIdentifier
     -> Peu () API
-getHackageHoogleTxt' withCompiler buildSem pkg =
+getHackageHoogleTxt' gi buildSem pkgId =
     withSystemTempDirectory "cabal-diff" $ \dir -> do
         -- fetch the package
-        _ <- runProcessCheck dir "cabal" ["get", prettyShow pkg]
+        _ <- runProcessCheck dir "cabal" ["get", prettyShow pkgId]
 
         -- directory cabal got
-        let dir' = dir </> fromUnrootedFilePath (prettyShow pkg)
+        let dir' = dir </> fromUnrootedFilePath (prettyShow pkgId)
 
-        -- build dependencies, for one package at the time
-        _ <- bracket acquire release $ \_ ->
-            runProcessCheck dir' "cabal" ["v2-build", "--with-compiler", withCompiler, "--dependencies-only"]
+        -- build hoogle.txt
+        buildHoogleTxt gi buildSem pkgId dir'
 
-        -- build packages concurrently
-        _ <- runProcessCheck dir' "cabal" ["v2-haddock", "--with-compiler", withCompiler, "--haddock-hoogle", "-O0"]
+buildHoogleTxt
+    :: GhcInfo
+    -> TSem
+    -> PackageIdentifier
+    -> Path Absolute -> Peu r API
+buildHoogleTxt gi buildSem pkgId dir = do
+    -- build dependencies, for one package at the time
+    _ <- bracket acquire release $ \_ ->
+        runProcessCheck dir "cabal" ["v2-build", "--with-compiler", ghcPath gi, "--dependencies-only", "."]
 
-        hoogle <- globHoogle dir' pkg
-        contents <- readByteString hoogle
-        case parseFile contents of
-            Right x  -> return x
-            Left err -> do
-                putError err
-                exitFailure
+    -- build packages concurrently
+    _ <- runProcessCheck dir "cabal" ["v2-haddock", "--with-compiler", ghcPath gi, "--haddock-hoogle", "-O0", "."]
+
+    -- find, read, and parse hoogle.txt
+    hoogle <- globHoogle dir pkgId
+    contents <- readByteString hoogle
+    case parseFile contents of
+        Right x  -> return x
+        Left err -> do
+            putError err
+            exitFailure
   where
     acquire   = liftIO $ atomically (waitTSem buildSem)
     release _ = liftIO $ atomically (signalTSem buildSem)

@@ -32,7 +32,6 @@ import qualified Cabal.Plan   as Plan
 
 import CabalEnv.Environment
 import CabalEnv.FakePackage
-import CabalEnv.GHC
 import CabalEnv.Warning
 
 import Paths_cabal_env (version)

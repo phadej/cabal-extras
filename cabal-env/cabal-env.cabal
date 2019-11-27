@@ -27,7 +27,6 @@ library cabal-env-internal
   exposed-modules:
     CabalEnv.Environment
     CabalEnv.FakePackage
-    CabalEnv.GHC
     CabalEnv.Main
     CabalEnv.Warning
 
@@ -61,7 +60,6 @@ library cabal-env-internal
     , cabal-install-parsers  ^>=0.1
     , cabal-plan             ^>=0.6.0.0
     , optparse-applicative   ^>=0.15.1.0
-    , split                  ^>=0.2.3.3
     , lzma                   ^>=0.0.0.3
 
   default-extensions:
