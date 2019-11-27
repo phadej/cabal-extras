@@ -1,6 +1,6 @@
 cabal-version: 2.2
 name:          peura
-version:       0.20191122
+version:       0.20191127
 synopsis:      Oleg's "prelude"
 category:      Development
 description:
@@ -30,6 +30,7 @@ library
     Peura.Cabal
     Peura.Debug
     Peura.Exports
+    Peura.GHC
     Peura.Monad
     Peura.Orphans
     Peura.Paths
