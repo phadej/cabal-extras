@@ -59,7 +59,6 @@ library cabal-diff-internal
     , ansi-terminal
     , cabal-install-parsers
     , cabal-plan
-    , concurrent-output
     , Glob                   ^>=0.10.0
     , optparse-applicative   ^>=0.15.1.0
     , semialign              ^>=1.1

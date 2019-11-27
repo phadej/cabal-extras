@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveTraversable   #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 -- |
@@ -11,10 +12,10 @@ import Prelude ()
 import Data.Version         (showVersion)
 import System.FilePath.Glob (glob)
 
-import Data.List (stripPrefix)
 import Control.Applicative         ((<**>))
 import Control.Concurrent.STM      (atomically)
 import Control.Concurrent.STM.TSem (TSem, newTSem, signalTSem, waitTSem)
+import Data.List                   (stripPrefix)
 import Distribution.Parsec         (eitherParsec)
 
 import qualified Data.Binary         as Binary
@@ -44,25 +45,38 @@ main = do
 -- Options parser
 -------------------------------------------------------------------------------
 
-data Opts = Opts
-    { _optCompiler :: FilePath
+data Opts c = Opts
+    { _optCompiler :: OneTwo c
     , _optPkgName  :: PackageName
     , _optVerA     :: DiffVersion
     , _optVerB     :: DiffVersion
     }
   deriving (Show)
 
+data OneTwo a
+    = One a
+    | Two a a
+  deriving (Show, Functor, Foldable, Traversable)
+
 data DiffVersion
     = HackageVersion Version
     | LocalVersion
   deriving (Show)
 
-optsP :: O.Parser Opts
+optsP :: O.Parser (Opts FilePath)
 optsP = Opts
-    <$> O.strOption (O.short 'w' <> O.long "with-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Specify compiler to use")
+    <$> compilerP
     <*> O.argument (O.eitherReader eitherParsec) (O.metavar "PKGNAME" <> O.help "package name")
     <*> O.argument readDiffVersion (O.metavar "OLDVER" <> O.help "new version")
     <*> O.argument readDiffVersion (O.metavar "NEWVER" <> O.help "new package")
+  where
+    compilerP :: O.Parser (OneTwo FilePath)
+    compilerP = one <|> two
+      where
+        one = One <$> O.strOption (O.short 'w' <> O.long "with-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Specify compiler to use")
+        two = Two
+            <$> O.strOption (O.long "old-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Compiler for old version")
+            <*> O.strOption (O.long "new-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Compiler for new version")
 
 readDiffVersion :: O.ReadM DiffVersion
 readDiffVersion = O.eitherReader $ \str -> case str of
@@ -80,19 +94,26 @@ cacheDir = root </> fromUnrootedFilePath "cabal-diff"
 -- Diffing
 -------------------------------------------------------------------------------
 
-doDiff :: Opts -> Peu () ()
+doDiff :: Opts FilePath -> Peu () ()
 doDiff (Opts withCompiler pn pkgVerA pkgVerB) = do
     buildSem <- liftIO $ atomically (newTSem 1)
 
-    dbA' <- async $ getHoogleTxt withCompiler buildSem pn pkgVerA
-    dbB' <- async $ getHoogleTxt withCompiler buildSem pn pkgVerB
+    (withCompilerA, withCompilerB) <- getGhcInfos withCompiler
+
+    dbA' <- async $ getHoogleTxt withCompilerA buildSem pn pkgVerA
+    dbB' <- async $ getHoogleTxt withCompilerB buildSem pn pkgVerB
 
     dbA <- wait dbA'
     dbB <- wait dbB'
 
     outputApiDiff (apiDiff dbA dbB)
 
-getHoogleTxt :: FilePath -> TSem -> PackageName -> DiffVersion -> Peu () API
+getGhcInfos :: OneTwo FilePath -> Peu r (GhcInfo, GhcInfo)
+getGhcInfos = fmap toPair . traverse getGhcInfo where
+    toPair (One x)   = (x, x)
+    toPair (Two x y) = (x, y)
+
+getHoogleTxt :: GhcInfo -> TSem -> PackageName -> DiffVersion -> Peu () API
 getHoogleTxt withCompiler buildSem pn LocalVersion =
     getLocalHoogleTxt withCompiler buildSem pn
 getHoogleTxt withCompiler buildSem pn (HackageVersion ver) =
@@ -103,7 +124,7 @@ getHoogleTxt withCompiler buildSem pn (HackageVersion ver) =
 -------------------------------------------------------------------------------
 
 getLocalHoogleTxt
-    :: FilePath           -- ^ compiler to use
+    :: GhcInfo            -- ^ compiler to use
     -> TSem               -- ^ is someone building dependencies
     -> PackageName
     -> Peu () API
@@ -124,7 +145,7 @@ getLocalHoogleTxt withCompiler buildSem pn = do
 
         -- untar
         _ <- runProcessCheck dir "tar" ["-xzf", toFilePath tarball]
-    
+
         -- directory we expect things got untarred to
         let dir' = dir </> fromUnrootedFilePath (prettyShow pkgId)
 
@@ -163,16 +184,15 @@ stripSuffix sfx str = fmap reverse (stripPrefix (reverse sfx) (reverse str))
 -------------------------------------------------------------------------------
 
 getHackageHoogleTxt
-    :: FilePath           -- ^ compiler to use
+    :: GhcInfo            -- ^ compiler to use
     -> TSem               -- ^ is someone building dependencies
     -> PackageIdentifier
     -> Peu () API
-getHackageHoogleTxt withCompiler buildSem pkg = do
-    cacheDir' <- makeAbsolute cacheDir
-    createDirectoryIfMissing True  cacheDir'
+getHackageHoogleTxt gi buildSem pkg = do
+    cacheDir' <- makeAbsolute $ cacheDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion gi))
+    createDirectoryIfMissing True cacheDir'
 
-    -- todo: should include GHC version
-    let cacheFile = cacheDir' </> fromUnrootedFilePath (prettyShow pkg)
+    let cacheFile = cacheDir' </> fromUnrootedFilePath (prettyShow pkg ++ ".txt")
 
     exists <- doesFileExist cacheFile
     if exists
@@ -180,16 +200,16 @@ getHackageHoogleTxt withCompiler buildSem pkg = do
         putInfo $ "Using cached hoogle.txt for " ++ prettyShow pkg
         liftIO $ Binary.decodeFile (toFilePath cacheFile)
     else do
-        api <- getHackageHoogleTxt' withCompiler buildSem pkg
+        api <- getHackageHoogleTxt' gi buildSem pkg
         liftIO $ Binary.encodeFile (toFilePath cacheFile) api
         return api
 
 getHackageHoogleTxt'
-    :: FilePath
+    :: GhcInfo
     -> TSem
     -> PackageIdentifier
     -> Peu () API
-getHackageHoogleTxt' withCompiler buildSem pkgId =
+getHackageHoogleTxt' gi buildSem pkgId =
     withSystemTempDirectory "cabal-diff" $ \dir -> do
         -- fetch the package
         _ <- runProcessCheck dir "cabal" ["get", prettyShow pkgId]
@@ -198,20 +218,20 @@ getHackageHoogleTxt' withCompiler buildSem pkgId =
         let dir' = dir </> fromUnrootedFilePath (prettyShow pkgId)
 
         -- build hoogle.txt
-        buildHoogleTxt withCompiler buildSem pkgId dir'
+        buildHoogleTxt gi buildSem pkgId dir'
 
 buildHoogleTxt
-    :: FilePath
+    :: GhcInfo
     -> TSem
     -> PackageIdentifier
     -> Path Absolute -> Peu r API
-buildHoogleTxt withCompiler buildSem pkgId dir = do
+buildHoogleTxt gi buildSem pkgId dir = do
     -- build dependencies, for one package at the time
     _ <- bracket acquire release $ \_ ->
-        runProcessCheck dir "cabal" ["v2-build", "--with-compiler", withCompiler, "--dependencies-only", "."]
+        runProcessCheck dir "cabal" ["v2-build", "--with-compiler", ghcPath gi, "--dependencies-only", "."]
 
     -- build packages concurrently
-    _ <- runProcessCheck dir "cabal" ["v2-haddock", "--with-compiler", withCompiler, "--haddock-hoogle", "-O0", "."]
+    _ <- runProcessCheck dir "cabal" ["v2-haddock", "--with-compiler", ghcPath gi, "--haddock-hoogle", "-O0", "."]
 
     -- find, read, and parse hoogle.txt
     hoogle <- globHoogle dir pkgId

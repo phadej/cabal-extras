@@ -15,7 +15,8 @@ import Peura.Paths
 import Peura.Process
 
 data GhcInfo = GhcInfo
-    { ghcVersion :: Version
+    { ghcPath    :: FilePath
+    , ghcVersion :: Version
     , ghcEnvDir  :: Path Absolute
     }
 
@@ -42,7 +43,8 @@ getGhcInfo ghc = do
                 _           -> die "Target platform is not a triple"
 
             return GhcInfo
-                { ghcVersion = ver
+                { ghcPath    = ghc
+                , ghcVersion = ver
                 , ghcEnvDir  = ghcDir </> fromUnrootedFilePath (x ++ "-" ++ y ++ "-" ++ prettyShow ver) </> fromUnrootedFilePath "environments"
                 }
 
