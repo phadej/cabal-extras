@@ -8,7 +8,7 @@ import Peura
 import qualified Zinza
 
 -- cabal repl cabal-bundler-internal 
--- :m *CabalBundler.NixSingle
+-- :m *CabalBundler.NixSingle.Input
 -- import Prelude (writeFile)
 -- Zinza.parseAndCompileModuleIO _moduleConfig "data/single.nix" >>= writeFile "src/CabalBundler/NixSingle/Template.hs"
 

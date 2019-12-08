@@ -6,12 +6,13 @@ import Peura
 
 import Data.Maybe (maybeToList)
 
-import qualified Cabal.Index        as I
-import qualified Cabal.Plan         as P
-import qualified Data.List.NonEmpty as NE
-import qualified Data.Map.Strict    as M
-import qualified Data.Set           as S
-import qualified Topograph          as TG
+import qualified Cabal.Index          as I
+import qualified Cabal.Plan           as P
+import qualified Data.List.NonEmpty   as NE
+import qualified Data.Map.Strict      as M
+import qualified Data.Set             as S
+import qualified Distribution.Package as C
+import qualified Topograph            as TG
 
 import CabalBundler.NixBase32
 import CabalBundler.NixSingle.Input
@@ -21,8 +22,13 @@ import CabalBundler.NixSingle.Template
 -- generating output
 -------------------------------------------------------------------------------
 
-generateDerivationNix :: P.PlanJson -> Map PackageName I.PackageInfo -> Peu r String
-generateDerivationNix plan meta = do
+generateDerivationNix
+    :: PackageName
+    -> String
+    -> P.PlanJson
+    -> Map PackageName I.PackageInfo
+    -> Peu r String
+generateDerivationNix packageName exeName plan meta = do
     let units :: Map P.UnitId P.Unit
         units = P.pjUnits plan
 
@@ -48,9 +54,9 @@ generateDerivationNix plan meta = do
             }
 
     return $ render Z
-        { zDerivationName = "cabal-fmt"
-        , zComponentName  = "cabal-fmt:exe:cabal-fmt"
-        , zExecutableName = "cabal-fmt"
+        { zDerivationName = exeName
+        , zComponentName  = C.unPackageName packageName ++ ":exe:" ++ exeName
+        , zExecutableName = exeName
         , zCdeps          = ["zlib", "zlib.dev"]
         , zHsdeps         = zhsdeps
         }

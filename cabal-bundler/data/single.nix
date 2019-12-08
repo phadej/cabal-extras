@@ -80,6 +80,7 @@ stdenv.mkDerivation {
 
     echo "Tools: $CC $HC $HCPKG $CABAL"
 
+    export LANG=C.utf8
     export CABAL_DIR=$TOPDIR/.cabal
     export CABAL_CONFIG=$CABAL_DIR/config
 
@@ -87,7 +88,7 @@ stdenv.mkDerivation {
     cat > $CABAL_CONFIG <<EOF
     -- doesn't work
     -- https://github.com/haskell/cabal/issues/5956
-    verbose: normal +nowrap +markoutput
+    verbose: normal +nowrap
     jobs: $NIX_BUILD_CORES
 
     -- No global repository, all deps should exist in global package-db
@@ -141,7 +142,7 @@ stdenv.mkDerivation {
     echo "Building project"
     #######################
 
-    $CABAL new-build -v2 --with-compiler=$HC --with-ghc=$CC "$targetComp"
+    $CABAL new-build -vverbose+nowrap --with-compiler=$HC --with-ghc=$CC "$targetComp"
 
     echo "Install built artifact"
     ##########################################

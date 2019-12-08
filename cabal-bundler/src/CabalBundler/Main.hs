@@ -33,9 +33,10 @@ main = runPeu () $ do
     -- Solve
 
     let pid@(PackageIdentifier pn ver) = optPackageId opts
+    let exeName = C.unPackageName pn
 
     mplan <- ephemeralPlanJson $ emptyPlanInput
-        { piExecutables = M.singleton pn (C.thisVersion ver, S.singleton $ C.unPackageName pn)
+        { piExecutables = M.singleton pn (C.thisVersion ver, S.singleton exeName)
         , piCompiler = Just (optCompiler opts)
         }
 
@@ -47,7 +48,7 @@ main = runPeu () $ do
 
     -- Generate derivation
 
-    rendered <- generateDerivationNix plan meta
+    rendered <- generateDerivationNix pn exeName plan meta
 
     case optOutput opts of
         Nothing -> output rendered
