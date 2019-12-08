@@ -5,3 +5,8 @@ test-actual
 test-expected
 test-lock
 deps.png
+
+-- testing cabal-bundler
+derivation.nix
+default.nix
+result

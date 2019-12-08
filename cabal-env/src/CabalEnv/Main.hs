@@ -135,7 +135,8 @@ installActionDo opts@Opts {..} deps transitive ghcInfo = do
                 [ (pn, vr)
                 | Dependency pn vr _ <- deps
                 ]
-            , piDryRun = optDryRun
+            , piDryRun   = optDryRun
+            , piCompiler = Just optCompiler
             }
 
     res <- ephemeralPlanJson' planInput
