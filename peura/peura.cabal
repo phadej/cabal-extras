@@ -57,6 +57,7 @@ library
 
   -- Extra dependencies
   build-depends:
+    , aeson              ^>=1.4.6.0
     , ansi-terminal      ^>=0.10.1
     , async              ^>=2.2.2
     , base-compat        ^>=0.11.0
