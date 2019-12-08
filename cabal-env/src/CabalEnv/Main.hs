@@ -17,7 +17,6 @@ import Distribution.Parsec           (eitherParsec)
 import Distribution.Types.Dependency (Dependency (..))
 import Distribution.Version          (intersectVersionRanges)
 
-import qualified Data.Aeson                     as A
 import qualified Data.Map.Strict                as Map
 import qualified Data.Set                       as Set
 import qualified Data.Text                      as T
@@ -31,8 +30,6 @@ import qualified Cabal.Config as Config
 import qualified Cabal.Plan   as Plan
 
 import CabalEnv.Environment
-import CabalEnv.FakePackage
-import CabalEnv.Warning
 
 import Paths_cabal_env (version)
 
@@ -132,44 +129,26 @@ installActionDo
     -> GhcInfo
     -> Peu r ()
 installActionDo opts@Opts {..} deps transitive ghcInfo = do
-    let cabalFile :: String
-        cabalFile = fakePackage $ Map.fromListWith intersectVersionRanges $
-            [ (pn, vr)
-            | Dependency pn vr _ <- deps
-            ]
+    let planInput :: PlanInput
+        planInput = emptyPlanInput
+            { piLibraries = Map.fromListWith intersectVersionRanges $
+                [ (pn, vr)
+                | Dependency pn vr _ <- deps
+                ]
+            , piDryRun = optDryRun
+            }
 
-    putDebug "Generated fake-package.cabal"
-    when optVerbose $ outputErr cabalFile
+    res <- ephemeralPlanJson' planInput
+    case res of
+        Nothing -> do
+            putError "ERROR: cabal v2-build failed"
+            putError "This is might be due inconsistent dependencies (delete package env file, or try -a) or something else"
+            exitFailure
 
-    withSystemTempDirectory "cabal-env-fake-package-XXXX" $ \tmpDir -> do
-        writeByteString (tmpDir </> fromUnrootedFilePath "fake-package.cabal") $ toUTF8BS cabalFile
-        writeByteString (tmpDir </> fromUnrootedFilePath "cabal.project") $ toUTF8BS $ unlines
-            [ "packages: ."
-            , "with-compiler: " ++ optCompiler
-            , "documentation: False"
-            , "write-ghc-environment-files: always"
-            , "package *"
-            , "  documentation: False"
-            ]
+        Just _ | optDryRun ->
+            return ()
 
-        ec <- runProcessOutput tmpDir "cabal" $
-            ["v2-build", "all", "--builddir=dist-newstyle"] ++ ["--dry-run" | optDryRun ]
-
-        case ec of
-            ExitFailure _ -> do
-                putError "ERROR: cabal v2-build failed"
-                putError "This is might be due inconsistent dependencies (delete package env file, or try -a) or something else"
-                exitFailure
-
-            ExitSuccess | optDryRun -> return ()
-            ExitSuccess -> do
-                planPath  <- liftIO $ Plan.findPlanJson (Plan.InBuildDir $ toFilePath $ tmpDir </> fromUnrootedFilePath "dist-newstyle")
-                planPath' <- makeAbsoluteFilePath planPath
-                planBS    <- readByteString planPath'
-                plan      <- case A.eitherDecodeStrict' planBS of
-                    Right x -> return x
-                    Left err -> die err
-
+        Just (planBS, plan) ->
                 generateEnvironment opts deps transitive ghcInfo plan planBS
 
 generateEnvironment
@@ -187,7 +166,7 @@ generateEnvironment Opts {..} deps transitive ghcInfo plan planBS = do
           , envPlan       = planBS
           }
 
-    config <- liftIO $ Config.readConfig
+    config <- liftIO Config.readConfig
 
     let depsPkgNames :: Set PackageName
         depsPkgNames = Set.fromList

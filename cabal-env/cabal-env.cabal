@@ -26,7 +26,6 @@ library cabal-env-internal
   ghc-options:        -Wall
   exposed-modules:
     CabalEnv.Environment
-    CabalEnv.FakePackage
     CabalEnv.Main
     CabalEnv.Warning
 
