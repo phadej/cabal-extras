@@ -1,7 +1,0 @@
-cabal-version: 2.2
-name: fake-package
-version: 0
-
-library
-  default-language: Haskell2010
-  build-tool-depends: cabal-fmt:cabal-fmt

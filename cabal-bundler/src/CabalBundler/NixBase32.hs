@@ -2,6 +2,10 @@ module CabalBundler.NixBase32 (
     encodeBase32,
     ) where
 
+import Peura
+
+import Prelude (splitAt)
+
 import Data.Word (Word8)
 import Data.List (foldl')
 import Data.Bits

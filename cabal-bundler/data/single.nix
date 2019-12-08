@@ -167,7 +167,7 @@ stdenv.mkDerivation {
     ];
   hsdeps  = builtins.attrValues {
 {% for dep in hsdeps %}
-    {{dep.name}} = hackageTarball "{{dep.name}}" "{{dep.version}}" "{{dep.sha256}}" {};
+    {{dep.name}} = hackageTarball "{{dep.name}}" "{{dep.version}}" "{{dep.sha256}}" {{dep.revision }};
 {% endfor %}
   };
 }
