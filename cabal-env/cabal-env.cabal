@@ -56,7 +56,7 @@ library cabal-env-internal
   build-depends:
     , aeson                  ^>=1.4.6.0
     , base64-bytestring      ^>=1.0.0.2
-    , cabal-install-parsers  ^>=0.1
+    , cabal-install-parsers  ^>=0.2
     , cabal-plan             ^>=0.6.0.0
     , optparse-applicative   ^>=0.15.1.0
     , lzma                   ^>=0.0.0.3

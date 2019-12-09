@@ -1,6 +1,6 @@
 cabal-version: 2.2
 name:          peura
-version:       0.20191127
+version:       0.20191209
 synopsis:      Oleg's "prelude"
 category:      Development
 description:
@@ -41,6 +41,7 @@ library
   -- ghc-boot dependencies
   build-depends:
     , base        ^>=4.10.1.0 || ^>=4.11.0.0 || ^>=4.12.0.0 || ^>=4.13.0.0
+    , binary      ^>=0.8.5.1
     , bytestring  ^>=0.10.8.2
     , containers  ^>=0.5.10.2 || ^>=0.6.0.1
     , deepseq     ^>=1.4.3.0
@@ -65,7 +66,8 @@ library
     , clock              ^>=0.8
     , concurrent-output  ^>=1.10.11
     , exceptions         ^>=0.10.3
-    , optics             ^>=0.2
+    , optics-core        ^>=0.2
+    , optics-extra       ^>=0.2
     , paths              ^>=0.2.0.0
     , serialise          ^>=0.2.1.0
     , temporary          ^>=1.3

@@ -219,6 +219,7 @@ putWarning  w msg = withTimeAndSetSgrCode $ \t setSgr -> do
         , setSgr []
         , "]: "
         , msg
+        , "\n"
         ]
 
 putError :: String -> Peu r ()

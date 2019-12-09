@@ -117,15 +117,9 @@ install:
     echo "packages: cabal-env" >> cabal.project
     echo "packages: peura" >> cabal.project
   - |
-    echo "constraints: directory     installed"                     >> cabal.project
-    echo "constraints: process       installed"                     >> cabal.project
-    echo "constraints: transformers  installed"                     >> cabal.project
-    echo ""                                                         >> cabal.project
-    echo "source-repository-package"                                >> cabal.project
-    echo "  type:     git"                                          >> cabal.project
-    echo "  location: https://github.com/haskell-CI/haskell-ci.git" >> cabal.project
-    echo "  tag:      752a3aa2a9d9054a3d83eea7918b139db8f134d0"     >> cabal.project
-    echo "  subdir:   cabal-install-parsers"                        >> cabal.project
+    echo "constraints: directory     installed" >> cabal.project
+    echo "constraints: process       installed" >> cabal.project
+    echo "constraints: transformers  installed" >> cabal.project
   - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
@@ -163,15 +157,9 @@ script:
     echo "packages: ${PKGDIR_cabal_env}" >> cabal.project
     echo "packages: ${PKGDIR_peura}" >> cabal.project
   - |
-    echo "constraints: directory     installed"                     >> cabal.project
-    echo "constraints: process       installed"                     >> cabal.project
-    echo "constraints: transformers  installed"                     >> cabal.project
-    echo ""                                                         >> cabal.project
-    echo "source-repository-package"                                >> cabal.project
-    echo "  type:     git"                                          >> cabal.project
-    echo "  location: https://github.com/haskell-CI/haskell-ci.git" >> cabal.project
-    echo "  tag:      752a3aa2a9d9054a3d83eea7918b139db8f134d0"     >> cabal.project
-    echo "  subdir:   cabal-install-parsers"                        >> cabal.project
+    echo "constraints: directory     installed" >> cabal.project
+    echo "constraints: process       installed" >> cabal.project
+    echo "constraints: transformers  installed" >> cabal.project
   - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
