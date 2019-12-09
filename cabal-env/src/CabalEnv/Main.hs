@@ -42,7 +42,7 @@ main = runPeu () $ do
         ActionInstall -> installAction opts ghcInfo
         ActionShow    -> showAction opts ghcInfo
         ActionList    -> listAction opts ghcInfo
-        ActionHide    -> putError "hide not implemented"
+        ActionHide    -> hideAction opts ghcInfo
   where
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat
         [ O.fullDesc
@@ -82,7 +82,9 @@ showAction Opts {..} ghcInfo = do
                 ]
 
         for_ (planPkgIds $ envPlan env) $ \pkgId@(PackageIdentifier pkgName _) -> do
-            let shown = envTransitive env || Set.member pkgName depsPkgNames || pkgName == mkPackageName "base"
+            let shown = (envTransitive env || Set.member pkgName depsPkgNames || pkgName == mkPackageName "base")
+                    && pkgName `notElem` envHidden env
+
             output $ prettyShow pkgId ++ if shown then "" else " (hidden)"
 
 -------------------------------------------------------------------------------
@@ -98,22 +100,22 @@ installAction opts@Opts {..} ghcInfo = unless (null optDeps) $ do
     withEnvironmentMaybe (envDir </> fromUnrootedFilePath optEnvName) $ \menv ->
         case menv of
             Nothing  -> installActionDo opts
-                optDeps
-                (fromMaybe True optTransitive)
+                (Environment optDeps [] (fromMaybe True optTransitive) ())
                 ghcInfo
             Just env -> do
                 let (planBS, plan) = envPlan env
-                let deps = nubDeps $ optDeps ++ envPackages env
-                if all (inThePlan plan) deps
+                let oldEnv :: Environment ()
+                    oldEnv = Environment
+                        { envPackages   = nubDeps $ optDeps ++ envPackages env
+                        , envTransitive = fromMaybe (envTransitive env) optTransitive
+                        , envHidden     = envHidden env
+                        , envPlan       = ()
+                        }
+                if all (inThePlan plan) (envPackages oldEnv)
                 then do
                     putDebug "Everything in plan, regenerating environment file"
-                    generateEnvironment opts deps
-                        (fromMaybe (envTransitive env) optTransitive)
-                        ghcInfo
-                        plan planBS
-                else installActionDo opts deps
-                    (fromMaybe (envTransitive env) optTransitive)
-                    ghcInfo
+                    generateEnvironment opts oldEnv ghcInfo plan planBS
+                else installActionDo opts oldEnv ghcInfo
 
 inThePlan :: Plan.PlanJson -> Dependency -> Bool
 inThePlan plan (Dependency pn range _) = case Map.lookup pn pkgIds of
@@ -122,18 +124,51 @@ inThePlan plan (Dependency pn range _) = case Map.lookup pn pkgIds of
   where
     pkgIds = planPkgIdsMap plan
 
+-------------------------------------------------------------------------------
+--  Hide
+-------------------------------------------------------------------------------
+
+hideAction :: Opts -> GhcInfo -> Peu r ()
+hideAction opts@Opts {..} ghcInfo = unless (null optDeps) $ do
+    let envDir = ghcEnvDir ghcInfo
+    putDebug $ "GHC environment directory: " ++ toFilePath envDir
+
+    createDirectoryIfMissing True envDir
+    withEnvironmentMaybe (envDir </> fromUnrootedFilePath optEnvName) $ \menv ->
+        case menv of
+            Nothing  -> return ()
+            Just env -> do
+                let (planBS, plan) = envPlan env
+                let oldEnv :: Environment ()
+                    oldEnv = Environment
+                        { envPackages   = nubDeps $ envPackages env
+                        , envTransitive = fromMaybe (envTransitive env) optTransitive
+                        , envHidden     = sortNub $ envHidden env ++ [ pn | Dependency pn _ _ <- optDeps ]
+                        , envPlan       = ()
+                        }
+
+                if all (inThePlan plan) (envPackages oldEnv)
+                then do
+                    putDebug "Everything in plan, regenerating environment file"
+                    generateEnvironment opts oldEnv ghcInfo plan planBS
+                else installActionDo opts oldEnv ghcInfo
+
+
+-------------------------------------------------------------------------------
+-- Environment generation
+-------------------------------------------------------------------------------
+
 installActionDo
     :: Opts
-    -> [Dependency]  -- ^ dependencies
-    -> Bool          -- ^ transitive
+    -> Environment () -- ^ old environment
     -> GhcInfo
     -> Peu r ()
-installActionDo opts@Opts {..} deps transitive ghcInfo = do
+installActionDo opts@Opts {..} oldEnv ghcInfo = do
     let planInput :: PlanInput
         planInput = emptyPlanInput
             { piLibraries = Map.fromListWith intersectVersionRanges $
                 [ (pn, vr)
-                | Dependency pn vr _ <- deps
+                | Dependency pn vr _ <- envPackages oldEnv
                 ]
             , piDryRun   = optDryRun
             , piCompiler = Just optCompiler
@@ -150,21 +185,38 @@ installActionDo opts@Opts {..} deps transitive ghcInfo = do
             return ()
 
         Just (planBS, plan) ->
-                generateEnvironment opts deps transitive ghcInfo plan planBS
+                generateEnvironment opts oldEnv ghcInfo plan planBS
 
 generateEnvironment
     :: Opts
-    -> [Dependency]  -- ^ dependencies
-    -> Bool          -- ^ transitive
+    -> Environment ()
     -> GhcInfo
     -> Plan.PlanJson
     -> ByteString
     -> Peu r ()
-generateEnvironment Opts {..} deps transitive ghcInfo plan planBS = do
-    let environment = Environment
-          { envPackages   = deps
-          , envTransitive = transitive
-          , envPlan       = planBS
+generateEnvironment Opts {..} env ghcInfo plan planBS = do
+    let units = Plan.pjUnits plan
+
+    -- https://github.com/haskell/cabal/issues/6407
+    -- collect units we can reach from fake-package
+    let fakePackageUnitId :: Set Plan.UnitId
+        fakePackageUnitId = Set.fromList
+            [ uid
+            | (uid, unit) <- Map.toList units
+            , Plan.uPId unit == Plan.PkgId (Plan.PkgName "fake-package") (Plan.Ver [0])
+            ]
+
+    let reachableUnits :: Set Plan.UnitId
+        reachableUnits = bfs fakePackageUnitId $ \uid -> Set.unions
+            [ Plan.ciLibDeps ci
+            | unit <- toList (Map.lookup uid units)
+            , ci <- Map.elems (Plan.uComps unit)
+            ]
+
+    -- Construct environment
+
+    let environment = env
+          { envPlan = planBS
           }
 
     config <- liftIO Config.readConfig
@@ -172,7 +224,7 @@ generateEnvironment Opts {..} deps transitive ghcInfo plan planBS = do
     let depsPkgNames :: Set PackageName
         depsPkgNames = Set.fromList
             [ pn
-            | Dependency pn _ _ <- deps
+            | Dependency pn _ _ <- envPackages env
             ]
 
     let envFileLines :: [String]
@@ -185,11 +237,13 @@ generateEnvironment Opts {..} deps transitive ghcInfo plan planBS = do
                 FP.</> "ghc-" ++ C.prettyShow (ghcVersion ghcInfo)
                 FP.</>"package.db"
             ] ++
-            [ "package-id " ++ T.unpack uid
-            | (Plan.UnitId uid, unit) <- Map.toList (Plan.pjUnits plan)
+            [ "package-id " ++ T.unpack uidText
+            | (uid@(Plan.UnitId uidText), unit) <- Map.toList units
+            , uid `Set.member` reachableUnits
             , Plan.uType unit `notElem` [ Plan.UnitTypeLocal, Plan.UnitTypeInplace ]
             , let PackageIdentifier pkgName _ = toCabal (Plan.uPId unit)
-            , transitive || Set.member pkgName depsPkgNames || pkgName == mkPackageName "base"
+            , envTransitive env || Set.member pkgName depsPkgNames || pkgName == mkPackageName "base"
+            , pkgName `notElem` envHidden env
             ] ++
             [ "-- cabal-env " ++ x
             | x <- lines $ encodeEnvironment environment
@@ -205,6 +259,20 @@ generateEnvironment Opts {..} deps transitive ghcInfo plan planBS = do
     writeByteString (ghcEnvDir ghcInfo </> fromUnrootedFilePath optEnvName) (toUTF8BS newEnvFileContents)
 
 -------------------------------------------------------------------------------
+-- BFS
+-------------------------------------------------------------------------------
+
+bfs :: forall a. Ord a => Set a -> (a -> Set a) -> Set a
+bfs xs edge = go Set.empty xs where
+    go :: Set a -> Set a -> Set a
+    go acc next
+        | Set.null next = acc
+        | otherwise     = go acc' next'
+      where
+        acc'  = acc <> next
+        next' = foldMap edge next `Set.difference` acc'
+
+-------------------------------------------------------------------------------
 -- Dependency extras
 -------------------------------------------------------------------------------
 
@@ -218,6 +286,9 @@ nubDeps deps =
         [ (pn, vr)
         | Dependency pn vr _ <- deps
         ]
+
+sortNub :: Ord a => [a] -> [a]
+sortNub = Set.toList . Set.fromList
 
 -------------------------------------------------------------------------------
 -- Plan extras
@@ -271,7 +342,7 @@ optsP = Opts
     -- behaviour flags
     <*> actionP
   where
-    transitiveP = 
+    transitiveP =
         O.flag' True (O.short 't' <> O.long "transitive" <> O.help "Expose transitive dependencies")
         <|>
         O.flag' False (O.long "no-transitive" <> O.help "Don't expose transitive dependencies")
@@ -281,4 +352,4 @@ actionP = installP <|> showP <|> listP <|> hideP <|> pure ActionInstall where
     installP = O.flag' ActionList (O.short 'i' <> O.long "install" <> O.help "Install / add packages to the environment")
     showP = O.flag' ActionShow (O.short 's' <> O.long "show" <> O.help "Shows the contents of the environment")
     listP = O.flag' ActionList (O.short 'l' <> O.long "list" <> O.help "List package environments")
-    hideP = O.flag' ActionList (O.short 'h' <> O.long "list" <> O.help "Hide packages from an environment")
+    hideP = O.flag' ActionHide (O.long "hide" <> O.help "Hide packages from an environment")

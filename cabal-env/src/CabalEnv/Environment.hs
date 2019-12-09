@@ -37,6 +37,7 @@ import CabalEnv.Warning
 
 data Environment plan = Environment
     { envPackages   :: [Dependency]
+    , envHidden     :: [PackageName]
     , envTransitive :: Bool
     , envPlan       :: plan
     }
@@ -44,6 +45,9 @@ data Environment plan = Environment
 
 envPackagesL :: C.Lens' (Environment plan) [Dependency]
 envPackagesL f s = (\x -> s { envPackages = x }) <$> f (envPackages s)
+
+envHiddenL :: C.Lens' (Environment plan) [PackageName]
+envHiddenL f s = (\x -> s { envHidden = x }) <$> f (envHidden s)
 
 envTransitiveL :: C.Lens' (Environment plan) Bool
 envTransitiveL f s = (\x -> s { envTransitive = x }) <$> f (envTransitive s)
@@ -84,9 +88,10 @@ environmentGrammar
     :: (C.FieldGrammar g, Applicative (g (Environment BS.ByteString)))
     => g (Environment BS.ByteString) (Environment BS.ByteString)
 environmentGrammar = Environment
-    <$> C.uniqueFieldAla  "packages"   (C.alaList C.CommaVCat)  envPackagesL
-    <*> C.booleanFieldDef "transitive"                          envTransitiveL  False
-    <*> C.uniqueFieldAla  "plan"       BS64                     envPlanL
+    <$> C.uniqueFieldAla       "packages"   (C.alaList C.CommaVCat)  envPackagesL
+    <*> C.optionalFieldDefAla  "hidden"     (C.alaList C.CommaVCat)  envHiddenL      []
+    <*> C.booleanFieldDef      "transitive"                          envTransitiveL  False
+    <*> C.uniqueFieldAla       "plan"       BS64                     envPlanL
 
 parseEnvironment
     :: [C.Field C.Position]
