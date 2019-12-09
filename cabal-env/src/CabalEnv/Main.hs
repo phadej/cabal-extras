@@ -81,6 +81,8 @@ showAction Opts {..} ghcInfo = do
                 | Dependency pn _ _ <- envPackages env
                 ]
 
+        -- we don't need to consider reachableUnits,
+        -- as we are interested only in package identifiers
         for_ (planPkgIds $ envPlan env) $ \pkgId@(PackageIdentifier pkgName _) -> do
             let shown = (envTransitive env || Set.member pkgName depsPkgNames || pkgName == mkPackageName "base")
                     && pkgName `notElem` envHidden env
@@ -100,7 +102,7 @@ installAction opts@Opts {..} ghcInfo = unless (null optDeps) $ do
     withEnvironmentMaybe (envDir </> fromUnrootedFilePath optEnvName) $ \menv ->
         case menv of
             Nothing  -> installActionDo opts
-                (Environment optDeps [] (fromMaybe True optTransitive) ())
+                (Environment optDeps [] (fromMaybe defaultTransitive optTransitive) ())
                 ghcInfo
             Just env -> do
                 let (planBS, plan) = envPlan env
@@ -199,19 +201,7 @@ generateEnvironment Opts {..} env ghcInfo plan planBS = do
 
     -- https://github.com/haskell/cabal/issues/6407
     -- collect units we can reach from fake-package
-    let fakePackageUnitId :: Set Plan.UnitId
-        fakePackageUnitId = Set.fromList
-            [ uid
-            | (uid, unit) <- Map.toList units
-            , Plan.uPId unit == Plan.PkgId (Plan.PkgName "fake-package") (Plan.Ver [0])
-            ]
-
-    let reachableUnits :: Set Plan.UnitId
-        reachableUnits = bfs fakePackageUnitId $ \uid -> Set.unions
-            [ Plan.ciLibDeps ci
-            | unit <- toList (Map.lookup uid units)
-            , ci <- Map.elems (Plan.uComps unit)
-            ]
+    let runits = reachableUnits plan
 
     -- Construct environment
 
@@ -239,8 +229,13 @@ generateEnvironment Opts {..} env ghcInfo plan planBS = do
             ] ++
             [ "package-id " ++ T.unpack uidText
             | (uid@(Plan.UnitId uidText), unit) <- Map.toList units
-            , uid `Set.member` reachableUnits
+            , uid `Set.member` runits
             , Plan.uType unit `notElem` [ Plan.UnitTypeLocal, Plan.UnitTypeInplace ]
+
+            -- internal libraries are all non-visible now.
+            , (cName, _ci) <- Map.toList (Plan.uComps unit)
+            , cName == Plan.CompNameLib
+
             , let PackageIdentifier pkgName _ = toCabal (Plan.uPId unit)
             , envTransitive env || Set.member pkgName depsPkgNames || pkgName == mkPackageName "base"
             , pkgName `notElem` envHidden env
@@ -306,6 +301,30 @@ planPkgIdsMap plan = Map.fromList
         PackageIdentifier pn ver -> (pn, ver)
     | unit <- Map.elems (Plan.pjUnits plan)
     ]
+
+reachableUnits :: Plan.PlanJson -> Set Plan.UnitId
+reachableUnits plan = bfs fakePackageUnitId $ \uid -> Set.unions
+    [ Plan.ciLibDeps ci
+    | unit <- toList (Map.lookup uid units)
+    , ci <- Map.elems (Plan.uComps unit)
+    ]
+  where
+    units = Plan.pjUnits plan
+
+    fakePackageUnitId :: Set Plan.UnitId
+    fakePackageUnitId = Set.fromList
+        [ uid
+        | (uid, unit) <- Map.toList units
+        , Plan.uPId unit == Plan.PkgId (Plan.PkgName "fake-package") (Plan.Ver [0])
+        ]
+
+
+-------------------------------------------------------------------------------
+-- Defaults
+-------------------------------------------------------------------------------
+
+defaultTransitive :: Bool
+defaultTransitive = False
 
 -------------------------------------------------------------------------------
 -- Options parser
