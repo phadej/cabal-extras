@@ -17,6 +17,7 @@ module Peura.Exports (
     IsString (..),
     NFData (..),
     Semigroup (..),
+    Typeable,
     -- ** MTL
     MonadCatch (..),
     MonadFail (..),
@@ -83,6 +84,8 @@ module Peura.Exports (
     head, last, groupBy,
     -- ** Data.Traversable
     for,
+    -- ** Data.Typeable
+    typeRep,
     -- * Cabal
     prettyShow,
     mkPackageName,
@@ -153,6 +156,7 @@ import Data.Set                        (Set)
 import Data.String                     (IsString (..))
 import Data.Text                       (Text)
 import Data.Traversable                (for)
+import Data.Typeable                   (Typeable, typeRep)
 import Distribution.Pretty             (prettyShow)
 import Distribution.Simple.Utils       (fromUTF8BS, toUTF8BS)
 import Distribution.Types.PackageId    (PackageIdentifier (..))

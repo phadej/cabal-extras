@@ -7,10 +7,13 @@ module Peura.Process (
     runProcessOutput,
     ) where
 
-import Control.Concurrent.Async  (wait, withAsync)
-import Foreign.C.Error           (Errno (..), ePIPE)
-import System.IO                 (Handle, hClose)
-import System.Process            (cwd, proc)
+import Control.Concurrent.Async (wait, withAsync)
+import Foreign.C.Error          (Errno (..), ePIPE)
+import System.Clock
+       (Clock (Monotonic), TimeSpec (TimeSpec), diffTimeSpec, getTime)
+import System.IO                (Handle, hClose)
+import System.Process           (cwd, proc)
+import Text.Printf              (printf)
 
 import qualified Control.Exception             as E
 import qualified Data.ByteString               as BS
@@ -31,7 +34,7 @@ runProcess
     -> Peu r (ExitCode, LazyByteString, LazyByteString)
 runProcess cwd' cmd args stdin = do
     putDebug $ "runProcess " ++ unwords (("cwd=" ++ toFilePath cwd') : cmd : args)
-    liftIO $ runProcessImpl p stdin
+    runProcessImpl p stdin
   where
     p0 = proc cmd args
     p  = p0
@@ -64,7 +67,7 @@ runProcessOutput
     -> Peu r ExitCode
 runProcessOutput cwd' cmd args = do
     putDebug $ "runProcessOutput " ++ unwords (("cwd=" ++ toFilePath cwd') : cmd : args)
-    liftIO $ runProcessOutputImpl p
+    runProcessOutputImpl p
   where
     p0 = proc cmd args
     p  = p0
@@ -78,8 +81,9 @@ runProcessOutput cwd' cmd args = do
 runProcessImpl
     :: Proc.CreateProcess
     -> ByteString
-    -> IO (ExitCode, LazyByteString, LazyByteString)
-runProcessImpl cp input =
+    -> Peu r (ExitCode, LazyByteString, LazyByteString)
+runProcessImpl cp input = withRunInIO $ \runInIO -> do
+    startTime <- getTime Monotonic
     Proc.withCreateProcess cp' $ \mi mo me ph -> case (mi, mo, me) of
         (Just inh, Just outh, Just errh) ->
             -- spawn workers to read stdout and stderr
@@ -95,6 +99,10 @@ runProcessImpl cp input =
 
                 -- wait for the process
                 ec <- Proc.waitForProcess ph
+
+                endTime <- getTime Monotonic
+                runInIO $ displayRunTime startTime endTime
+
 
                 return (ec, out, err)
 
@@ -112,10 +120,16 @@ runProcessImpl cp input =
 
 runProcessOutputImpl
     :: Proc.CreateProcess
-    -> IO ExitCode
-runProcessOutputImpl cp =
-    Proc.withCreateProcess cp' $ \_ _ _ ph ->
-        Proc.waitForProcess ph
+    -> Peu r ExitCode
+runProcessOutputImpl cp = withRunInIO $ \runInIO -> do
+    startTime <- getTime Monotonic
+    Proc.withCreateProcess cp' $ \_ _ _ ph -> do
+        ec <- Proc.waitForProcess ph
+
+        endTime <- getTime Monotonic
+        runInIO $ displayRunTime startTime endTime
+
+        return ec
   where
     cp' :: Proc.CreateProcess
     cp' = cp
@@ -124,10 +138,18 @@ runProcessOutputImpl cp =
         , Proc.std_err       = Proc.Inherit
         , Proc.delegate_ctlc = True
         }
-
 -------------------------------------------------------------------------------
 -- Helpers
 -------------------------------------------------------------------------------
+
+displayRunTime :: TimeSpec -> TimeSpec -> Peu r ()
+displayRunTime start end = do
+    let TimeSpec s ns = diffTimeSpec end start
+    let durr = fromIntegral s + fromIntegral ns / 1e9 :: Double
+
+    if durr > 10
+    then putDebug $ printf "Process run for %.03f seconds" durr
+    else return ()
 
 ignoreSigPipe :: IO () -> IO ()
 ignoreSigPipe = E.handle $ \e -> case e of

@@ -26,6 +26,7 @@ module Peura.Monad (
 
 import Control.Monad.IO.Class     (MonadIO (..))
 import Control.Monad.Reader.Class (MonadReader (..))
+import Data.Typeable              (cast)
 import System.Clock
        (Clock (Monotonic), TimeSpec (TimeSpec), diffTimeSpec, getTime)
 import System.Console.Concurrent
@@ -63,7 +64,22 @@ runPeu r m = withConcurrentOutput $ displayConsoleRegions $ do
             , envR            = r
             }
 
-    unPeu m env
+    res <- unPeu m env `catch` handleException env
+    unPeu (putDebug "runPeu completed successfully") env
+    return res
+  where
+    handleException :: Env r -> SomeException -> IO a
+    handleException env (X.SomeException exc) =
+        case cast exc of
+            Just (ec :: ExitCode) ->
+                X.throwIO ec
+            Nothing -> do
+                unPeu (putError $ "Exception " ++ typeNameOf exc) env
+                errorConcurrent $ X.displayException exc ++ "\n"
+                unPeu exitFailure env
+
+    typeNameOf :: forall x. Typeable x => x -> String
+    typeNameOf _ = show $ typeRep (Proxy :: Proxy x)
 
 changePeu :: (r -> s) -> Peu s a -> Peu r a
 changePeu f (Peu m) = Peu $ \e -> m $ e { envR = f (envR e) }
@@ -232,7 +248,7 @@ putError msg = withTimeAndSetSgrCode $ \t setSgr -> do
     errorConcurrent $ concat
         [ t
         , setSgr sgr
-        , "error:"
+        , "error: "
         , setSgr []
         , msg
         , "\n"
