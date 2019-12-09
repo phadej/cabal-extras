@@ -1,0 +1,65 @@
+cabal-version:      2.2
+name:               cabal-store-check
+version:            0.1
+synopsis:           Check integrity of cabal store
+category:           Development
+description:        Check integrity of cabal store, think @ghc-pkg check@
+license:            GPL-2.0-or-later
+license-files:      LICENSE LICENSE.GPLv2 LICENSE.GPLv3
+author:             Oleg Grenrus <oleg.grenrus@iki.fi>
+maintainer:         Oleg Grenrus <oleg.grenrus@iki.fi>
+tested-with:        GHC ==8.2.2 || ==8.4.4 || ==8.6.5 || ==8.8.1
+extra-source-files: Changelog.md
+
+source-repository head
+  type:     git
+  location: https://github.com/phadej/cabal-extras.git
+  subdir:   cabal-store-check
+
+library cabal-store-check-internal
+  default-language:   Haskell2010
+  hs-source-dirs:     src
+  ghc-options:        -Wall
+  exposed-modules:    CabalStoreCheck.Main
+  other-modules:      Paths_cabal_store_check
+  autogen-modules:    Paths_cabal_store_check
+
+  -- ghc-boot dependencies
+  build-depends:
+    , base        ^>=4.10.1.0 || ^>=4.11.0.0 || ^>=4.12.0.0 || ^>=4.13.0.0
+    , bytestring  ^>=0.10.8.2
+    , containers  ^>=0.5.10.2 || ^>=0.6.0.1
+    , deepseq     ^>=1.4.3.0
+    , directory   ^>=1.3.0.2
+    , filepath    ^>=1.4.1.2
+    , mtl         ^>=2.2.2
+    , parsec      ^>=3.1.13.0
+    , pretty      ^>=1.1.3.3
+    , process     ^>=1.6.1.0
+    , text        ^>=1.2.3.0
+
+  -- We use Cabal-3.0
+  build-depends:      Cabal ^>=3.0
+
+  -- We also use peura
+  build-depends:      peura
+
+  -- dependencies in library
+  build-depends:
+    , cabal-install-parsers
+    , optparse-applicative   ^>=0.15.1.0
+    , topograph
+
+  default-extensions:
+    NoImplicitPrelude
+    DeriveFunctor
+    OverloadedStrings
+
+executable cabal-store-check
+  default-language: Haskell2010
+  hs-source-dirs:   cli
+  main-is:          Main.hs
+  ghc-options:      -Wall -threaded -rtsopts -with-rtsopts=-N2
+  build-depends:
+    , base
+    , cabal-store-check-internal

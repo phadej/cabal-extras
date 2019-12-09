@@ -3,6 +3,8 @@ packages: cabal-deps
 packages: cabal-diff
 packages: cabal-env
 
+packages: cabal-store-check
+
 packages: peura
 
 package cabal-bundler
