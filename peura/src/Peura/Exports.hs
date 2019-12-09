@@ -8,10 +8,16 @@ module Peura.Exports (
     module A,
     -- * Classes
     Alternative (..),
+    Bifoldable (..),
+    Bifunctor (..),
+    Bitraversable (..),
     Coercible,
     Generic,
     Generic1,
     IsString (..),
+    NFData (..),
+    Semigroup (..),
+    -- ** MTL
     MonadCatch (..),
     MonadFail (..),
     MonadIO (..),
@@ -19,8 +25,8 @@ module Peura.Exports (
     MonadReader (..),
     MonadThrow (..),
     MonadUnliftIO (..),
-    NFData (..),
-    Semigroup (..),
+    -- ** Serialisation
+    Binary,
     Serialise,
     -- * Types
     ByteString,
@@ -58,6 +64,8 @@ module Peura.Exports (
     -- ** Control.Monad.Catch
     handle,
     bracket,
+    -- ** Data.Bitraversable
+    bimapDefault,  bifoldMapDefault,
     -- ** Data.Coercible
     coerce,
     -- ** Data.Foldable
@@ -125,6 +133,11 @@ import Control.Monad.Fail              (MonadFail (..))
 import Control.Monad.IO.Class          (MonadIO (..))
 import Control.Monad.IO.Unlift         (MonadUnliftIO (withRunInIO))
 import Control.Monad.Reader.Class      (MonadReader (ask, local))
+import Data.Bifoldable                 (Bifoldable (..))
+import Data.Bifunctor                  (Bifunctor (..))
+import Data.Binary                     (Binary)
+import Data.Bitraversable
+       (Bitraversable (..), bifoldMapDefault, bimapDefault)
 import Data.ByteString                 (ByteString)
 import Data.Coerce                     (Coercible, coerce)
 import Data.Foldable                   (for_, traverse_)
@@ -147,7 +160,7 @@ import Distribution.Types.PackageName  (PackageName, mkPackageName)
 import Distribution.Types.Version      (Version, mkVersion)
 import Distribution.Types.VersionRange (VersionRange)
 import GHC.Generics                    (Generic, Generic1)
-import Optics
+import Optics.Extra
        (at, ifor, ifor_, itraverse, itraverse_, ix, preview, view)
 import System.Exit                     (ExitCode (..))
 
