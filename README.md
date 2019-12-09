@@ -6,6 +6,7 @@ There are four tools in this repository:
 - `cabal-diff`: Compare API of different package versions
 - `cabal-bundler`: (ab)use `cabal-install` solver to build standalone installation bundles
 - `cabal-deps`: An experiment on what `cabal outdated` could be.
+- `cabal-store-check`: A naive tool to try to repair cabal's nix-store
 
 All tools are highly experimental, although I (Oleg Grenrus) use them daily.
 
@@ -45,3 +46,11 @@ Prelude Optics>
 ```
 
 TBW
+
+## cabal-store-check
+
+This is a small script which can find some broken packages in cabal nix-store.
+It's a proof-of-concept of
+
+- https://gitlab.haskell.org/ghc/ghc/merge_requests/2284
+- https://github.com/haskell/cabal/issues/6060
