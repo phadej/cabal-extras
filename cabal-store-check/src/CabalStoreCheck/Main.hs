@@ -127,16 +127,21 @@ checkConsistency opts = do
                 removePathForcibly pkgConf
             else putError $ toFilePath pkgConf ++ " does not exist"
 
+        let packageDbFlag :: String
+            packageDbFlag
+                | ghcVersion ghcInfo >= mkVersion [7,6] = "--package-db=" ++ toFilePath storeDb
+                | otherwise                             = "--package-conf" ++ toFilePath storeDb
+
         -- finally recache the db.
         void $ runProcessCheck storeDir ghcPkg
             [ "recache"
-            , "--package-db=" ++ toFilePath storeDb
+            , packageDbFlag
             ]
 
         -- and run vanilla ghc-pkg check on the db
         void $ runProcessOutput storeDir ghcPkg
             [ "check"
-            , "--package-db=" ++ toFilePath storeDb
+            , packageDbFlag
             , "--simple-output"
             ]
 
