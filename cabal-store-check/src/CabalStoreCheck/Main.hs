@@ -78,7 +78,7 @@ checkConsistency opts = do
     let storeDir' = storeDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion ghcInfo))
     let storeDb = storeDir' </> fromUnrootedFilePath "package.db"
     dbS <- readDb storeDb
-    putInfo $ show (Map.size dbS) ++ " packages in " ++ toFilePath (ghcGlobalDb ghcInfo)
+    putInfo $ show (Map.size dbS) ++ " packages in " ++ toFilePath storeDb
 
     let db = dbG <> dbS
 

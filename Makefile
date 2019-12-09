@@ -15,3 +15,6 @@ install-cabal-deps :
 
 install-cabal-bundler :
 	cabal v2-install cabal-bundler --overwrite-policy=always
+
+install-cabal-store-check :
+	cabal v2-install cabal-store-check --overwrite-policy=always
