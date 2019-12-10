@@ -23,6 +23,7 @@ main = defaultMain $ testGroup "golden"
         , golden "vec"
         , golden "colour-2.3.4"
         , golden "colour-2.3.5"
+        , golden "resolv"
         ]
     ]
   where

@@ -37,7 +37,7 @@ parseFile = explicitEitherParsecBS $ do
     packageP *> whitespace
     versionP *> whitespace
 
-    entries <- many entryP
+    entries <- concatMap (either (singleton . Left) (map Right)) <$> many entryP
 
     eof
 
@@ -51,15 +51,15 @@ parseFile = explicitEitherParsecBS $ do
         spaces
         x <- case word of
             "module"   -> Left <$> moduleP
-            "class"    -> Right <$> classP
-            "instance" -> Right <$> instanceP
-            "data"     -> Right <$> dataP
-            "type"     -> Right <$> typeP
-            "newtype"  -> Right <$> newtypeP
-            "infixl"   -> Right <$> infixP KeyInL
-            "infixr"   -> Right <$> infixP KeyInR
-            "infix"    -> Right <$> infixP KeyInf
-            "pattern"  -> Right <$> patternP
+            "class"    -> Right . singleton <$> classP
+            "instance" -> Right . singleton <$> instanceP
+            "data"     -> Right . singleton <$> dataP
+            "type"     -> Right . singleton <$> typeP
+            "newtype"  -> Right . singleton <$> newtypeP
+            "infixl"   -> Right . singleton <$> infixP KeyInL
+            "infixr"   -> Right . singleton <$> infixP KeyInR
+            "infix"    -> Right . singleton <$> infixP KeyInf
+            "pattern"  -> Right . singleton <$> patternP
             _          -> Right <$> functionP word
         whitespace
         return x
@@ -120,12 +120,22 @@ parseFile = explicitEitherParsecBS $ do
         return (con contents, "")
 
     functionP name = do
+        names' <- many (char ',' *> spaces *> wordP <* spaces)
+        let names = name :| names'
+
         _ <- string "::"
         spaces
         contents <- many (satisfy (\c -> c /= '\n'))
-        return (KeyFun name, contents)
+        return $ if null names' then [(KeyFun name, contents)] else
+            case head names of
+                '[' : _ -> [ (KeyFun $ "[" ++ filter notBracket n ++ "]", contents) | n <- toList names ]
+                _       -> [ (KeyFun n, contents) | n <- toList names ]
 
-    wordP = some (satisfy $ \c -> isPrint c && not (isSpace c))
+    notBracket '[' = False
+    notBracket ']' = False
+    notBracket _   = True
+
+    wordP = some (satisfy $ \c -> isPrint c && not (isSpace c) && c /= ',')
 
     -- spaces and comments
     whitespace = do
@@ -152,6 +162,9 @@ takeWhileMaybe f = go where
     go xs@(x:xs') = case f x of
         Nothing -> ([],xs)
         Just y  -> let (ys,zs) = go xs' in (y:ys,zs)
+
+singleton :: a -> [a]
+singleton x = [x]
 
 -- | Various entries in the API.
 data Key

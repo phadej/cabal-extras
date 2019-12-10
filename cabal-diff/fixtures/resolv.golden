@@ -1,0 +1,163 @@
+Map.fromList
+  [_×_
+     (ModuleName "Network.DNS")
+     (Map.fromList
+        [_×_ (KeyCls "IsLabels s") "",
+         _×_ (KeyDat "DnsException") "DnsEncodeException :: DnsException",
+         _×_ (KeyDat "IPv4") "IPv4 :: !Word32 -> IPv4",
+         _×_ (KeyDat "IPv6") "IPv6 :: !Word64 -> !Word64 -> IPv6",
+         _×_ (KeyDat "Labels") "(:.:) :: !Label -> !Labels -> Labels",
+         _×_ (KeyDat "Msg") "l",
+         _×_
+           (KeyDat "MsgHeader")
+           "MsgHeader :: !Word16 -> !MsgHeaderFlags -> !Word16 -> !Word16 -> !Word16 -> !Word16 -> MsgHeader",
+         _×_
+           (KeyDat "MsgHeaderFlags")
+           "MsgHeaderFlags :: !QR -> !Word8 -> !Bool -> !Bool -> !Bool -> !Bool -> !Bool -> !Bool -> !Bool -> !Word8 -> MsgHeaderFlags",
+         _×_ (KeyDat "MsgQuestion") "l",
+         _×_ (KeyDat "MsgRR") "l",
+         _×_ (KeyDat "QR") "IsQuery :: QR",
+         _×_ (KeyDat "RData") "l",
+         _×_ (KeyDat "SRV") "l",
+         _×_ (KeyDat "TypeSym") "-- | <a>RFC 1035</a>",
+         _×_ (KeyInR "5 :.:") "",
+         _×_
+           (KeyIns "GHC.Exception.Type.Exception Network.DNS.DnsException")
+           "",
+         _×_ (KeyIns "GHC.Show.Show Network.DNS.DnsException") "",
+         _×_ (KeyNew "CharStr") "CharStr :: ByteString -> CharStr",
+         _×_ (KeyNew "Class") "Class :: Word16 -> Class",
+         _×_ (KeyNew "Name") "Name :: ByteString -> Name",
+         _×_ (KeyNew "TTL") "TTL :: Int32 -> TTL",
+         _×_ (KeyNew "Type") "Type :: Word16 -> Type",
+         _×_ (KeyTyp "Label") "= ByteString",
+         _×_ (KeyFun "DnsDecodeException") "DnsException",
+         _×_ (KeyFun "IsResponse") "QR",
+         _×_
+           (KeyFun "Msg")
+           "!MsgHeader -> [MsgQuestion l] -> [MsgRR l] -> Msg l",
+         _×_
+           (KeyFun "MsgQuestion") "!l -> !Type -> !Class -> MsgQuestion l",
+         _×_ (KeyFun "MsgRR") "!l -> !Class -> !TTL -> !RData l -> MsgRR l",
+         _×_ (KeyFun "RData") "!Type -> !ByteString -> RData l",
+         _×_ (KeyFun "RDataA") "!IPv4 -> RData l",
+         _×_ (KeyFun "RDataAAAA") "!IPv6 -> RData l",
+         _×_ (KeyFun "RDataAFSDB") "!Word16 -> !l -> RData l",
+         _×_
+           (KeyFun "RDataCAA") "!Word8 -> !CharStr -> !ByteString -> RData l",
+         _×_ (KeyFun "RDataCNAME") "!l -> RData l",
+         _×_
+           (KeyFun "RDataDNSKEY")
+           "!Word16 -> !Word8 -> !Word8 -> !ByteString -> RData l",
+         _×_
+           (KeyFun "RDataDS")
+           "!Word16 -> !Word8 -> !Word8 -> !ByteString -> RData l",
+         _×_ (KeyFun "RDataHINFO") "!CharStr -> !CharStr -> RData l",
+         _×_ (KeyFun "RDataMX") "!Word16 -> !l -> RData l",
+         _×_
+           (KeyFun "RDataNAPTR")
+           "!Word16 -> !Word16 -> !CharStr -> !CharStr -> !CharStr -> !l -> RData l",
+         _×_ (KeyFun "RDataNS") "!l -> RData l",
+         _×_ (KeyFun "RDataNSEC") "!l -> !Set Type -> RData l",
+         _×_
+           (KeyFun "RDataNSEC3")
+           "!Word8 -> !Word8 -> !Word16 -> !CharStr -> !CharStr -> !Set Type -> RData l",
+         _×_
+           (KeyFun "RDataNSEC3PARAM")
+           "!Word8 -> !Word8 -> !Word16 -> !CharStr -> RData l",
+         _×_ (KeyFun "RDataOPT") "!ByteString -> RData l",
+         _×_ (KeyFun "RDataPTR") "!l -> RData l",
+         _×_
+           (KeyFun "RDataRRSIG")
+           "!Word16 -> !Word8 -> !Word8 -> !Word32 -> !Word32 -> !Word32 -> !Word16 -> !l -> !ByteString -> RData l",
+         _×_
+           (KeyFun "RDataSOA")
+           "!l -> !l -> !Word32 -> !Word32 -> !Word32 -> !Word32 -> !Word32 -> RData l",
+         _×_ (KeyFun "RDataSPF") "![CharStr] -> RData l",
+         _×_ (KeyFun "RDataSRV") "!SRV l -> RData l",
+         _×_
+           (KeyFun "RDataSSHFP") "!Word8 -> !Word8 -> !ByteString -> RData l",
+         _×_ (KeyFun "RDataTXT") "![CharStr] -> RData l",
+         _×_
+           (KeyFun "RDataURI") "!Word16 -> !Word16 -> !ByteString -> RData l",
+         _×_ (KeyFun "Root") "Labels",
+         _×_ (KeyFun "SRV") "!Word16 -> !Word16 -> !Word16 -> !l -> SRV l",
+         _×_ (KeyFun "TypeA") "TypeSym",
+         _×_ (KeyFun "TypeAAAA") "TypeSym",
+         _×_ (KeyFun "TypeAFSDB") "TypeSym",
+         _×_ (KeyFun "TypeANY") "TypeSym",
+         _×_ (KeyFun "TypeCAA") "TypeSym",
+         _×_ (KeyFun "TypeCNAME") "TypeSym",
+         _×_ (KeyFun "TypeDNSKEY") "TypeSym",
+         _×_ (KeyFun "TypeDS") "TypeSym",
+         _×_ (KeyFun "TypeHINFO") "TypeSym",
+         _×_ (KeyFun "TypeMX") "TypeSym",
+         _×_ (KeyFun "TypeNAPTR") "TypeSym",
+         _×_ (KeyFun "TypeNS") "TypeSym",
+         _×_ (KeyFun "TypeNSEC") "TypeSym",
+         _×_ (KeyFun "TypeNSEC3") "TypeSym",
+         _×_ (KeyFun "TypeNSEC3PARAM") "TypeSym",
+         _×_ (KeyFun "TypeOPT") "TypeSym",
+         _×_ (KeyFun "TypePTR") "TypeSym",
+         _×_ (KeyFun "TypeRRSIG") "TypeSym",
+         _×_ (KeyFun "TypeSOA") "TypeSym",
+         _×_ (KeyFun "TypeSPF") "TypeSym",
+         _×_ (KeyFun "TypeSRV") "TypeSym",
+         _×_ (KeyFun "TypeSSHFP") "TypeSym",
+         _×_ (KeyFun "TypeTXT") "TypeSym",
+         _×_ (KeyFun "TypeURI") "TypeSym",
+         _×_ (KeyFun "[mhAA]") "MsgHeaderFlags -> !Bool",
+         _×_ (KeyFun "[mhAD]") "MsgHeaderFlags -> !Bool",
+         _×_ (KeyFun "[mhANCount]") "MsgHeader -> !Word16",
+         _×_ (KeyFun "[mhARCount]") "MsgHeader -> !Word16",
+         _×_ (KeyFun "[mhCD]") "MsgHeaderFlags -> !Bool",
+         _×_ (KeyFun "[mhFlags]") "MsgHeader -> !MsgHeaderFlags",
+         _×_ (KeyFun "[mhId]") "MsgHeader -> !Word16",
+         _×_ (KeyFun "[mhNSCount]") "MsgHeader -> !Word16",
+         _×_ (KeyFun "[mhOpcode]") "MsgHeaderFlags -> !Word8",
+         _×_ (KeyFun "[mhQDCount]") "MsgHeader -> !Word16",
+         _×_ (KeyFun "[mhQR]") "MsgHeaderFlags -> !QR",
+         _×_ (KeyFun "[mhRA]") "MsgHeaderFlags -> !Bool",
+         _×_ (KeyFun "[mhRCode]") "MsgHeaderFlags -> !Word8",
+         _×_ (KeyFun "[mhRD]") "MsgHeaderFlags -> !Bool",
+         _×_ (KeyFun "[mhTC]") "MsgHeaderFlags -> !Bool",
+         _×_ (KeyFun "[mhZ]") "MsgHeaderFlags -> !Bool",
+         _×_ (KeyFun "[msgAN]") "Msg l -> [MsgRR l]",
+         _×_ (KeyFun "[msgAR]") "Msg l -> [MsgRR l]",
+         _×_ (KeyFun "[msgHeader]") "Msg l -> !MsgHeader",
+         _×_ (KeyFun "[msgNS]") "Msg l -> [MsgRR l]",
+         _×_ (KeyFun "[msgQD]") "Msg l -> [MsgQuestion l]",
+         _×_ (KeyFun "[rrClass]") "MsgRR l -> !Class",
+         _×_ (KeyFun "[rrData]") "MsgRR l -> !RData l",
+         _×_ (KeyFun "[rrName]") "MsgRR l -> !l",
+         _×_ (KeyFun "[rrTTL]") "MsgRR l -> !TTL",
+         _×_ (KeyFun "[srvPort]") "SRV l -> !Word16",
+         _×_ (KeyFun "[srvPriority]") "SRV l -> !Word16",
+         _×_ (KeyFun "[srvTarget]") "SRV l -> !l",
+         _×_ (KeyFun "[srvWeight]") "SRV l -> !Word16",
+         _×_ (KeyFun "caseFoldName") "Name -> Name",
+         _×_ (KeyFun "classIN") "Class",
+         _×_
+           (KeyFun "decodeMessage")
+           "IsLabels n => ByteString -> Maybe (Msg n)",
+         _×_
+           (KeyFun "encodeMessage") "IsLabels n => Msg n -> Maybe ByteString",
+         _×_ (KeyFun "fromLabels") "IsLabels s => Labels -> s",
+         _×_
+           (KeyFun "mkQueryMsg") "IsLabels n => Class -> n -> Type -> Msg n",
+         _×_ (KeyFun "mkQueryRaw") "Class -> Name -> Type -> IO ByteString",
+         _×_
+           (KeyFun "query")
+           "IsLabels n => Class -> n -> TypeSym -> IO (Msg n)",
+         _×_ (KeyFun "queryA") "Name -> IO [(TTL, IPv4)]",
+         _×_ (KeyFun "queryAAAA") "Name -> IO [(TTL, IPv6)]",
+         _×_ (KeyFun "queryCNAME") "Name -> IO [(TTL, Name)]",
+         _×_ (KeyFun "queryRaw") "Class -> Name -> Type -> IO ByteString",
+         _×_ (KeyFun "querySRV") "Name -> IO [(TTL, SRV Name)]",
+         _×_ (KeyFun "queryTXT") "Name -> IO [(TTL, [CharStr])]",
+         _×_ (KeyFun "rdType") "RData l -> Either Type TypeSym",
+         _×_ (KeyFun "resIsReentrant") "Bool",
+         _×_ (KeyFun "sendRaw") "ByteString -> IO ByteString",
+         _×_ (KeyFun "toLabels") "IsLabels s => s -> Maybe Labels",
+         _×_ (KeyFun "typeFromSym") "TypeSym -> Type",
+         _×_ (KeyFun "typeToSym") "Type -> Maybe TypeSym"])]
