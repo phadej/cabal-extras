@@ -4,6 +4,7 @@ packages: cabal-diff
 packages: cabal-env
 
 packages: cabal-store-check
+packages: cabal-store-gc
 
 packages: peura
 

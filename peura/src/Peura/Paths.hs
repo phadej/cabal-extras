@@ -13,11 +13,18 @@ module Peura.Paths (
     getCurrentDirectory,
     makeAbsoluteFilePath,
     getAppUserDataDirectory,
+    doesPathExist,
     doesFileExist,
     doesDirectoryExist,
+    pathIsSymbolicLink,
     createDirectoryIfMissing,
     listDirectory,
     removePathForcibly,
+    canonicalizePath,
+    getFileSize,
+    -- * Symbolic links
+    createFileLink,
+    getSymbolicLinkTarget,
     -- * Roots
     Tar,
     fromTarPath,
@@ -31,6 +38,7 @@ import System.Path
        toUnrootedFilePath, (</>))
 import System.Path.Unsafe (Path (..))
 
+import qualified System.FilePath as FP
 import qualified System.Directory as D
 import qualified System.Path      as P
 import qualified System.Path.IO   as P
@@ -53,11 +61,17 @@ getAppUserDataDirectory app = do
     x <- liftIO $ D.getAppUserDataDirectory app
     makeAbsoluteFilePath x
 
+doesPathExist :: Path Absolute -> Peu r Bool
+doesPathExist = liftIO . D.doesPathExist . toFilePath
+
 doesFileExist :: Path Absolute -> Peu r Bool
 doesFileExist = liftIO . D.doesFileExist . toFilePath
 
 doesDirectoryExist :: Path Absolute -> Peu r Bool
 doesDirectoryExist = liftIO . D.doesDirectoryExist . toFilePath
+
+pathIsSymbolicLink :: Path Absolute -> Peu r Bool
+pathIsSymbolicLink = liftIO . D.pathIsSymbolicLink . toFilePath
 
 createDirectoryIfMissing :: Bool -> Path Absolute -> Peu r ()
 createDirectoryIfMissing b = liftIO . D.createDirectoryIfMissing b . toFilePath
@@ -67,6 +81,27 @@ listDirectory = fmap (map fromUnrootedFilePath) . liftIO . D.listDirectory . toF
 
 removePathForcibly :: Path Absolute -> Peu r ()
 removePathForcibly = liftIO . D.removePathForcibly . toFilePath
+
+canonicalizePath :: Path Absolute -> Peu r (Path Absolute)
+canonicalizePath = liftIO . fmap P.fromAbsoluteFilePath . D.canonicalizePath . toFilePath
+
+getFileSize :: Path Absolute -> Peu r Integer
+getFileSize = liftIO . D.getFileSize . toFilePath
+
+-------------------------------------------------------------------------------
+-- Symbolic links
+-------------------------------------------------------------------------------
+
+createFileLink :: Path Absolute -> Path Absolute -> Peu r ()
+createFileLink target link = liftIO $ D.createFileLink (toFilePath target) (toFilePath link)
+
+getSymbolicLinkTarget :: Path Absolute -> Peu r (Path Absolute)
+getSymbolicLinkTarget p =
+    liftIO . fmap mk . D.getSymbolicLinkTarget . toFilePath $ p
+  where
+    dir = takeDirectory p
+    mk p' | FP.isAbsolute p' = P.fromAbsoluteFilePath p'
+          | otherwise        = dir </> fromUnrootedFilePath p'
 
 -------------------------------------------------------------------------------
 -- Tar root

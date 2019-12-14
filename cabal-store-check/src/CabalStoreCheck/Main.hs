@@ -130,7 +130,7 @@ checkConsistency opts = do
         let packageDbFlag :: String
             packageDbFlag
                 | ghcVersion ghcInfo >= mkVersion [7,6] = "--package-db=" ++ toFilePath storeDb
-                | otherwise                             = "--package-conf" ++ toFilePath storeDb
+                | otherwise                             = "--package-conf=" ++ toFilePath storeDb
 
         -- finally recache the db.
         void $ runProcessCheck storeDir ghcPkg

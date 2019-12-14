@@ -78,6 +78,7 @@ module Peura.Exports (
     -- ** Data.Maybe
     fromMaybe,
     mapMaybe,
+    catMaybes,
     -- ** Data.List
     sortBy, sortOn,
     -- ** Data.List.NonEmpty
@@ -149,7 +150,7 @@ import Data.Functor.Identity           (Identity (..))
 import Data.List                       (sortBy, sortOn)
 import Data.List.NonEmpty              (NonEmpty (..), groupBy, head, last)
 import Data.Map.Strict                 (Map)
-import Data.Maybe                      (fromMaybe, mapMaybe)
+import Data.Maybe                      (catMaybes, fromMaybe, mapMaybe)
 import Data.Proxy                      (Proxy (..))
 import Data.Semigroup                  (Semigroup (..))
 import Data.Set                        (Set)

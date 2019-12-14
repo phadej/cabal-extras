@@ -18,3 +18,6 @@ install-cabal-bundler :
 
 install-cabal-store-check :
 	cabal v2-install cabal-store-check --overwrite-policy=always
+
+install-cabal-store-gc :
+	cabal v2-install cabal-store-gc --overwrite-policy=always
