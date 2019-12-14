@@ -318,7 +318,6 @@ reachableUnits plan = bfs fakePackageUnitId $ \uid -> Set.unions
         , Plan.uPId unit == Plan.PkgId (Plan.PkgName "fake-package") (Plan.Ver [0])
         ]
 
-
 -------------------------------------------------------------------------------
 -- Defaults
 -------------------------------------------------------------------------------

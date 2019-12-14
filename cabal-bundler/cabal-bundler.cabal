@@ -15,7 +15,7 @@ license:            GPL-3.0-or-later AND BSD-3-Clause
 license-file:       LICENSE
 author:             Oleg Grenrus <oleg.grenrus@iki.fi>
 maintainer:         Oleg Grenrus <oleg.grenrus@iki.fi>
-tested-with:        GHC ==8.2.2 || ==8.4.4 || ==8.6.5 || ==8.8.1
+tested-with:        GHC ==8.4.4 || ==8.6.5 || ==8.8.1
 extra-source-files:
   Changelog.md
   data/single.nix

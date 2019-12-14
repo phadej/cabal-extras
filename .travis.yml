@@ -4,9 +4,11 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.7.20191106
+# version: 0.9.20191209
 #
+version: ~> 1.0
 language: c
+os: linux
 dist: bionic
 git:
   # whether to recursively clone submodules
@@ -28,16 +30,17 @@ before_cache:
   - rm -fv $CABALHOME/packages/hackage.haskell.org/01-index.tar
   - rm -fv $CABALHOME/packages/hackage.haskell.org/01-index.tar.idx
   - rm -rfv $CABALHOME/packages/head.hackage
-matrix:
+jobs:
   include:
     - compiler: ghc-8.8.1
       addons: {"apt":{"sources":[{"sourceline":"deb http://ppa.launchpad.net/hvr/ghc/ubuntu bionic main","key_url":"https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x063dab2bdc0b3f9fcebc378bff3aeacef6f88286"}],"packages":["ghc-8.8.1","cabal-install-3.0"]}}
+      os: linux
     - compiler: ghc-8.6.5
       addons: {"apt":{"sources":[{"sourceline":"deb http://ppa.launchpad.net/hvr/ghc/ubuntu bionic main","key_url":"https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x063dab2bdc0b3f9fcebc378bff3aeacef6f88286"}],"packages":["ghc-8.6.5","cabal-install-3.0"]}}
+      os: linux
     - compiler: ghc-8.4.4
       addons: {"apt":{"sources":[{"sourceline":"deb http://ppa.launchpad.net/hvr/ghc/ubuntu bionic main","key_url":"https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x063dab2bdc0b3f9fcebc378bff3aeacef6f88286"}],"packages":["ghc-8.4.4","cabal-install-3.0"]}}
-    - compiler: ghc-8.2.2
-      addons: {"apt":{"sources":[{"sourceline":"deb http://ppa.launchpad.net/hvr/ghc/ubuntu bionic main","key_url":"https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x063dab2bdc0b3f9fcebc378bff3aeacef6f88286"}],"packages":["ghc-8.2.2","cabal-install-3.0"]}}
+      os: linux
 before_install:
   - HC=$(echo "/opt/$CC/bin/ghc" | sed 's/-/\//')
   - WITHCOMPILER="-w $HC"
@@ -116,12 +119,13 @@ install:
     echo "packages: cabal-diff" >> cabal.project
     echo "packages: cabal-env" >> cabal.project
     echo "packages: cabal-store-check" >> cabal.project
+    echo "packages: cabal-store-gc" >> cabal.project
     echo "packages: peura" >> cabal.project
   - |
     echo "constraints: directory     installed" >> cabal.project
     echo "constraints: process       installed" >> cabal.project
     echo "constraints: transformers  installed" >> cabal.project
-  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|cabal-store-check|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
+  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|cabal-store-check|cabal-store-gc|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
   - if [ -f "cabal-bundler/configure.ac" ]; then (cd "cabal-bundler" && autoreconf -i); fi
@@ -129,6 +133,7 @@ install:
   - if [ -f "cabal-diff/configure.ac" ]; then (cd "cabal-diff" && autoreconf -i); fi
   - if [ -f "cabal-env/configure.ac" ]; then (cd "cabal-env" && autoreconf -i); fi
   - if [ -f "cabal-store-check/configure.ac" ]; then (cd "cabal-store-check" && autoreconf -i); fi
+  - if [ -f "cabal-store-gc/configure.ac" ]; then (cd "cabal-store-gc" && autoreconf -i); fi
   - if [ -f "peura/configure.ac" ]; then (cd "peura" && autoreconf -i); fi
   - ${CABAL} v2-freeze $WITHCOMPILER ${TEST} ${BENCH} | color_cabal_output
   - "cat cabal.project.freeze | sed -E 's/^(constraints: *| *)//' | sed 's/any.//'"
@@ -149,6 +154,7 @@ script:
   - PKGDIR_cabal_diff="$(find . -maxdepth 1 -type d -regex '.*/cabal-diff-[0-9.]*')"
   - PKGDIR_cabal_env="$(find . -maxdepth 1 -type d -regex '.*/cabal-env-[0-9.]*')"
   - PKGDIR_cabal_store_check="$(find . -maxdepth 1 -type d -regex '.*/cabal-store-check-[0-9.]*')"
+  - PKGDIR_cabal_store_gc="$(find . -maxdepth 1 -type d -regex '.*/cabal-store-gc-[0-9.]*')"
   - PKGDIR_peura="$(find . -maxdepth 1 -type d -regex '.*/peura-[0-9.]*')"
   # Generate cabal.project
   - rm -rf cabal.project cabal.project.local cabal.project.freeze
@@ -159,12 +165,13 @@ script:
     echo "packages: ${PKGDIR_cabal_diff}" >> cabal.project
     echo "packages: ${PKGDIR_cabal_env}" >> cabal.project
     echo "packages: ${PKGDIR_cabal_store_check}" >> cabal.project
+    echo "packages: ${PKGDIR_cabal_store_gc}" >> cabal.project
     echo "packages: ${PKGDIR_peura}" >> cabal.project
   - |
     echo "constraints: directory     installed" >> cabal.project
     echo "constraints: process       installed" >> cabal.project
     echo "constraints: transformers  installed" >> cabal.project
-  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|cabal-store-check|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
+  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|cabal-store-check|cabal-store-gc|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
   # Building...
@@ -181,6 +188,7 @@ script:
   - (cd ${PKGDIR_cabal_diff} && ${CABAL} -vnormal check)
   - (cd ${PKGDIR_cabal_env} && ${CABAL} -vnormal check)
   - (cd ${PKGDIR_cabal_store_check} && ${CABAL} -vnormal check)
+  - (cd ${PKGDIR_cabal_store_gc} && ${CABAL} -vnormal check)
   - (cd ${PKGDIR_peura} && ${CABAL} -vnormal check)
   # haddock...
   - ${CABAL} v2-haddock $WITHCOMPILER --with-haddock $HADDOCK ${TEST} ${BENCH} all | color_cabal_output
@@ -188,5 +196,5 @@ script:
   - rm -f cabal.project.local
   - ${CABAL} v2-build $WITHCOMPILER --disable-tests --disable-benchmarks all | color_cabal_output
 
-# REGENDATA ("0.7.20191106",["--config=cabal.haskell-ci","cabal.project"])
+# REGENDATA ("0.9.20191209",["--config=cabal.haskell-ci","cabal.project"])
 # EOF

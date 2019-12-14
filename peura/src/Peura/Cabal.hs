@@ -11,23 +11,23 @@ module Peura.Cabal (
     ephemeralPlanJson',
     ) where
 
+import Peura.ByteString
 import Peura.Exports
 import Peura.Monad
-import Peura.Temporary
-import Peura.ByteString
 import Peura.Paths
 import Peura.Process
+import Peura.Temporary
 
 import Text.PrettyPrint ((<+>))
 
-import qualified Data.Aeson as A
 import qualified Cabal.Plan                 as P
+import qualified Data.Aeson                 as A
 import qualified Data.Map.Strict            as Map
+import qualified Data.Set                   as Set
 import qualified Data.Text                  as T
 import qualified Distribution.Fields.Pretty as C
 import qualified Distribution.Package       as C
 import qualified Distribution.Pretty        as C
-import qualified Data.Set as Set
 import qualified Distribution.Version       as C
 import qualified Text.PrettyPrint           as PP
 
@@ -51,6 +51,10 @@ instance CabalPlanConvert P.PkgName C.PackageName where
 instance CabalPlanConvert P.PkgId C.PackageIdentifier where
     toCabal (P.PkgId pn v) = C.PackageIdentifier (toCabal pn) (toCabal v)
     fromCabal (C.PackageIdentifier pn v) = P.PkgId (fromCabal pn) (fromCabal v)
+
+instance CabalPlanConvert P.UnitId C.UnitId where
+    toCabal (P.UnitId u) = C.mkUnitId (T.unpack u)
+    fromCabal u          = P.UnitId (T.pack (C.unUnitId u))
 
 -------------------------------------------------------------------------------
 -- plan.json input

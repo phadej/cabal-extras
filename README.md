@@ -54,3 +54,51 @@ It's a proof-of-concept of
 
 - https://gitlab.haskell.org/ghc/ghc/merge_requests/2284
 - https://github.com/haskell/cabal/issues/6060
+
+### Synopsis
+
+```
+# Check if store package db is inconsistent
+$ cabal-store-check
+...
+[   0.64132] error: haskell-ci-0.3.20190327-98543f1828739a9ad62f8722220f5d812f7f4a13f6fe2745a286c227593452b9 interface file for HaskellCI is missing
+...
+
+# You can remove broken packages with, which would repair the state
+$ cabal-store-check --repair
+```
+
+## cabal-store-gc
+
+This is another small script to reduce size of cabal's nix-store.
+
+### Synopsis
+
+```bash
+# Add possible current projects dependencies as in direct root,
+# and print reclaiming information
+$ cabal-store-gc
+...
+...
+[  16.89166] info: 262 components are referenced from the roots
+[  16.89714] info: 183 components are in the store
+[  16.89726] info: 393 components can be removed from the store
+[  17.71338] info: 2328 MB can be freed
+
+# If you want to perform the cleanup
+$ cabal-store-gc --collect
+
+# For more information, see
+$ cabal-store-gc --help
+```
+
+### Roots
+
+There are three kind of roots, which retain the packages in the store:
+
+- executables in `installdir`. These are automatic roots.
+- packages references from environments in `~/.ghc/.../environments/...`. These are also automatic roots.
+- indirect roots, which are links from `~/.cabal/store/roots` to `plan.json`s
+  elsewhere in the file system. Indirect links allow to retain development
+  project dependencies.
+  New indirect roots can be added with `--add-project-root` or `--add-root` actions.
