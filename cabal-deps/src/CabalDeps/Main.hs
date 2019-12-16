@@ -55,12 +55,23 @@ main = do
 -------------------------------------------------------------------------------
 
 data Opts = Opts
-    { optCabal :: [FsPath]
+    { optAction :: Action
     }
+
+data Action
+    = ActionCabal [FsPath]
+    | ActionBuilddir FsPath
 
 optsP :: O.Parser Opts
 optsP = Opts
-    <$> many (O.argument (O.eitherReader $ return . fromFilePath) (O.metavar "CABALFILE..." <> O.help "Cabal files"))
+    <$> actionP
+
+actionP :: O.Parser Action
+actionP = builddirP <|> cabalP where
+    cabalP    = ActionCabal <$> many (O.argument fspath (O.metavar "CABALFILE..." <> O.help "Cabal files"))
+    builddirP = ActionBuilddir <$> O.option fspath (O.long "builddir" <> O.metavar "BUILDDIR" <> O.help "build directory with plan.json")
+
+    fspath = O.eitherReader $ return . fromFilePath
 
 -------------------------------------------------------------------------------
 --
@@ -71,9 +82,12 @@ doDeps opts = do
     putInfo "Reading Hackage metadata"
     meta <- liftIO I.cachedHackageMetadata
 
-    case optCabal opts of
-        []     -> doPlanDeps meta
-        (x:xs) -> doGpdDeps meta (x :| xs)
+    case optAction opts of
+        ActionCabal []     -> doPlanDeps meta (P.ProjectRelativeToDir ".")
+        ActionCabal (x:xs) -> doGpdDeps meta (x :| xs)
+        ActionBuilddir p   -> do
+            p' <- makeAbsolute p
+            doPlanDeps meta (P.InBuildDir (toFilePath p'))
 
 -------------------------------------------------------------------------------
 -- Check GPD
@@ -214,10 +228,10 @@ lessThanLowerBound v (C.LowerBound v' C.ExclusiveBound) = v <= v'
 -- Check plan
 -------------------------------------------------------------------------------
 
-doPlanDeps :: Map PackageName I.PackageInfo -> Peu r ()
-doPlanDeps meta = do
+doPlanDeps :: Map PackageName I.PackageInfo -> P.SearchPlanJson -> Peu r ()
+doPlanDeps meta search = do
     putInfo "Reading plan.json for current project"
-    plan <- liftIO $ P.findAndDecodePlanJson (P.ProjectRelativeToDir ".")
+    plan <- liftIO $ P.findAndDecodePlanJson search
 
     let pkgIds :: Set C.PackageIdentifier
         pkgIds = Set.fromList
