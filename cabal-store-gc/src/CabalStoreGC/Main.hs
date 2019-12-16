@@ -35,6 +35,9 @@ import qualified Topograph                                            as TG
 
 import Paths_cabal_store_gc (version)
 
+import CabalStoreGC.Deps
+
+
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
@@ -181,12 +184,14 @@ doCountImpl opts = do
     dbG <- readDb (ghcGlobalDb ghcInfo)
     putInfo $ show (Map.size dbG) ++ " packages in " ++ toFilePath (ghcGlobalDb ghcInfo)
 
-    -- TODO: handle non-existence of store-db
     putInfo "Reading store package db"
     storeDir <- makeAbsoluteFilePath $ runIdentity $ Cbl.cfgStoreDir cblCfg
     let storeDir' = storeDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion ghcInfo))
     let storeDb = storeDir' </> fromUnrootedFilePath "package.db"
-    dbS <- readDb storeDb
+    dbS <- doesDirectoryExist storeDb >>= \exists ->
+        if exists
+        then readDb storeDb
+        else return Map.empty
     putInfo $ show (Map.size dbS) ++ " packages in " ++ toFilePath storeDb
 
     let db = dbG <> dbS
@@ -199,11 +204,20 @@ doCountImpl opts = do
         handle (\(_ :: IOException) -> return Nothing) $
         fmap Just $ getSymbolicLinkTarget (installDir </> exe) >>= canonicalizePath
 
-    let installDirUnitIds :: Set C.UnitId
-        installDirUnitIds = Set.fromList $ mapMaybe (isInStore storeDir') exes'
+    let exes'' :: [C.UnitId]
+        exes''
+            = mapMaybe (isInStore storeDir')
+            $ Set.toList
+            $ Set.fromList exes'
+
+    installDirUnitIds <- Set.fromList . concat <$> traverse (readExeDeps storeDir') exes''
+
+    putDebug $ "Found " ++ show (Set.size installDirUnitIds) ++ " installdir roots from "
+        ++ show (length exes'') ++ " executables"
 
     putInfo "Reading environment roots"
-    envs <- listDirectory $ ghcEnvDir ghcInfo
+    envs <- handle (\(_ :: IOException) -> return [])
+        $ listDirectory $ ghcEnvDir ghcInfo
 
     envs' <- for envs $ \env -> do
         contents <- readByteString $ ghcEnvDir ghcInfo </> env
@@ -213,6 +227,8 @@ doCountImpl opts = do
 
     let envUnitIds :: Set C.UnitId
         envUnitIds = setOf (folded % folded % _Just) envs'
+
+    putDebug $ "Found " ++ show (Set.size envUnitIds) ++ " environment roots"
 
     putInfo "Reading indirect roots"
     let rootsDir = storeDir </> fromUnrootedFilePath "roots"
@@ -229,6 +245,8 @@ doCountImpl opts = do
             , toCabal (P.pjCompilerId plan) == PackageIdentifier (mkPackageName "ghc") (ghcVersion ghcInfo)
             , unitId <- Map.keys (P.pjUnits plan)
             ]
+
+    putDebug $ "Found " ++ show (Set.size envUnitIds) ++ " indirect roots"
 
     let rootUnitIds :: Set C.UnitId
         rootUnitIds = installDirUnitIds <> envUnitIds <> indirectUnitIds
@@ -264,6 +282,17 @@ doCountImpl opts = do
         , cStoreDb          = storeDb
         , cRemovableUnitIds = removableUnitIds
         }
+
+-------------------------------------------------------------------------------
+-- Store Exe
+-------------------------------------------------------------------------------
+
+readExeDeps :: Path Absolute -> C.UnitId -> Peu r [C.UnitId]
+readExeDeps storeDir unitId = handle (\(_ :: IOException) -> return []) $ do
+    let fp = storeDir </> fromUnrootedFilePath (C.unUnitId unitId)
+                      </> fromUnrootedFilePath "cabal-hash.txt"
+    contents <- readByteString fp
+    return (unitId : extractDeps contents)
 
 isInStore :: Path Absolute -> Path Absolute -> Maybe C.UnitId
 isInStore storeDir p = do
