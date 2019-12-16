@@ -1,4 +1,3 @@
-{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE OverloadedStrings      #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
 -- |
@@ -9,23 +8,28 @@ module CabalStoreCheck.Main (main) where
 import Peura
 
 import Control.Applicative ((<**>))
-import Data.List           (isSuffixOf, intercalate)
+import Data.Char           (isSpace)
+import Data.List           (intercalate, isPrefixOf, isSuffixOf)
 import Data.Maybe          (isJust)
 import Data.Version        (showVersion)
 
 import qualified Cabal.Config                                         as Cbl
 import qualified Cabal.Parse                                          as Cbl
+import qualified Data.ByteString.Char8                                as BS8
 import qualified Data.List.NonEmpty                                   as NE
 import qualified Data.Map.Strict                                      as Map
 import qualified Data.Set                                             as Set
 import qualified Distribution.CabalSpecVersion                        as C
+import qualified Distribution.Compat.Newtype                          as C
 import qualified Distribution.FieldGrammar                            as C
 import qualified Distribution.ModuleName                              as C
+import qualified Distribution.Parsec                                  as C
+import qualified Distribution.Parsec.Newtypes                         as C
 import qualified Distribution.Types.InstalledPackageInfo              as C
 import qualified Distribution.Types.InstalledPackageInfo.FieldGrammar as C
 import qualified Distribution.Types.UnitId                            as C
-import qualified Topograph as TG
 import qualified Options.Applicative                                  as O
+import qualified Topograph                                            as TG
 
 import Paths_cabal_store_check (version)
 
@@ -83,8 +87,8 @@ checkConsistency opts = do
     let db = dbG <> dbS
 
     -- report broken packages.
-    brokenUnitIds <- fmap (Set.fromList . concat) $ ifor db $ \unitId ipi -> do
-        b <- checkIpi db ipi
+    brokenUnitIds <- fmap (Set.fromList . concat) $ ifor dbS $ \unitId ipi -> do
+        b <- checkIpi storeDir' db ipi
         return $ if b then [] else [unitId]
 
     -- reverse dependencies
@@ -104,13 +108,60 @@ checkConsistency opts = do
     for_ closure $ \unitId ->
         putError $ prettyShow unitId ++ " is broken transitively"
 
-    when (not (null brokenUnitIds) && optRepair opts) $ do
-        putInfo "Repairing db"
-        ghcPkg <- findGhcPkg ghcInfo
+    let brokenLibs :: Set C.UnitId
+        brokenLibs = brokenUnitIds <> closure
 
-        for_ brokenUnitIds $ \unitId -> for_ (Map.lookup unitId db) $ \_ipi -> do
+    -- lookup executables
+    unitDirs <- fmap (filter (`notElem` map fromUnrootedFilePath ["incoming", "package.db"]))
+        $ listDirectory storeDir'
+
+    let unitDirIds :: Set C.UnitId
+        unitDirIds = Set.fromList $ map (C.mkUnitId . toUnrootedFilePath) unitDirs
+
+    -- The unregistered packages must all be executables,
+    -- we check that they are, and that their dependencies are present,
+    -- i.e. none is in broken closure
+    --
+    brokenExes <- fmap (Set.fromList . catMaybes) $ for (Set.toList $ unitDirIds `Set.difference` Map.keysSet db) $ \unitId -> do
+        let fp = storeDir' </> fromUnrootedFilePath (C.unUnitId unitId)
+                           </> fromUnrootedFilePath "cabal-hash.txt"
+
+        let handler :: IOException -> Peu r (Maybe C.UnitId)
+            handler exc = do
+                putError $ prettyShow unitId ++ " executable is broken: " ++ displayException exc
+                return (Just unitId)
+
+        handle handler $ do
+            contents <- readByteString fp
+
+            let ch :: CabalHash
+                ch = extractDeps contents
+
+            let broken :: Either String ()
+                broken = do
+                    unless ("ComponentExe" `isPrefixOf` chComponent ch) $
+                        Left "No component entry in cabal-hash.txt"
+
+                    when (any (`Set.member` closure) $ chDeps ch) $
+                        Left "Broken dependency"
+
+            case broken of
+                Right () -> return Nothing
+                Left err -> do
+                    putError $ prettyShow unitId ++ " executable is broken: " ++ show err
+                    return (Just unitId)
+
+    -- totals
+
+    putInfo $ show (Set.size brokenUnitIds) ++ " directly broken library components"
+    putInfo $ show (Set.size closure) ++ " transitively broken libraries"
+    putInfo $ show (Set.size brokenExes) ++ " broken executable components"
+
+    -- Repairing
+
+    when (not (null brokenExes) && optRepair opts) $ do
+        for_ brokenExes $ \unitId -> do
             let pkgDir = storeDir' </> fromUnrootedFilePath (prettyShow unitId)
-                pkgConf = storeDb </> fromUnrootedFilePath (prettyShow unitId ++ ".conf")
 
             ed <- doesDirectoryExist pkgDir
             if ed
@@ -120,12 +171,23 @@ checkConsistency opts = do
             -- TODO: Warning
             else putError $ toFilePath pkgDir ++ " does not exist"
 
+    when (not (null brokenLibs) && optRepair opts) $ do
+        putInfo "Repairing db"
+        ghcPkg <- findGhcPkg ghcInfo
+
+        for_ brokenLibs $ \unitId -> do
+            let pkgDir = storeDir' </> fromUnrootedFilePath (prettyShow unitId)
+                pkgConf = storeDb </> fromUnrootedFilePath (prettyShow unitId ++ ".conf")
+
+            ed <- doesDirectoryExist pkgDir
+            when ed $ do
+                putDebug $ "Removing " ++ toFilePath pkgDir
+                removePathForcibly pkgDir
+
             ec <- doesFileExist pkgConf
-            if ec
-            then do
+            when ec $ do
                 putDebug $ "Removing " ++ toFilePath pkgConf
                 removePathForcibly pkgConf
-            else putError $ toFilePath pkgConf ++ " does not exist"
 
         let packageDbFlag :: String
             packageDbFlag
@@ -155,8 +217,9 @@ checkConsistency opts = do
 --
 -- * module files are there
 --
-checkIpi :: PackageDb -> C.InstalledPackageInfo -> Peu r Bool
-checkIpi db ipi = fmap isJust $ validate (reportV . NE.head) $
+checkIpi :: Path Absolute -> PackageDb -> C.InstalledPackageInfo -> Peu r Bool
+checkIpi storeDir db ipi = fmap isJust $ validate (reportV . NE.head) $
+    checkDirectory *>
     traverse_ checkDep           (C.depends ipi) *>
     traverse_ checkExposedModule (C.exposedModules ipi) *>
     traverse_ checkModuleFile    (C.hiddenModules ipi)
@@ -167,6 +230,14 @@ checkIpi db ipi = fmap isJust $ validate (reportV . NE.head) $
     checkDep dep
         | Map.member dep db = pure ()
         | otherwise         = invalid $ pure $ VMissingDep unitId dep
+
+    checkDirectory :: Validate r ()
+    checkDirectory = ValidateT $ do
+        let dir = storeDir </> fromUnrootedFilePath (prettyShow unitId)
+        exists <- doesDirectoryExist dir
+        if exists
+        then return $ Right ()
+        else return $ Left $ pure $ VMissingDir unitId
 
     checkExposedModule :: C.ExposedModule -> Validate r ()
     checkExposedModule (C.ExposedModule mdl reexport) = do
@@ -198,12 +269,15 @@ checkIpi db ipi = fmap isJust $ validate (reportV . NE.head) $
 -------------------------------------------------------------------------------
 
 data V
-    = VMissingDep C.UnitId C.UnitId
+    = VMissingDir C.UnitId
+    | VMissingDep C.UnitId C.UnitId
     | VMissingModuleFile C.UnitId C.ModuleName
 
 type Validate r = ValidateT (NonEmpty V) (Peu r)
 
 reportV :: V -> Peu r ()
+reportV (VMissingDir pkg) = putError $
+    prettyShow pkg ++ " unit directory is missing"
 reportV (VMissingDep pkg dep) = putError $
     prettyShow pkg ++ " dependency " ++ prettyShow dep ++ " is missing"
 reportV (VMissingModuleFile pkg mdl) = putError $
@@ -268,3 +342,38 @@ anyM p = go . toList where
         if c
         then return True
         else go xs
+
+-------------------------------------------------------------------------------
+-- cabal-hash.txt
+-------------------------------------------------------------------------------
+
+-- TODO: we should parse the component, and check that there's executable
+-- matching the component name.
+data CabalHash = CabalHash
+    { chComponent :: String
+    , chDeps      :: [C.UnitId]
+    }
+  deriving Show
+
+extractDeps :: ByteString -> CabalHash
+extractDeps contents = CabalHash
+    { chComponent = firstOr ""
+        [ fromUTF8BS sfx
+        | l <- ls
+        , Just sfx' <- return (BS8.stripPrefix "component:" l)
+        , let sfx = BS8.dropWhile isSpace sfx'
+        ]
+    , chDeps =
+        [ unitId
+        | l <- ls
+        , Just sfx' <- return (BS8.stripPrefix "deps:" l)
+        , let sfx = BS8.dropWhile isSpace sfx'
+        , unitId <- either fail (C.unpack' (C.alaList C.CommaFSep))
+            $ C.eitherParsec $ fromUTF8BS sfx
+        ]
+    }
+  where
+    firstOr x []    = x
+    firstOr _ (x:_) = x
+
+    ls = BS8.lines contents
