@@ -30,6 +30,7 @@ library cabal-bundler-internal
   ghc-options:        -Wall
   exposed-modules:
     CabalBundler.Main
+    CabalBundler.Curl
     CabalBundler.NixBase32
     CabalBundler.NixSingle
     CabalBundler.NixSingle.Input

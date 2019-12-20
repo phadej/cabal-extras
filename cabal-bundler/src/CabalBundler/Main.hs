@@ -8,6 +8,7 @@ import Data.Version        (showVersion)
 import Distribution.Parsec (eitherParsec)
 
 import qualified Cabal.Index          as I
+import qualified Cabal.Plan           as P
 import qualified Data.Map.Strict      as M
 import qualified Data.Set             as S
 import qualified Distribution.Package as C
@@ -17,6 +18,7 @@ import qualified Options.Applicative  as O
 import Paths_cabal_bundler (version)
 
 import CabalBundler.NixSingle
+import CabalBundler.Curl
 
 -------------------------------------------------------------------------------
 -- Main
@@ -35,20 +37,29 @@ main = runPeu () $ do
     let pid@(PackageIdentifier pn ver) = optPackageId opts
     let exeName = C.unPackageName pn
 
-    mplan <- ephemeralPlanJson $ emptyPlanInput
-        { piExecutables = M.singleton pn (C.thisVersion ver, S.singleton exeName)
-        , piCompiler = Just (optCompiler opts)
-        }
+    -- Read plan
+    plan <- case optPlan opts of
+        Just planPath -> do
+            planPath' <- makeAbsolute planPath
+            liftIO $ P.decodePlanJson (toFilePath planPath')
 
-    plan <- case mplan of
         Nothing -> do
-            putError $ "Cannot find an install plan for " ++ prettyShow pid
-            exitFailure
-        Just plan -> return plan
+            mplan <- ephemeralPlanJson $ emptyPlanInput
+                { piExecutables = M.singleton pn (C.thisVersion ver, S.singleton exeName)
+                , piCompiler = Just (optCompiler opts)
+                }
+
+            case mplan of
+                Nothing -> do
+                    putError $ "Cannot find an install plan for " ++ prettyShow pid
+                    exitFailure
+                Just plan -> return plan
 
     -- Generate derivation
 
-    rendered <- generateDerivationNix pn exeName plan meta
+    rendered <- case optFormat opts of
+        NixSingle -> generateDerivationNix pn exeName plan meta
+        Curl      -> generateCurl          pn exeName plan meta
 
     case optOutput opts of
         Nothing -> output rendered
@@ -71,54 +82,24 @@ main = runPeu () $ do
 -------------------------------------------------------------------------------
 
 data Opts = Opts
-    { optCompiler  :: FilePath
-    , optOutput    :: Maybe FsPath
+    { optFormat    :: Format
     , optPackageId :: PackageIdentifier
+    , optCompiler  :: FilePath
+    , optOutput    :: Maybe FsPath
+    , optPlan      :: Maybe FsPath
     }
+
+data Format = NixSingle | Curl
 
 optsP :: O.Parser Opts
 optsP = Opts
-    <$> O.strOption (O.short 'w' <> O.long "with-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Specify compiler to use")
-    <*> optional (O.option (O.eitherReader $ return . fromFilePath) (O.short 'o' <> O.long "output" <> O.metavar "PATH" <> O.help "Output location"))
+    <$> formatP
     <*> O.argument (O.eitherReader eitherParsec) (O.metavar "PKG" <> O.help "package to install")
+    <*> O.strOption (O.short 'w' <> O.long "with-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Specify compiler to use")
+    <*> optional (O.option (O.eitherReader $ return . fromFilePath) (O.short 'o' <> O.long "output" <> O.metavar "PATH" <> O.help "Output location"))
+    <*> optional (O.option (O.eitherReader $ return . fromFilePath) (O.short 'p' <> O.long "plan" <> O.metavar "PATH" <> O.help "Use plan.json provided"))
 
-{-
-
--------------------------------------------------------------------------------
--- Rest
--------------------------------------------------------------------------------
-
-curlScript :: [DownloadFile] -> String
-curlScript files = unlines
-    [ "curl --output " ++ fn ++ " '" ++ url ++ "'"
-    | DownloadFile fn url _ <- sortOn dwFileName files
-    ]
-
-sha256sumsFile :: [DownloadFile] -> String
-sha256sumsFile files = unlines
-    [ C.prettyShow shasum ++ "  " ++ fn
-    | DownloadFile fn _ shasum <- sortOn dwFileName files
-    ]
-
-hackagePackageBaseUrl :: String
-hackagePackageBaseUrl = "http://hackage.haskell.org/package"
-
-hackagePackageUrl :: C.PackageIdentifier -> String
-hackagePackageUrl pid = hackagePackageBaseUrl
-    FP.</> C.prettyShow pid
-    FP.</> C.prettyShow pid ++ ".tar.gz"
-
-hackageRevisionUrl :: C.PackageIdentifier -> Word -> String
-hackageRevisionUrl pid rev = hackagePackageBaseUrl
-    FP.</> C.prettyShow pid
-    FP.</> "revision"
-    FP.</> show rev ++ ".cabal"
-
-data DownloadFile = DownloadFile
-    { dwFileName :: FilePath
-    , dwUrl      :: String
-    , dwSha256   :: I.SHA256
-    }
-  deriving Show
-
--}
+formatP :: O.Parser Format
+formatP = nixSingle <|> curl <|> pure Curl where
+    nixSingle = O.flag' NixSingle $ O.long "nix-single" <> O.help "Single nix derivation"
+    curl      = O.flag' Curl      $ O.long "curl"       <> O.help "Curl script to download dependencies"
