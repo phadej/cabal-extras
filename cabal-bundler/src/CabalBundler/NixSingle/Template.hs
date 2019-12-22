@@ -1,12 +1,13 @@
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module CabalBundler.NixSingle.Template (render) where
-import Prelude (String, fst, snd, ($))
+import Prelude (String, fst, snd, ($), return)
 import Control.Monad (forM_)
 import CabalBundler.NixSingle.Input
 type Writer a = (String, a)
 tell :: String -> Writer (); tell x = (x, ())
 execWriter :: Writer a -> String; execWriter = fst
 render :: Z -> String
-render (z_root) = execWriter $ do
+render z_root = execWriter $ do
   tell "{ stdenv\n"
   tell ", ghc\n"
   tell ", cabal-install\n"
@@ -78,7 +79,7 @@ render (z_root) = execWriter $ do
   tell "\n"
   tell "stdenv.mkDerivation {\n"
   tell "  name = \""
-  tell (zDerivationName $ z_root)
+  tell (zDerivationName z_root)
   tell "\";\n"
   tell "\n"
   tell "  buildCommand = ''\n"
@@ -169,31 +170,31 @@ render (z_root) = execWriter $ do
   tell "\n"
   tell "  # Target\n"
   tell "  targetComp = \""
-  tell (zComponentName $ z_root)
+  tell (zComponentName z_root)
   tell "\";\n"
   tell "  targetExe  = \""
-  tell (zExecutableName $ z_root)
+  tell (zExecutableName z_root)
   tell "\";\n"
   tell "\n"
   tell "  # Dependencies\n"
   tell "  cdeps   = [\n"
-  forM_ (zCdeps $ z_root) $ \z_var0_dep -> do
+  forM_ (zCdeps z_root) $ \z_var0_dep -> do
     tell "    "
-    tell (z_var0_dep)
+    tell z_var0_dep
     tell "\n"
   tell "    ];\n"
   tell "  hsdeps  = builtins.attrValues {\n"
-  forM_ (zHsdeps $ z_root) $ \z_var1_dep -> do
+  forM_ (zHsdeps z_root) $ \z_var1_dep -> do
     tell "    "
-    tell (zdepName $ z_var1_dep)
+    tell (zdepName z_var1_dep)
     tell " = hackageTarball \""
-    tell (zdepName $ z_var1_dep)
+    tell (zdepName z_var1_dep)
     tell "\" \""
-    tell (zdepVersion $ z_var1_dep)
+    tell (zdepVersion z_var1_dep)
     tell "\" \""
-    tell (zdepSha256 $ z_var1_dep)
+    tell (zdepSha256 z_var1_dep)
     tell "\" "
-    tell (zdepRevision $ z_var1_dep)
+    tell (zdepRevision z_var1_dep)
     tell ";\n"
   tell "  };\n"
   tell "}\n"
