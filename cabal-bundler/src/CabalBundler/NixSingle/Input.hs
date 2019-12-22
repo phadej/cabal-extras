@@ -27,8 +27,9 @@ data Z = Z
   deriving (Show, Generic)
 
 instance Zinza.Zinza Z where
-    toType  = Zinza.genericToTypeSFP
-    toValue = Zinza.genericToValueSFP
+    toType    = Zinza.genericToTypeSFP
+    toValue   = Zinza.genericToValueSFP
+    fromValue = Zinza.genericFromValueSFP
 
 data ZDep = ZDep
     { zdepName     :: String
@@ -39,5 +40,6 @@ data ZDep = ZDep
   deriving (Show, Generic)
 
 instance Zinza.Zinza ZDep where
-    toType  = Zinza.genericToTypeSFP
-    toValue = Zinza.genericToValueSFP
+    toType    = Zinza.genericToTypeSFP
+    toValue   = Zinza.genericToValueSFP
+    fromValue = Zinza.genericFromValueSFP
