@@ -24,7 +24,7 @@ if [ "x$DOCKER" = "xYES" ]; then
   cabal build --builddir=/build/builddir all
 
   TARGETS="cabal-bundler cabal-deps cabal-diff cabal-env cabal-store-check cabal-store-gc"
-  VERSION=$(date +'%Y%m%d')
+  VERSION=snapshot-$(date +'%Y%m%d')
 
   for TARGET in $TARGETS; do
   cp "$(cabal-plan list-bin --builddir=/build/builddir "$TARGET")" "/build/bindist/$TARGET"
