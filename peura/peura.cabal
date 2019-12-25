@@ -1,6 +1,6 @@
 cabal-version: 2.2
 name:          peura
-version:       0.20191214
+version:       0.20191225
 synopsis:      Oleg's "prelude"
 category:      Development
 description:

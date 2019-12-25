@@ -28,6 +28,7 @@ data GhcInfo = GhcInfo
 getGhcInfo :: FilePath -> Peu r GhcInfo
 getGhcInfo ghc = do
     ghcDir   <- getAppUserDataDirectory "ghc"
+    createDirectoryIfMissing True ghcDir
 
     infoBS <- LBS.toStrict <$> runProcessCheck ghcDir ghc ["--info"]
     info <- maybe (die "Cannot parse compilers --info output") return $
