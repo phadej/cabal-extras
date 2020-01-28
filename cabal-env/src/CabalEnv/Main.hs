@@ -367,7 +367,7 @@ optsP = Opts
 
 actionP :: O.Parser Action
 actionP = installP <|> showP <|> listP <|> hideP <|> pure ActionInstall where
-    installP = O.flag' ActionList (O.short 'i' <> O.long "install" <> O.help "Install / add packages to the environment")
+    installP = O.flag' ActionInstall (O.short 'i' <> O.long "install" <> O.help "Install / add packages to the environment")
     showP = O.flag' ActionShow (O.short 's' <> O.long "show" <> O.help "Shows the contents of the environment")
     listP = O.flag' ActionList (O.short 'l' <> O.long "list" <> O.help "List package environments")
     hideP = O.flag' ActionHide (O.long "hide" <> O.help "Hide packages from an environment")
