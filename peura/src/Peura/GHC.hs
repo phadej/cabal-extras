@@ -4,13 +4,15 @@ module Peura.GHC (
     findGhcPkg,
     ) where
 
-import Data.Char           (isSpace)
+import Data.Char           (isSpace, toLower)
 import Data.List           (lookup, stripPrefix)
 import Distribution.Parsec (eitherParsec)
 import Text.Read           (readMaybe)
 
 import qualified Data.ByteString.Lazy as LBS
+import qualified System.Directory     as D
 import qualified System.FilePath      as FP
+import qualified System.Info          as SI
 
 import Peura.Exports
 import Peura.Monad
@@ -27,9 +29,11 @@ data GhcInfo = GhcInfo
 
 getGhcInfo :: FilePath -> Peu r GhcInfo
 getGhcInfo ghc = do
-    ghcDir   <- getAppUserDataDirectory "ghc"
+    ghcDir  <- getAppUserDataDirectory "ghc"
+    mbGhcExe  <- liftIO $ D.findExecutable (addExeExtension ghc)
+    let ghcExe = fromMaybe ghc mbGhcExe
 
-    infoBS <- LBS.toStrict <$> runProcessCheck ghcDir ghc ["--info"]
+    infoBS <- LBS.toStrict <$> runProcessCheck ghcDir ghcExe ["--info"]
     info <- maybe (die "Cannot parse compilers --info output") return $
         readMaybe (fromUTF8BS infoBS)
 
@@ -52,7 +56,7 @@ getGhcInfo ghc = do
             globalDb <- makeAbsoluteFilePath globalDbStr
 
             return GhcInfo
-                { ghcPath     = ghc
+                { ghcPath     = ghcExe
                 , ghcVersion  = ver
                 , ghcEnvDir   = ghcDir </> fromUnrootedFilePath (x ++ "-" ++ y ++ "-" ++ prettyShow ver) </> fromUnrootedFilePath "environments"
                 , ghcGlobalDb = globalDb
@@ -109,3 +113,8 @@ trim = let tr = dropWhile isSpace . reverse in tr . tr
 
 die :: String -> Peu r a
 die msg = putError msg *> exitFailure
+
+addExeExtension :: FilePath -> FilePath
+addExeExtension fp
+    | SI.os == "mingw32" && FP.takeExtension (map toLower fp) /= "exe" = FP.addExtension fp "exe"
+    | otherwise = fp
