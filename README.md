@@ -20,6 +20,12 @@ To install individual executables from this repository,
 2. Clone it with `git clone https://github.com/phadej/cabal-extras.git`
 3. Install individual executables with `make install-cabal-env`, `make install-cabal-deps` etc.
 
+You can pass flags to `cabal install` by setting `INSTALL_FLAGS`, e.g.
+
+```
+make INSTALL_FLAGS="--installdir $HOME/bin --install-method copy" install-cabal-env
+```
+
 # Executables
 
 ## cabal-bundler
