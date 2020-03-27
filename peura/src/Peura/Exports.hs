@@ -41,6 +41,7 @@ module Peura.Exports (
     Text,
     Version,
     VersionRange,
+    UnitId,
     -- * Functors
     Proxy (..),
     Const (..),
@@ -162,6 +163,7 @@ import Distribution.Pretty             (prettyShow)
 import Distribution.Simple.Utils       (fromUTF8BS, toUTF8BS)
 import Distribution.Types.PackageId    (PackageIdentifier (..))
 import Distribution.Types.PackageName  (PackageName, mkPackageName)
+import Distribution.Types.UnitId       (UnitId)
 import Distribution.Types.Version      (Version, mkVersion)
 import Distribution.Types.VersionRange (VersionRange)
 import GHC.Generics                    (Generic, Generic1)

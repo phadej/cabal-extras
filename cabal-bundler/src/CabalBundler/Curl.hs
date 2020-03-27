@@ -5,7 +5,6 @@ module CabalBundler.Curl (
 import Peura
 
 import Data.Maybe (maybeToList)
-import Prelude (lines)
 
 import qualified Cabal.Index          as I
 import qualified Cabal.Plan           as P

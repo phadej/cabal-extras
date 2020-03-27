@@ -10,24 +10,20 @@ import Peura
 import Control.Applicative ((<**>))
 import Data.Char           (isSpace)
 import Data.Foldable       (foldlM)
-import Data.List           (intercalate, isSuffixOf, stripPrefix)
+import Data.List           (intercalate, stripPrefix)
 import Data.Version        (showVersion)
 
 import Data.Set.Optics (setOf)
 import Optics.Core     (folded, _Just, (%))
 
 import qualified Cabal.Config                                         as Cbl
-import qualified Cabal.Parse                                          as Cbl
 import qualified Cabal.Plan                                           as P
 import qualified Crypto.Hash.SHA256                                   as SHA256
 import qualified Data.ByteString.Base64.URL                           as Base64
 import qualified Data.ByteString.Char8                                as BS8
 import qualified Data.Map.Strict                                      as Map
 import qualified Data.Set                                             as Set
-import qualified Distribution.CabalSpecVersion                        as C
-import qualified Distribution.FieldGrammar                            as C
 import qualified Distribution.Types.InstalledPackageInfo              as C
-import qualified Distribution.Types.InstalledPackageInfo.FieldGrammar as C
 import qualified Distribution.Types.UnitId                            as C
 import qualified Options.Applicative                                  as O
 import qualified System.Path                                          as P
@@ -172,7 +168,7 @@ data Counted = Counted
     , cStoreDir         :: Path Absolute
     , cStoreDir'        :: Path Absolute
     , cStoreDb          :: Path Absolute
-    , cRemovableUnitIds :: Set C.UnitId
+    , cRemovableUnitIds :: Set UnitId
     }
 
 doCountImpl :: Opts -> Peu r Counted
@@ -181,7 +177,7 @@ doCountImpl opts = do
     cblCfg  <- liftIO Cbl.readConfig
 
     putInfo "Reading global package db"
-    dbG <- readDb (ghcGlobalDb ghcInfo)
+    dbG <- readPackageDb (ghcGlobalDb ghcInfo)
     putInfo $ show (Map.size dbG) ++ " packages in " ++ toFilePath (ghcGlobalDb ghcInfo)
 
     putInfo "Reading store package db"
@@ -190,7 +186,7 @@ doCountImpl opts = do
     let storeDb = storeDir' </> fromUnrootedFilePath "package.db"
     dbS <- doesDirectoryExist storeDb >>= \exists ->
         if exists
-        then readDb storeDb
+        then readPackageDb storeDb
         else return Map.empty
     putInfo $ show (Map.size dbS) ++ " packages in " ++ toFilePath storeDb
 
@@ -204,7 +200,7 @@ doCountImpl opts = do
         handle (\(_ :: IOException) -> return Nothing) $
         fmap Just $ getSymbolicLinkTarget (installDir </> exe) >>= canonicalizePath
 
-    let exes'' :: [C.UnitId]
+    let exes'' :: [UnitId]
         exes''
             = mapMaybe (isInStore storeDir')
             $ Set.toList
@@ -225,7 +221,7 @@ doCountImpl opts = do
             for (BS8.stripPrefix "package-id " line) $ \sfx ->
                 return (C.mkUnitId (trim (fromUTF8BS sfx)))
 
-    let envUnitIds :: Set C.UnitId
+    let envUnitIds :: Set UnitId
         envUnitIds = setOf (folded % folded % _Just) envs'
 
     putDebug $ "Found " ++ show (Set.size envUnitIds) ++ " environment roots"
@@ -238,7 +234,7 @@ doCountImpl opts = do
         fmap Just $ liftIO $ P.findAndDecodePlanJson $
         P.ExactPath $ toFilePath $ rootsDir </> indirect
 
-    let indirectUnitIds ::  Set C.UnitId
+    let indirectUnitIds ::  Set UnitId
         indirectUnitIds = Set.fromList
             [ toCabal unitId
             | plan <- plans
@@ -248,14 +244,14 @@ doCountImpl opts = do
 
     putDebug $ "Found " ++ show (Set.size envUnitIds) ++ " indirect roots"
 
-    let rootUnitIds :: Set C.UnitId
+    let rootUnitIds :: Set UnitId
         rootUnitIds = installDirUnitIds <> envUnitIds <> indirectUnitIds
 
     putInfo $ "Found " ++ show (Set.size rootUnitIds) ++ " roots"
 
     putInfo "Finding dependencies"
     -- reverse dependencies
-    let dbAm :: Map C.UnitId (Set C.UnitId)
+    let dbAm :: Map UnitId (Set UnitId)
         dbAm = Map.map (Set.fromList . C.depends) db
         reportLoop unitIds = do
             putError $ "There is a loop in package-db " ++ intercalate " -> " (map prettyShow unitIds)
@@ -272,7 +268,7 @@ doCountImpl opts = do
     putInfo $ show (Set.size closure) ++ " components are referenced from the roots"
     putInfo $ show (Set.size $ Map.keysSet dbS `Set.intersection` closure) ++ " components are in the store"
 
-    let removableUnitIds :: Set C.UnitId
+    let removableUnitIds :: Set UnitId
         removableUnitIds = Map.keysSet dbS `Set.difference` closure
 
     return Counted
@@ -287,14 +283,14 @@ doCountImpl opts = do
 -- Store Exe
 -------------------------------------------------------------------------------
 
-readExeDeps :: Path Absolute -> C.UnitId -> Peu r [C.UnitId]
+readExeDeps :: Path Absolute -> UnitId -> Peu r [UnitId]
 readExeDeps storeDir unitId = handle (\(_ :: IOException) -> return []) $ do
     let fp = storeDir </> fromUnrootedFilePath (C.unUnitId unitId)
                       </> fromUnrootedFilePath "cabal-hash.txt"
     contents <- readByteString fp
     return (unitId : extractDeps contents)
 
-isInStore :: Path Absolute -> Path Absolute -> Maybe C.UnitId
+isInStore :: Path Absolute -> Path Absolute -> Maybe UnitId
 isInStore storeDir p = do
     sfx <- stripPrefix (P.splitFragments (P.unrootPath storeDir)) (P.splitFragments (P.unrootPath p))
     case sfx of
@@ -383,27 +379,6 @@ getPathSize p = do
 
                 else return 0
     else return 0
-
--------------------------------------------------------------------------------
--- PackageDb
--------------------------------------------------------------------------------
-
-type PackageDb = Map C.UnitId C.InstalledPackageInfo
-
-readDb :: Path Absolute -> Peu r PackageDb
-readDb db = do
-    files <- listDirectory db
-    fmap (Map.fromList . concat) $ for files $ \p' -> do
-        let p = db </> p'
-        if ".conf" `isSuffixOf` toFilePath p
-        then do
-            contents <- readByteString p
-            ipi <- either throwM return $ Cbl.parseWith parseIpi (toFilePath p) contents
-            return [(C.installedUnitId ipi, ipi)]
-        else return []
-  where
-    parseIpi fields = case C.partitionFields fields of
-        (fields', _) -> C.parseFieldGrammar C.cabalSpecLatest fields' C.ipiFieldGrammar
 
 -------------------------------------------------------------------------------
 -- MissingH

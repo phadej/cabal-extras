@@ -1,17 +1,29 @@
 module Peura.GHC (
+    -- * GHC info
     GhcInfo (..),
     getGhcInfo,
+    -- * ghc-pkg
     findGhcPkg,
+    -- * Package databases
+    PackageDb,
+    readPackageDb,
     ) where
 
 import Data.Char           (isSpace)
-import Data.List           (lookup, stripPrefix)
+import Data.List           (isSuffixOf, lookup, stripPrefix)
 import Distribution.Parsec (eitherParsec)
 import Text.Read           (readMaybe)
 
-import qualified Data.ByteString.Lazy as LBS
-import qualified System.FilePath      as FP
+import qualified Cabal.Parse                                          as Cbl
+import qualified Data.ByteString.Lazy                                 as LBS
+import qualified Data.Map.Strict                                      as Map
+import qualified Distribution.CabalSpecVersion                        as C
+import qualified Distribution.FieldGrammar                            as C
+import qualified Distribution.Types.InstalledPackageInfo              as C
+import qualified Distribution.Types.InstalledPackageInfo.FieldGrammar as C
+import qualified System.FilePath                                      as FP
 
+import Peura.ByteString
 import Peura.Exports
 import Peura.Monad
 import Peura.Paths
@@ -109,3 +121,24 @@ trim = let tr = dropWhile isSpace . reverse in tr . tr
 
 die :: String -> Peu r a
 die msg = putError msg *> exitFailure
+
+-------------------------------------------------------------------------------
+-- PackageDb
+-------------------------------------------------------------------------------
+
+type PackageDb = Map UnitId C.InstalledPackageInfo
+
+readPackageDb :: Path Absolute -> Peu r PackageDb
+readPackageDb db = do
+    files <- listDirectory db
+    fmap (Map.fromList . concat) $ for files $ \p' -> do
+        let p = db </> p'
+        if ".conf" `isSuffixOf` toFilePath p
+        then do
+            contents <- readByteString p
+            ipi <- either throwM return $ Cbl.parseWith parseIpi (toFilePath p) contents
+            return [(C.installedUnitId ipi, ipi)]
+        else return []
+  where
+    parseIpi fields = case C.partitionFields fields of
+        (fields', _) -> C.parseFieldGrammar C.cabalSpecLatest fields' C.ipiFieldGrammar
