@@ -15,12 +15,13 @@ import System.FilePath.Glob (glob)
 import Control.Applicative         ((<**>))
 import Control.Concurrent.STM      (atomically)
 import Control.Concurrent.STM.TSem (TSem, newTSem, signalTSem, waitTSem)
-import Data.List                   (stripPrefix)
+import Data.List                   (stripPrefix, sort)
 import Distribution.Parsec         (eitherParsec)
 
 import qualified Crypto.Hash.SHA256     as SHA256
 import qualified Data.Binary            as Binary
 import qualified Data.ByteString.Base16 as Base16
+import qualified Data.ByteString.Lazy   as LBS
 import qualified Options.Applicative    as O
 
 import CabalDiff.Diff
@@ -136,16 +137,16 @@ getLocalHoogleTxt gi buildSem pn = do
         _ <- runProcessCheck cwd "cabal"
             [ "sdist"
             , "--builddir=" ++ toFilePath (dir </> fromUnrootedFilePath "dist-newstyle")
-            , "pkg:" ++ prettyShow pn
+            , "all"
             ]
 
         -- we don't know the local package version, so we glob for it.
         -- Without cabal.project we'd need to glob for *.cabal file anyway.
-        res  <- liftIO $ glob (toFilePath dir ++ "/dist-newstyle/sdist/" ++ prettyShow pn ++ "-*.tar.gz")
-        (tarball, pkgId) <- elaborateSdistLocation res
+        res  <- liftIO $ glob (toFilePath dir ++ "/dist-newstyle/sdist/*.tar.gz")
+        (tarballs, tarball, pkgId) <- elaborateSdistLocation res
 
         -- tarball hash is using for caching, version alone is not enough
-        hash <- calculateHash tarball
+        hash <- calculateHash (tarball : tarballs)
 
         -- cache dir
         cacheDir' <- makeAbsolute $ cacheDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion gi))
@@ -166,7 +167,7 @@ getLocalHoogleTxt gi buildSem pn = do
             let dir' = dir </> fromUnrootedFilePath (prettyShow pkgId)
 
             -- build hoogle.txt
-            api <- buildHoogleTxt gi buildSem pkgId dir'
+            api <- buildHoogleTxt gi buildSem pkgId tarballs dir'
 
             -- write cache
             liftIO $ Binary.encodeFile (toFilePath cacheFile) api
@@ -174,19 +175,26 @@ getLocalHoogleTxt gi buildSem pn = do
             -- return
             return api
   where
-    elaborateSdistLocation :: [FilePath] -> Peu r (Path Absolute, PackageIdentifier)
-    elaborateSdistLocation [fp] = do
-        fp' <- makeAbsoluteFilePath fp
-        let fn = toUnrootedFilePath (takeFileName fp')
-        pid <- elaboratePkgId fn
-        return (fp', pid)
-
-    elaborateSdistLocation [] = do
-        putError "Cannot find sdist tarball"
-        exitFailure
-    elaborateSdistLocation fps = do
-        putError $ "Found multiple sdist tarballs " ++ show fps
-        exitFailure
+    elaborateSdistLocation :: forall r. [FilePath] -> Peu r ([Path Absolute], Path Absolute, PackageIdentifier)
+    elaborateSdistLocation = go Nothing [] where
+        go :: Maybe (Path Absolute, PackageIdentifier) -> [Path Absolute] -> [FilePath]
+           -> Peu r ([Path Absolute], Path Absolute, PackageIdentifier)
+        go (Just (fp, pid)) acc [] =
+            return (acc, fp, pid)
+        go Nothing _acc [] = do
+            putError "Cannot find sdist tarball"
+            exitFailure
+        go mpid acc (fp:fps) = do
+            fp' <- makeAbsoluteFilePath fp
+            let fn = toUnrootedFilePath (takeFileName fp')
+            pid <- elaboratePkgId fn
+            if pkgName pid == pn
+            then case mpid of
+                Nothing -> go (Just (fp', pid)) acc fps
+                Just _  ->  do
+                    putError $ "Found multiple sdist tarballs " ++ show fps
+                    exitFailure
+            else go mpid (fp' : acc) fps
 
     elaboratePkgId :: String -> Peu r PackageIdentifier
     elaboratePkgId str = case stripSuffix ".tar.gz" str of
@@ -198,11 +206,15 @@ getLocalHoogleTxt gi buildSem pn = do
             Right pkgId -> return pkgId
             Left  err   -> putError err *> exitFailure
 
-calculateHash :: Path Absolute -> Peu () String
-calculateHash f = do
-    lbs <- readLazyByteString f
-    let hash = Base16.encode $ SHA256.hashlazy lbs
-    return (fromUTF8BS hash)
+calculateHash :: [Path Absolute] -> Peu () String
+calculateHash xs = fmap post (foldM step SHA256.init (sort xs)) where
+    post ctx =
+        let hash = Base16.encode $ SHA256.finalize ctx
+        in fromUTF8BS hash
+
+    step ctx f = do
+        lbs <- readLazyByteString f
+        return (SHA256.updates ctx (LBS.toChunks lbs))
 
 stripSuffix :: Eq a => [a] -> [a] -> Maybe [a]
 stripSuffix sfx str = fmap reverse (stripPrefix (reverse sfx) (reverse str))
@@ -246,17 +258,28 @@ getHackageHoogleTxt' gi buildSem pkgId =
         let dir' = dir </> fromUnrootedFilePath (prettyShow pkgId)
 
         -- build hoogle.txt
-        buildHoogleTxt gi buildSem pkgId dir'
+        buildHoogleTxt gi buildSem pkgId [] dir'
 
 buildHoogleTxt
     :: GhcInfo
     -> TSem
     -> PackageIdentifier
+    -> [Path Absolute] -- ^ additional tarballs 
     -> Path Absolute -> Peu r API
-buildHoogleTxt gi buildSem pkgId dir = do
+buildHoogleTxt gi buildSem pkgId tarballs dir = do
+    let cabalProjectLines :: [String]
+        cabalProjectLines = "packages: ." :
+            [ "packages: " ++ toFilePath t
+            | t <- tarballs
+            ] 
+
+    writeByteString (dir </> fromUnrootedFilePath "cabal.project")
+        $ toUTF8BS $ unlines cabalProjectLines
+
     -- build dependencies, for one package at the time
-    _ <- bracket acquire release $ \_ ->
-        runProcessCheck dir "cabal" ["v2-build", "--with-compiler", ghcPath gi, "--dependencies-only", "."]
+    when (null tarballs) $ void $
+        bracket acquire release $ \_ ->
+            runProcessCheck dir "cabal" ["v2-build", "--with-compiler", ghcPath gi, "--dependencies-only", "."]
 
     -- build packages concurrently
     _ <- runProcessCheck dir "cabal" ["v2-haddock", "--with-compiler", ghcPath gi, "--haddock-hoogle", "-O0", "."]

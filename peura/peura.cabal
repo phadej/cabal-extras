@@ -1,6 +1,6 @@
 cabal-version: 2.2
 name:          peura
-version:       0.20191214
+version:       0.20200202
 synopsis:      Oleg's "prelude"
 category:      Development
 description:
@@ -58,20 +58,21 @@ library
 
   -- Extra dependencies
   build-depends:
-    , aeson              ^>=1.4.6.0
-    , ansi-terminal      ^>=0.10.1
-    , async              ^>=2.2.2
-    , base-compat        ^>=0.11.0
-    , cabal-plan         ^>=0.6.2.0
-    , clock              ^>=0.8
-    , concurrent-output  ^>=1.10.11
-    , exceptions         ^>=0.10.3
-    , optics-core        ^>=0.2
-    , optics-extra       ^>=0.2
-    , paths              ^>=0.2.0.0
-    , serialise          ^>=0.2.1.0
-    , temporary          ^>=1.3
-    , unliftio-core      ^>=0.1.2.0
+    , aeson                  ^>=1.4.6.0
+    , ansi-terminal          ^>=0.10.1
+    , async                  ^>=2.2.2
+    , base-compat            ^>=0.11.0
+    , cabal-install-parsers  ^>=0.2
+    , cabal-plan             ^>=0.6.2.0
+    , clock                  ^>=0.8
+    , concurrent-output      ^>=1.10.11
+    , exceptions             ^>=0.10.3
+    , optics-core            ^>=0.2
+    , optics-extra           ^>=0.2
+    , paths                  ^>=0.2.0.0
+    , serialise              ^>=0.2.1.0
+    , temporary              ^>=1.3
+    , unliftio-core          ^>=0.1.2.0
 
   default-extensions:
     NoImplicitPrelude
