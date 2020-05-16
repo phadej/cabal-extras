@@ -22,17 +22,18 @@ import qualified Distribution.Pretty      as C
 import qualified Options.Applicative      as O
 
 import qualified Distribution.Package                         as C
-import qualified Distribution.Version                         as C
+import qualified Distribution.Parsec                          as C
 import qualified Distribution.Types.BuildInfo                 as C
 import qualified Distribution.Types.BuildInfo.Lens            as L
 import qualified Distribution.Types.ComponentName             as C
-import qualified Distribution.Types.ExeDependency             as C
+import qualified Distribution.Types.Condition                 as C
 import qualified Distribution.Types.CondTree                  as C
-import qualified Distribution.Types.Condition                  as C
-import qualified Distribution.Types.PackageDescription as C
+import qualified Distribution.Types.ExeDependency             as C
 import qualified Distribution.Types.GenericPackageDescription as C
 import qualified Distribution.Types.LibraryName               as C
+import qualified Distribution.Types.PackageDescription        as C
 import qualified Distribution.Types.SetupBuildInfo            as C
+import qualified Distribution.Version                         as C
 
 import Paths_cabal_deps (version)
 
@@ -55,7 +56,8 @@ main = do
 -------------------------------------------------------------------------------
 
 data Opts = Opts
-    { optAction :: Action
+    { optAction  :: Action
+    , optExclude :: Set PackageName
     }
 
 data Action
@@ -65,6 +67,12 @@ data Action
 optsP :: O.Parser Opts
 optsP = Opts
     <$> actionP
+    <*> fmap Set.fromList (many (O.option (O.eitherReader C.eitherParsec) $ mconcat
+        [ O.short 'e'
+        , O.long "exclude"
+        , O.metavar "PKGNAME..."
+        , O.help "Don't report following packages"
+        ]))
 
 actionP :: O.Parser Action
 actionP = builddirP <|> cabalP where
@@ -83,31 +91,31 @@ doDeps opts = do
     meta <- liftIO I.cachedHackageMetadata
 
     case optAction opts of
-        ActionCabal []     -> doPlanDeps meta (P.ProjectRelativeToDir ".")
-        ActionCabal (x:xs) -> doGpdDeps meta (x :| xs)
+        ActionCabal []     -> doPlanDeps meta (optExclude opts) (P.ProjectRelativeToDir ".")
+        ActionCabal (x:xs) -> doGpdDeps  meta (optExclude opts) (x :| xs)
         ActionBuilddir p   -> do
             p' <- makeAbsolute p
-            doPlanDeps meta (P.InBuildDir (toFilePath p'))
+            doPlanDeps meta (optExclude opts) (P.InBuildDir (toFilePath p'))
 
 -------------------------------------------------------------------------------
 -- Check GPD
 -------------------------------------------------------------------------------
 
-doGpdDeps :: Map PackageName I.PackageInfo -> NonEmpty FsPath -> Peu r ()
-doGpdDeps meta fps = do
+doGpdDeps :: Map PackageName I.PackageInfo -> Set PackageName -> NonEmpty FsPath -> Peu r ()
+doGpdDeps meta excl fps = do
     gpds <- for fps $ \fp -> do
         fp' <- makeAbsolute fp
         liftIO $ Pkg.readPackage $ toFilePath fp'
 
     for_ gpds $ \gpd ->
-        checkGpd meta gpd
+        checkGpd meta excl gpd
 
     -- TODO: use exitCode to indicate
 
 -- TODO: return True or False if fine or not.
 
-checkGpd :: Map PackageName I.PackageInfo -> C.GenericPackageDescription -> Peu r ()
-checkGpd meta gpd = do
+checkGpd :: Map PackageName I.PackageInfo -> Set PackageName -> C.GenericPackageDescription -> Peu r ()
+checkGpd meta excl gpd = do
     let PackageIdentifier packageName _ = C.package (C.packageDescription gpd)
 
     let comps :: Map C.ComponentName (C.CondTree C.ConfVar () C.BuildInfo)
@@ -138,10 +146,11 @@ checkGpd meta gpd = do
         checkDepMap meta (C.prettyShow packageName ++ ":setup") $ DepMap $ Map.fromListWith C.intersectVersionRanges
             [ (pn, vr)
             | C.Dependency pn vr _ <- C.setupDepends s
+            , Set.notMember pn excl
             ]
 
     ifor_ comps $ \n c ->
-        checkDepMap meta (C.prettyShow packageName ++ ":" ++ C.prettyShow n) (condTreeToDepMap c)
+        checkDepMap meta (C.prettyShow packageName ++ ":" ++ C.prettyShow n) (condTreeToDepMap excl c)
 
 --    ifor_ comps $ \n c -> do
 --        output (show n)
@@ -179,8 +188,8 @@ checkDepMap meta cname (DepMap depMap) =
                     cname ++ " doesn't accept " ++ C.prettyShow (PackageIdentifier pn ver)
                     ++ "; depends " ++ C.prettyShow vr
 
-condTreeToDepMap :: C.CondTree C.ConfVar () L.BuildInfo -> DepMap
-condTreeToDepMap = go where
+condTreeToDepMap :: Set PackageName -> C.CondTree C.ConfVar () L.BuildInfo -> DepMap
+condTreeToDepMap excl = go where
     go :: C.CondTree C.ConfVar x L.BuildInfo -> DepMap
     go (C.CondNode bi _ branches) = fromBi bi <> foldMap branch branches
 
@@ -198,11 +207,13 @@ condTreeToDepMap = go where
         builddeps = DepMap $ Map.fromListWith C.intersectVersionRanges
             [ (pn, vr)
             | C.Dependency pn vr _ <- C.targetBuildDepends bi
+            , Set.notMember pn excl
             ]
 
         buildtools = DepMap $ Map.fromListWith C.intersectVersionRanges
             [ (pn, vr)
             | C.ExeDependency pn _ vr <- C.buildToolDepends bi
+            , Set.notMember pn excl
             ]
 
 flagCondition :: C.Condition C.ConfVar -> Bool
@@ -228,8 +239,8 @@ lessThanLowerBound v (C.LowerBound v' C.ExclusiveBound) = v <= v'
 -- Check plan
 -------------------------------------------------------------------------------
 
-doPlanDeps :: Map PackageName I.PackageInfo -> P.SearchPlanJson -> Peu r ()
-doPlanDeps meta search = do
+doPlanDeps :: Map PackageName I.PackageInfo -> Set PackageName -> P.SearchPlanJson -> Peu r ()
+doPlanDeps meta excl search = do
     putInfo "Reading plan.json for current project"
     plan <- liftIO $ P.findAndDecodePlanJson search
 
@@ -241,8 +252,8 @@ doPlanDeps meta search = do
             , P.uType unit /= P.UnitTypeBuiltin
             ]
 
-    for_ pkgIds $ \pkgId ->
-        checkPlan meta pkgId
+    for_ pkgIds $ \pkgId@(PackageIdentifier pn _) ->
+        unless (Set.member pn excl) $ checkPlan meta pkgId
 
     -- TODO: use exitCode to indicate
 
