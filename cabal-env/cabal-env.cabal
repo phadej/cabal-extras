@@ -13,7 +13,7 @@ license:            GPL-2.0-or-later
 license-files:      LICENSE LICENSE.GPLv2 LICENSE.GPLv3
 author:             Oleg Grenrus <oleg.grenrus@iki.fi>
 maintainer:         Oleg Grenrus <oleg.grenrus@iki.fi>
-tested-with:        GHC ==8.4.4 || ==8.6.5 || ==8.8.1
+tested-with:        GHC ==8.4.4 || ==8.6.5 || ==8.8.3 || ==8.10.1
 extra-source-files: Changelog.md
 
 source-repository head
@@ -34,7 +34,7 @@ library cabal-env-internal
 
   -- ghc-boot dependencies
   build-depends:
-    , base        ^>=4.11.0.0 || ^>=4.12.0.0 || ^>=4.13.0.0
+    , base        ^>=4.11.0.0 || ^>=4.12.0.0 || ^>=4.13.0.0 || ^>=4.14.0.0
     , bytestring  ^>=0.10.8.2
     , containers  ^>=0.5.10.2 || ^>=0.6.0.1
     , deepseq     ^>=1.4.3.0
@@ -46,18 +46,18 @@ library cabal-env-internal
     , process     ^>=1.6.1.0
     , text        ^>=1.2.3.0
 
-  -- We use Cabal-3.0
-  build-depends:      Cabal ^>=3.0
+  -- We use Cabal-3.2
+  build-depends:      Cabal ^>=3.2
 
   -- We also use peura
   build-depends:      peura
 
   -- dependencies in library
   build-depends:
-    , aeson                  ^>=1.4.6.0
-    , base64-bytestring      ^>=1.0.0.2
-    , cabal-install-parsers  ^>=0.2
-    , cabal-plan             ^>=0.6.0.0
+    , aeson                  ^>=1.5.0.0
+    , base64-bytestring      ^>=1.1.0.0
+    , cabal-install-parsers  ^>=0.3.0.1
+    , cabal-plan             ^>=0.7.0.0
     , optparse-applicative   ^>=0.15.1.0
     , lzma                   ^>=0.0.0.3
 

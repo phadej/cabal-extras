@@ -28,6 +28,7 @@ import qualified Distribution.Types.BuildInfo.Lens            as L
 import qualified Distribution.Types.ComponentName             as C
 import qualified Distribution.Types.Condition                 as C
 import qualified Distribution.Types.CondTree                  as C
+import qualified Distribution.Types.ConfVar                   as C
 import qualified Distribution.Types.ExeDependency             as C
 import qualified Distribution.Types.GenericPackageDescription as C
 import qualified Distribution.Types.LibraryName               as C
