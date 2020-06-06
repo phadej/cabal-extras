@@ -339,6 +339,7 @@ data Opts = Opts
     , optDryRun     :: Bool
     , optTransitive :: Maybe Bool
     , optDeps       :: [Dependency]
+    , optLocal      :: Bool
     , optAction     :: Action
     }
 
@@ -357,6 +358,7 @@ optsP = Opts
     <*> O.switch (O.short 'd' <> O.long "dry-run" <> O.help "Dry run, don't install anything")
     <*> optional transitiveP
     <*> many (O.argument (O.eitherReader eitherParsec) (O.metavar "PKG..." <> O.help "packages (with possible bounds)"))
+    <*> O.switch (O.long "local" <> O.help "Include local packages")
     -- behaviour flags
     <*> actionP
   where
