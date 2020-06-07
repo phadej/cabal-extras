@@ -99,6 +99,7 @@ install:
     echo "packages: cabal-deps" >> cabal.project
     echo "packages: cabal-diff" >> cabal.project
     echo "packages: cabal-env" >> cabal.project
+    echo "packages: cabal-iface-query" >> cabal.project
     echo "packages: cabal-store-check" >> cabal.project
     echo "packages: cabal-store-gc" >> cabal.project
     echo "packages: peura" >> cabal.project
@@ -109,6 +110,8 @@ install:
   - echo 'package cabal-diff' >> cabal.project
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - echo 'package cabal-env' >> cabal.project
+  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
+  - echo 'package cabal-iface-query' >> cabal.project
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - echo 'package cabal-store-check' >> cabal.project
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
@@ -122,13 +125,14 @@ install:
     echo "constraints: transformers  installed" >> cabal.project
     echo "allow-newer: paths:base"              >> cabal.project
     echo "allow-newer: paths:template-haskell"  >> cabal.project
-  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|cabal-store-check|cabal-store-gc|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
+  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|cabal-iface-query|cabal-store-check|cabal-store-gc|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
   - if [ -f "cabal-bundler/configure.ac" ]; then (cd "cabal-bundler" && autoreconf -i); fi
   - if [ -f "cabal-deps/configure.ac" ]; then (cd "cabal-deps" && autoreconf -i); fi
   - if [ -f "cabal-diff/configure.ac" ]; then (cd "cabal-diff" && autoreconf -i); fi
   - if [ -f "cabal-env/configure.ac" ]; then (cd "cabal-env" && autoreconf -i); fi
+  - if [ -f "cabal-iface-query/configure.ac" ]; then (cd "cabal-iface-query" && autoreconf -i); fi
   - if [ -f "cabal-store-check/configure.ac" ]; then (cd "cabal-store-check" && autoreconf -i); fi
   - if [ -f "cabal-store-gc/configure.ac" ]; then (cd "cabal-store-gc" && autoreconf -i); fi
   - if [ -f "peura/configure.ac" ]; then (cd "peura" && autoreconf -i); fi
@@ -150,6 +154,7 @@ script:
   - PKGDIR_cabal_deps="$(find . -maxdepth 1 -type d -regex '.*/cabal-deps-[0-9.]*')"
   - PKGDIR_cabal_diff="$(find . -maxdepth 1 -type d -regex '.*/cabal-diff-[0-9.]*')"
   - PKGDIR_cabal_env="$(find . -maxdepth 1 -type d -regex '.*/cabal-env-[0-9.]*')"
+  - PKGDIR_cabal_iface_query="$(find . -maxdepth 1 -type d -regex '.*/cabal-iface-query-[0-9.]*')"
   - PKGDIR_cabal_store_check="$(find . -maxdepth 1 -type d -regex '.*/cabal-store-check-[0-9.]*')"
   - PKGDIR_cabal_store_gc="$(find . -maxdepth 1 -type d -regex '.*/cabal-store-gc-[0-9.]*')"
   - PKGDIR_peura="$(find . -maxdepth 1 -type d -regex '.*/peura-[0-9.]*')"
@@ -161,6 +166,7 @@ script:
     echo "packages: ${PKGDIR_cabal_deps}" >> cabal.project
     echo "packages: ${PKGDIR_cabal_diff}" >> cabal.project
     echo "packages: ${PKGDIR_cabal_env}" >> cabal.project
+    echo "packages: ${PKGDIR_cabal_iface_query}" >> cabal.project
     echo "packages: ${PKGDIR_cabal_store_check}" >> cabal.project
     echo "packages: ${PKGDIR_cabal_store_gc}" >> cabal.project
     echo "packages: ${PKGDIR_peura}" >> cabal.project
@@ -171,6 +177,8 @@ script:
   - echo 'package cabal-diff' >> cabal.project
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - echo 'package cabal-env' >> cabal.project
+  - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
+  - echo 'package cabal-iface-query' >> cabal.project
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
   - echo 'package cabal-store-check' >> cabal.project
   - "echo '  ghc-options: -Werror=missing-methods' >> cabal.project"
@@ -184,7 +192,7 @@ script:
     echo "constraints: transformers  installed" >> cabal.project
     echo "allow-newer: paths:base"              >> cabal.project
     echo "allow-newer: paths:template-haskell"  >> cabal.project
-  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|cabal-store-check|cabal-store-gc|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
+  - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|cabal-iface-query|cabal-store-check|cabal-store-gc|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
   # Building...
@@ -200,6 +208,7 @@ script:
   - (cd ${PKGDIR_cabal_deps} && ${CABAL} -vnormal check)
   - (cd ${PKGDIR_cabal_diff} && ${CABAL} -vnormal check)
   - (cd ${PKGDIR_cabal_env} && ${CABAL} -vnormal check)
+  - (cd ${PKGDIR_cabal_iface_query} && ${CABAL} -vnormal check)
   - (cd ${PKGDIR_cabal_store_check} && ${CABAL} -vnormal check)
   - (cd ${PKGDIR_cabal_store_gc} && ${CABAL} -vnormal check)
   - (cd ${PKGDIR_peura} && ${CABAL} -vnormal check)
