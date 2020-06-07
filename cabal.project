@@ -1,7 +1,10 @@
+with-compiler: ghc-8.8.3
+
 packages: cabal-bundler
 packages: cabal-deps
 packages: cabal-diff
 packages: cabal-env
+packages: cabal-iface-query
 
 packages: cabal-store-check
 packages: cabal-store-gc
