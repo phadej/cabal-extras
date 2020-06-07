@@ -6,8 +6,6 @@ module Peura.ByteString (
     toUTF8BS,
     ) where
 
-import Distribution.Simple.Utils (fromUTF8BS, toUTF8BS)
-
 import Peura.Exports
 import Peura.Monad
 import Peura.Paths

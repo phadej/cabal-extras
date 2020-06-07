@@ -42,6 +42,9 @@ module Peura.Exports (
     Version,
     VersionRange,
     UnitId,
+    -- ** Numerals
+    Int8, Int16, Int32, Int64,
+    Word8, Word16, Word32, Word64,
     -- * Functors
     Proxy (..),
     Const (..),
@@ -81,7 +84,7 @@ module Peura.Exports (
     mapMaybe,
     catMaybes,
     -- ** Data.List
-    sortBy, sortOn,
+    sortBy, sortOn, ordNub,
     -- ** Data.List.NonEmpty
     head, last, groupBy,
     -- ** Data.Traversable
@@ -148,6 +151,7 @@ import Data.Coerce                     (Coercible, coerce)
 import Data.Foldable                   (for_, traverse_)
 import Data.Functor.Compat             (void, (<&>))
 import Data.Functor.Identity           (Identity (..))
+import Data.Int                        (Int16, Int32, Int64, Int8)
 import Data.List                       (sortBy, sortOn)
 import Data.List.NonEmpty              (NonEmpty (..), groupBy, head, last)
 import Data.Map.Strict                 (Map)
@@ -159,8 +163,9 @@ import Data.String                     (IsString (..))
 import Data.Text                       (Text)
 import Data.Traversable                (for)
 import Data.Typeable                   (Typeable, typeRep)
+import Data.Word                       (Word16, Word32, Word64, Word8)
 import Distribution.Pretty             (prettyShow)
-import Distribution.Simple.Utils       (fromUTF8BS, toUTF8BS)
+import Distribution.Simple.Utils       (fromUTF8BS, ordNub, toUTF8BS)
 import Distribution.Types.PackageId    (PackageIdentifier (..))
 import Distribution.Types.PackageName  (PackageName, mkPackageName)
 import Distribution.Types.UnitId       (UnitId)

@@ -1,6 +1,6 @@
 cabal-version: 2.2
 name:          peura
-version:       0.20200202
+version:       0.20200607
 synopsis:      Oleg's "prelude"
 category:      Development
 description:
@@ -31,6 +31,7 @@ library
     Peura.Debug
     Peura.Exports
     Peura.GHC
+    Peura.Glob
     Peura.Monad
     Peura.Orphans
     Peura.Paths
@@ -67,6 +68,7 @@ library
     , clock                  ^>=0.8
     , concurrent-output      ^>=1.10.11
     , exceptions             ^>=0.10.3
+    , Glob                   ^>=0.10.0
     , optics-core            ^>=0.3
     , optics-extra           ^>=0.3
     , paths                  ^>=0.2.0.0
