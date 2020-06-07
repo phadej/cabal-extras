@@ -123,8 +123,6 @@ install:
     echo "constraints: directory     installed" >> cabal.project
     echo "constraints: process       installed" >> cabal.project
     echo "constraints: transformers  installed" >> cabal.project
-    echo "allow-newer: paths:base"              >> cabal.project
-    echo "allow-newer: paths:template-haskell"  >> cabal.project
   - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|cabal-iface-query|cabal-store-check|cabal-store-gc|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true
@@ -190,8 +188,6 @@ script:
     echo "constraints: directory     installed" >> cabal.project
     echo "constraints: process       installed" >> cabal.project
     echo "constraints: transformers  installed" >> cabal.project
-    echo "allow-newer: paths:base"              >> cabal.project
-    echo "allow-newer: paths:template-haskell"  >> cabal.project
   - "for pkg in $($HCPKG list --simple-output); do echo $pkg | sed 's/-[^-]*$//' | (grep -vE -- '^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-env|cabal-iface-query|cabal-store-check|cabal-store-gc|peura)$' || true) | sed 's/^/constraints: /' | sed 's/$/ installed/' >> cabal.project.local; done"
   - cat cabal.project || true
   - cat cabal.project.local || true

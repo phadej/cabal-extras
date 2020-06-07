@@ -10,8 +10,6 @@ import Peura
 
 import Control.Applicative           ((<**>))
 import Data.List                     (lines, sort)
-import Data.Semigroup                (Semigroup (..))
-import Data.Set                      (Set)
 import Data.Version                  (showVersion)
 import Distribution.Parsec           (eitherParsec)
 import Distribution.Types.Dependency (Dependency (..))

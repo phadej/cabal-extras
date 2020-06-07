@@ -29,6 +29,3 @@ package peura
 constraints: directory     installed
 constraints: process       installed
 constraints: transformers  installed
-
-allow-newer: paths:base
-allow-newer: paths:template-haskell

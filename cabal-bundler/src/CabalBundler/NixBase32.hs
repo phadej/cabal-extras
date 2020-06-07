@@ -6,8 +6,6 @@ import Peura
 
 import Prelude (splitAt)
 
-import Data.Word (Word8)
-import Data.List (foldl')
 import Data.Bits
 
 import qualified Data.Vector.Unboxed as V

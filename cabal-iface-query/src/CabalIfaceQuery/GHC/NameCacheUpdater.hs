@@ -4,9 +4,8 @@ module CabalIfaceQuery.GHC.NameCacheUpdater (
 ) where
 
 import Data.IORef (atomicModifyIORef', newIORef)
-import Prelude    (IO, String, return, ($))
+import Prelude    (IO, return, ($))
 
-import DynFlags   (DynFlags)
 import IfaceEnv   (NameCacheUpdater (..))
 import NameCache  (initNameCache)
 import UniqSupply (mkSplitUniqSupply)

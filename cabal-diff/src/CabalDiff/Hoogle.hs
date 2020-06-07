@@ -12,10 +12,7 @@ module CabalDiff.Hoogle (
 import Peura
 import Prelude ()
 
-import Control.Applicative                 (Alternative (..), optional)
-import Data.Binary                         (Binary)
 import Data.Char                           (isPrint, isSpace)
-import Data.Functor                        (void)
 import Distribution.Compat.CharParsing
        (char, eof, manyTill, satisfy, skipMany, spaces, string, try,
        unexpected)
@@ -23,7 +20,6 @@ import Distribution.ModuleName             (ModuleName)
 import Distribution.Parsec
        (ParsecParser, parsec, runParsecParser)
 import Distribution.Parsec.FieldLineStream (fieldLineStreamFromBS)
-import GHC.Generics                        (Generic)
 
 import qualified Data.Map.Strict as Map
 
