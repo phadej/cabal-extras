@@ -24,7 +24,6 @@ module Peura.Monad (
     exitFailure,
     ) where
 
-import Control.Monad.IO.Class     (MonadIO (..))
 import Control.Monad.Reader.Class (MonadReader (..))
 import Data.Typeable              (cast)
 import System.Clock

@@ -10,7 +10,7 @@ module Peura.GHC (
     ) where
 
 import Data.Char           (isSpace)
-import Data.List           (isSuffixOf, lookup, stripPrefix)
+import Data.List           (isSuffixOf, lookup)
 import Distribution.Parsec (eitherParsec)
 import Text.Read           (readMaybe)
 
@@ -21,7 +21,6 @@ import qualified Distribution.CabalSpecVersion                        as C
 import qualified Distribution.FieldGrammar                            as C
 import qualified Distribution.Types.InstalledPackageInfo              as C
 import qualified Distribution.Types.InstalledPackageInfo.FieldGrammar as C
-import qualified System.FilePath                                      as FP
 
 import Peura.ByteString
 import Peura.Exports
@@ -34,6 +33,7 @@ data GhcInfo = GhcInfo
     , ghcVersion  :: Version
     , ghcEnvDir   :: Path Absolute
     , ghcGlobalDb :: Path Absolute
+    , ghcLibDir   :: Path Absolute
     }
   deriving Show
 
@@ -47,31 +47,54 @@ getGhcInfo ghc = do
 
     case lookup ("Project name" :: String) info of
         Just "The Glorious Glasgow Haskell Compilation System" -> do
-            versionStr <- maybe (die "cannot find Project version in ghc --info") return $
+            versionStr <- maybe (die "cannot find 'Project version' in ghc --info") return $
                 lookup "Project version" info
             ver <- case eitherParsec versionStr of
                 Right ver -> return (ver :: Version)
                 Left err  -> die $ "Project version cannot be parsed\n" ++ err
 
-            targetStr <- maybe (die "cannot find Target platform in ghc --info") return $
+            targetStr <- maybe (die "cannot find 'Target platform' in ghc --info") return $
                 lookup "Target platform" info
             (x,y) <- case splitOn '-' targetStr of
                 x :| [_, y] -> return (x, y)
                 _           -> die "Target platform is not a triple"
 
-            globalDbStr <- maybe (die "Cannot find Global Package DB in ghc --info") return $
+            globalDbStr <- maybe (die "Cannot find 'Global Package DB' in ghc --info") return $
                 lookup "Global Package DB" info
             globalDb <- makeAbsoluteFilePath globalDbStr
+
+            libDirStr <- maybe (die "Cannot find 'LibDir' in ghc --info") return $
+                lookup "LibDir" info
+            libDir <- makeAbsoluteFilePath libDirStr
 
             return GhcInfo
                 { ghcPath     = ghc
                 , ghcVersion  = ver
                 , ghcEnvDir   = ghcDir </> fromUnrootedFilePath (x ++ "-" ++ y ++ "-" ++ prettyShow ver) </> fromUnrootedFilePath "environments"
                 , ghcGlobalDb = globalDb
+                , ghcLibDir   = libDir
                 }
 
         _ -> die "Your compiler is not GHC"
 
+findGhcPkg :: GhcInfo -> Peu r FilePath
+findGhcPkg ghcInfo = do
+    let guess = toFilePath $ ghcLibDir ghcInfo </> fromUnrootedFilePath "bin/ghc-pkg"
+
+    ghcDir   <- getAppUserDataDirectory "ghc"
+    verBS <- LBS.toStrict <$> runProcessCheck ghcDir guess ["--version"]
+
+    let expected = "GHC package manager version " ++ prettyShow (ghcVersion ghcInfo)
+        actual   = trim $ fromUTF8BS verBS
+    if actual == expected
+    then return guess
+    else do
+        putError $ guess ++ " --version returned " ++ actual ++ "; expecting " ++ expected
+        exitFailure
+
+{-
+
+-- This is old variant, which uses heuristics
 findGhcPkg :: GhcInfo -> Peu r FilePath
 findGhcPkg ghcInfo = do
     let ghc = ghcPath ghcInfo
@@ -98,6 +121,7 @@ findGhcPkg ghcInfo = do
     else do
         putError $ guess ++ " --version returned " ++ actual ++ "; expecting " ++ expected
         exitFailure
+-}
 
 -- | One of missing functions for lists in Prelude.
 --

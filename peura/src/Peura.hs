@@ -14,6 +14,7 @@ import Peura.Cabal      as A
 import Peura.Debug      as A
 import Peura.Exports    as A
 import Peura.GHC        as A
+import Peura.Glob       as A
 import Peura.Monad      as A
 import Peura.Paths      as A
 import Peura.Process    as A
