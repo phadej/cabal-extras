@@ -9,12 +9,15 @@ module CabalEnv.Main (main) where
 import Peura
 
 import Control.Applicative           ((<**>))
-import Data.List                     (lines, sort)
+import Data.List                     (lines, sort, stripPrefix)
 import Data.Version                  (showVersion)
 import Distribution.Parsec           (eitherParsec)
 import Distribution.Types.Dependency (Dependency (..))
 import Distribution.Version          (intersectVersionRanges)
+import System.FilePath.Glob          (glob)
 
+import qualified Crypto.Hash.SHA256             as SHA256
+import qualified Data.ByteString.Base16         as Base16
 import qualified Data.Map.Strict                as Map
 import qualified Data.Set                       as Set
 import qualified Data.Text                      as T
@@ -100,7 +103,7 @@ installAction opts@Opts {..} ghcInfo = unless (null optDeps) $ do
     withEnvironmentMaybe (envDir </> fromUnrootedFilePath optEnvName) $ \menv ->
         case menv of
             Nothing  -> installActionDo opts
-                (Environment optDeps [] (fromMaybe defaultTransitive optTransitive) ())
+                (Environment optDeps [] (fromMaybe defaultTransitive optTransitive) Map.empty ())
                 ghcInfo
             Just env -> do
                 let (planBS, plan) = envPlan env
@@ -109,6 +112,7 @@ installAction opts@Opts {..} ghcInfo = unless (null optDeps) $ do
                         { envPackages   = nubDeps $ optDeps ++ envPackages env
                         , envTransitive = fromMaybe (envTransitive env) optTransitive
                         , envHidden     = envHidden env
+                        , envLocalPkgs  = envLocalPkgs env
                         , envPlan       = ()
                         }
                 if all (inThePlan plan) (envPackages oldEnv)
@@ -123,6 +127,78 @@ inThePlan plan (Dependency pn range _) = case Map.lookup pn pkgIds of
     Just ver -> ver `C.withinRange` range
   where
     pkgIds = planPkgIdsMap plan
+
+-------------------------------------------------------------------------------
+-- Local packages
+-------------------------------------------------------------------------------
+
+getLocalPackages :: Opts -> Peu r (Map PackageName (Path Absolute))
+getLocalPackages Opts {..}
+    | optLocal = do
+        putInfo "SDisting local packages"
+        cwd <- getCurrentDirectory
+
+        withSystemTempDirectory "cabal-env" $ \dir -> do
+            -- local packages are sdist'd, and we'll copy them to
+            -- a directory ~/.cabal/local-pkgs if ~/.cabal/store is storeDir,
+            -- i.e. next to store.
+            --
+            cblCfg  <- liftIO Config.readConfig
+            storeDir <- makeAbsoluteFilePath $ runIdentity $ Config.cfgStoreDir cblCfg
+            let localPkgDir = takeDirectory storeDir </> fromUnrootedFilePath "local-pkgs"
+            createDirectoryIfMissing True localPkgDir
+
+            -- 1. we sdist all, using empty --builddir
+            _ <- runProcessCheck cwd "cabal"
+                [ "sdist"
+                , "--builddir=" ++ toFilePath (dir </> fromUnrootedFilePath "dist-newstyle")
+                , "all"
+                ]
+
+            -- 2. then we look for all packages in that directory.
+            res  <- liftIO $ glob (toFilePath dir ++ "/dist-newstyle/sdist/*.tar.gz")
+            tarballs <- elaborateSdistLocation res
+
+            -- 3. We copy files to ~/.cabal/local-pkgs
+            -- Naming them as pkgid-contenthash.tar.gz
+            fmap Map.fromList $ for (Map.toList tarballs) $ \(pkgId@(PackageIdentifier pkgName _), path) -> do
+                hash <- calculateHash1 path
+                let newPath = localPkgDir </> fromUnrootedFilePath
+                        (prettyShow pkgId ++ "-" ++ hash ++ ".tar.gz")
+
+                copyFile path newPath
+
+                return (pkgName, newPath)
+
+    | otherwise =
+        return Map.empty
+
+elaborateSdistLocation :: [FilePath] -> Peu r (Map PackageIdentifier (Path Absolute))
+elaborateSdistLocation = fmap Map.fromList . traverse go where
+    go :: FilePath -> Peu r (PackageIdentifier, Path Absolute)
+    go fp = do
+        fp' <- makeAbsoluteFilePath fp
+        let fn = toUnrootedFilePath (takeFileName fp')
+        pid <- elaboratePkgId fn
+        return (pid, fp')
+
+    elaboratePkgId :: String -> Peu r PackageIdentifier
+    elaboratePkgId str = case stripSuffix ".tar.gz" str of
+        Nothing -> do
+            putError $ "tarball path doesn't end with .tar.gz -- " ++ str
+            exitFailure
+
+        Just pfx -> case eitherParsec pfx of
+            Right pkgId -> return pkgId
+            Left  err   -> putError err *> exitFailure
+
+    stripSuffix :: Eq a => [a] -> [a] -> Maybe [a]
+    stripSuffix sfx str = fmap reverse (stripPrefix (reverse sfx) (reverse str))
+
+calculateHash1 :: Path Absolute -> Peu r String
+calculateHash1 fp = do
+    content <- readLazyByteString fp
+    return $ fromUTF8BS $ Base16.encode $ SHA256.hashlazy content
 
 -------------------------------------------------------------------------------
 --  Hide
@@ -144,6 +220,7 @@ hideAction opts@Opts {..} ghcInfo = unless (null optDeps) $ do
                         { envPackages   = nubDeps $ envPackages env
                         , envTransitive = fromMaybe (envTransitive env) optTransitive
                         , envHidden     = sortNub $ envHidden env ++ [ pn | Dependency pn _ _ <- optDeps ]
+                        , envLocalPkgs  = envLocalPkgs env
                         , envPlan       = ()
                         }
 
@@ -164,14 +241,19 @@ installActionDo
     -> GhcInfo
     -> Peu r ()
 installActionDo opts@Opts {..} oldEnv ghcInfo = do
+    -- new environment with added local packages
+    locals <- getLocalPackages opts
+    let env = oldEnv { envLocalPkgs = Map.union locals (envLocalPkgs oldEnv) }
+
     let planInput :: PlanInput
         planInput = emptyPlanInput
             { piLibraries = Map.fromListWith intersectVersionRanges $
                 [ (pn, vr)
-                | Dependency pn vr _ <- envPackages oldEnv
+                | Dependency pn vr _ <- envPackages env
                 ]
             , piDryRun   = optDryRun
             , piCompiler = Just optCompiler
+            , piTarballs = Map.elems $ envLocalPkgs env
             }
 
     res <- ephemeralPlanJson' planInput
@@ -185,7 +267,7 @@ installActionDo opts@Opts {..} oldEnv ghcInfo = do
             return ()
 
         Just (planBS, plan) ->
-                generateEnvironment opts oldEnv ghcInfo plan planBS
+                generateEnvironment opts env ghcInfo plan planBS
 
 generateEnvironment
     :: Opts

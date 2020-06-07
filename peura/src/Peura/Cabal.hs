@@ -67,6 +67,7 @@ data PlanInput = PlanInput
     , piConstraints :: Map PackageName VersionRange
     , piAllowNewer  :: Map PackageIdentifier (Set PackageName)
     , piCompiler    :: Maybe FilePath
+    , piTarballs    :: [Path Absolute]
     , piDryRun      :: Bool
       -- ^ dry-run, whether only solve, or also build the dependencies.
     }
@@ -80,6 +81,7 @@ emptyPlanInput = PlanInput
     , piConstraints = Map.empty
     , piAllowNewer  = Map.empty
     , piCompiler    = Nothing
+    , piTarballs    = []
     , piDryRun      = True
     }
 
@@ -154,6 +156,9 @@ fakePackage pi = C.showFields (const [])
 cabalProject :: PlanInput -> String
 cabalProject pi = C.showFields (const []) $
     [ fi "packages" $ PP.text "."
+    ] ++
+    [ fi "packages" $ PP.text (toFilePath path)
+    | path <- piTarballs pi
     ] ++
     [ fi "constraints" $ PP.text "any." PP.<> C.pretty pn <+> C.pretty vr
     | (pn, vr) <- Map.toList (piConstraints pi)

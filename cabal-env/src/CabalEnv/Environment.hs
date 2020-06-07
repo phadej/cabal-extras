@@ -1,5 +1,8 @@
+{-# LANGUAGE DataKinds          #-}
 {-# LANGUAGE DeriveAnyClass     #-}
+{-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeApplications   #-}
 module CabalEnv.Environment (
     Environment (..),
     withEnvironment,
@@ -9,6 +12,7 @@ module CabalEnv.Environment (
 
 import Peura
 
+import Data.Generics.Lens.Lite       (field)
 import Distribution.Types.Dependency (Dependency (..))
 
 import qualified Cabal.Parse                     as Parse
@@ -22,9 +26,9 @@ import qualified Data.ByteString.Char8           as BS8
 import qualified Data.ByteString.Lazy            as LBS
 import qualified Data.ByteString.Lazy.Char8      as LBS8
 import qualified Data.List                       as L
+import qualified Data.Map.Strict                 as Map
 import qualified Distribution.CabalSpecVersion   as C
 import qualified Distribution.Compat.CharParsing as P
-import qualified Distribution.Compat.Lens        as C
 import qualified Distribution.Compat.Newtype     as C
 import qualified Distribution.FieldGrammar       as C
 import qualified Distribution.Fields             as C
@@ -39,21 +43,10 @@ data Environment plan = Environment
     { envPackages   :: [Dependency]
     , envHidden     :: [PackageName]
     , envTransitive :: Bool
+    , envLocalPkgs  :: Map PackageName (Path Absolute)
     , envPlan       :: plan
     }
-  deriving (Show)
-
-envPackagesL :: C.Lens' (Environment plan) [Dependency]
-envPackagesL f s = (\x -> s { envPackages = x }) <$> f (envPackages s)
-
-envHiddenL :: C.Lens' (Environment plan) [PackageName]
-envHiddenL f s = (\x -> s { envHidden = x }) <$> f (envHidden s)
-
-envTransitiveL :: C.Lens' (Environment plan) Bool
-envTransitiveL f s = (\x -> s { envTransitive = x }) <$> f (envTransitive s)
-
-envPlanL :: C.Lens' (Environment plan) plan
-envPlanL f s = (\x -> s { envPlan = x }) <$> f (envPlan s)
+  deriving (Show, Generic)
 
 -------------------------------------------------------------------------------
 -- Newtypes
@@ -80,6 +73,23 @@ chunks _ [] = []
 chunks n xs = case L.splitAt n xs of
     (ys, zs) -> ys : chunks n zs
 
+newtype LocalPkgs = LocalPkgs (Map PackageName (Path Absolute))
+  deriving anyclass (C.Newtype (Map PackageName (Path Absolute)))
+
+instance C.Parsec LocalPkgs where
+    parsec = fmap (LocalPkgs . Map.fromList) $ C.parsecLeadingCommaList $ do
+        pn <- C.parsec
+        P.spaces
+        C.FilePathNT path <- C.parsec
+        case fromAbsoluteFilePathMaybe path of
+            Just path' -> return (pn, path')
+            Nothing    -> P.unexpected $ "Not absolute path " ++ path
+
+instance C.Pretty LocalPkgs where
+    pretty (LocalPkgs m) = PP.vcat $ PP.punctuate PP.comma
+        [ C.pretty pn PP.<+> C.pretty (C.FilePathNT (toFilePath path))
+        | (pn, path) <- Map.toList m
+        ]
 -------------------------------------------------------------------------------
 -- Grammars
 -------------------------------------------------------------------------------
@@ -88,10 +98,11 @@ environmentGrammar
     :: (C.FieldGrammar g, Applicative (g (Environment BS.ByteString)))
     => g (Environment BS.ByteString) (Environment BS.ByteString)
 environmentGrammar = Environment
-    <$> C.uniqueFieldAla       "packages"   (C.alaList C.CommaVCat)  envPackagesL
-    <*> C.optionalFieldDefAla  "hidden"     (C.alaList C.CommaVCat)  envHiddenL      []
-    <*> C.booleanFieldDef      "transitive"                          envTransitiveL  False
-    <*> C.uniqueFieldAla       "plan"       BS64                     envPlanL
+    <$> C.uniqueFieldAla       "packages"   (C.alaList C.CommaVCat)  (field @"envPackages")
+    <*> C.optionalFieldDefAla  "hidden"     (C.alaList C.CommaVCat)  (field @"envHidden")     []
+    <*> C.booleanFieldDef      "transitive"                          (field @"envTransitive") False
+    <*> C.monoidalFieldAla     "local-pkgs" LocalPkgs                (field @"envLocalPkgs")
+    <*> C.uniqueFieldAla       "plan"       BS64                     (field @"envPlan")
 
 parseEnvironment
     :: [C.Field C.Position]

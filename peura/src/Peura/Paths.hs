@@ -8,6 +8,7 @@
 module Peura.Paths (
     module System.Path,
     makeAbsolute,
+    fromAbsoluteFilePathMaybe,
     root,
     -- * Directory
     getCurrentDirectory,
@@ -22,6 +23,7 @@ module Peura.Paths (
     removePathForcibly,
     canonicalizePath,
     getFileSize,
+    copyFile,
     -- * Symbolic links
     createFileLink,
     getSymbolicLinkTarget,
@@ -45,6 +47,11 @@ import qualified System.Path.IO   as P
 
 import Peura.Exports
 import Peura.Monad
+
+fromAbsoluteFilePathMaybe :: FilePath -> Maybe (Path Absolute)
+fromAbsoluteFilePathMaybe fp
+    | FP.isAbsolute fp = Just (P.fromAbsoluteFilePath fp)
+    | otherwise        = Nothing
 
 -------------------------------------------------------------------------------
 -- Directory
@@ -87,6 +94,9 @@ canonicalizePath = liftIO . fmap P.fromAbsoluteFilePath . D.canonicalizePath . t
 
 getFileSize :: Path Absolute -> Peu r Integer
 getFileSize = liftIO . D.getFileSize . toFilePath
+
+copyFile :: Path Absolute -> Path Absolute -> Peu r ()
+copyFile src tgt = liftIO $ D.copyFile (toFilePath src) (toFilePath tgt)
 
 -------------------------------------------------------------------------------
 -- Symbolic links
