@@ -46,7 +46,7 @@ main = do
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat
         [ O.fullDesc
         , O.progDesc "Check project or package deps"
-        , O.header "cabal-diff"
+        , O.header "cabal-deps"
         ]
 
     versionP = O.infoOption (showVersion version)
