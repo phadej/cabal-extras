@@ -35,6 +35,7 @@ library cabal-bundler-internal
     CabalBundler.NixSingle
     CabalBundler.NixSingle.Input
     CabalBundler.NixSingle.Template
+    CabalBundler.OpenBSD
 
   other-modules:      Paths_cabal_bundler
   autogen-modules:    Paths_cabal_bundler

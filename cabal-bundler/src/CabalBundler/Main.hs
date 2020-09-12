@@ -17,8 +17,9 @@ import qualified Options.Applicative  as O
 
 import Paths_cabal_bundler (version)
 
-import CabalBundler.NixSingle
 import CabalBundler.Curl
+import CabalBundler.NixSingle
+import CabalBundler.OpenBSD
 
 -------------------------------------------------------------------------------
 -- Main
@@ -60,6 +61,7 @@ main = runPeu () $ do
     rendered <- case optFormat opts of
         NixSingle -> generateDerivationNix pn exeName plan meta
         Curl      -> generateCurl          pn exeName plan meta
+        OpenBSD   -> generateOpenBSD       pn exeName plan meta
 
     case optOutput opts of
         Nothing -> output rendered
@@ -89,7 +91,7 @@ data Opts = Opts
     , optPlan      :: Maybe FsPath
     }
 
-data Format = NixSingle | Curl
+data Format = NixSingle | Curl | OpenBSD
 
 optsP :: O.Parser Opts
 optsP = Opts
@@ -100,6 +102,7 @@ optsP = Opts
     <*> optional (O.option (O.eitherReader $ return . fromFilePath) (O.short 'p' <> O.long "plan" <> O.metavar "PATH" <> O.help "Use plan.json provided"))
 
 formatP :: O.Parser Format
-formatP = nixSingle <|> curl <|> pure Curl where
+formatP = nixSingle <|> curl <|> openbsd <|> pure Curl where
     nixSingle = O.flag' NixSingle $ O.long "nix-single" <> O.help "Single nix derivation"
     curl      = O.flag' Curl      $ O.long "curl"       <> O.help "Curl script to download dependencies"
+    openbsd   = O.flag' OpenBSD   $ O.long "openbsd"    <> O.help "OpenBSD port manifest"
