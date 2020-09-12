@@ -20,6 +20,7 @@ import Paths_cabal_bundler (version)
 
 import CabalBundler.Curl
 import CabalBundler.NixSingle
+import CabalBundler.OpenBSD
 
 -------------------------------------------------------------------------------
 -- Main
@@ -60,8 +61,9 @@ main = do
         -- Generate derivation
 
         rendered <- case optFormat opts of
-            NixSingle -> generateDerivationNix pn exeName plan meta
-            Curl      -> generateCurl          pn exeName plan meta
+            NixSingle -> generateDerivationNix        pn exeName plan meta
+            Curl      -> generateCurl                 pn exeName plan meta
+            OpenBSD   -> generateOpenBSD       tracer pn exeName plan meta
 
         case optOutput opts of
             Nothing -> output tracer rendered
@@ -92,7 +94,7 @@ data Opts = Opts
     , optTracer    :: TracerOptions Void -> TracerOptions Void
     }
 
-data Format = NixSingle | Curl
+data Format = NixSingle | Curl | OpenBSD
 
 optsP :: O.Parser Opts
 optsP = Opts
@@ -104,6 +106,7 @@ optsP = Opts
     <*> tracerOptionsParser
 
 formatP :: O.Parser Format
-formatP = nixSingle <|> curl <|> pure Curl where
+formatP = nixSingle <|> curl <|> openbsd <|> pure Curl where
     nixSingle = O.flag' NixSingle $ O.long "nix-single" <> O.help "Single nix derivation"
     curl      = O.flag' Curl      $ O.long "curl"       <> O.help "Curl script to download dependencies"
+    openbsd   = O.flag' OpenBSD   $ O.long "openbsd"    <> O.help "OpenBSD port manifest (MODCABAL_MANIFEST variable)"

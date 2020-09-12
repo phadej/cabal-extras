@@ -1,0 +1,7 @@
+	Cabal	3.0.0.0	0	\
+	ansi-terminal	0.10.1	0	\
+	ansi-wl-pprint	0.6.9	2	\
+	cabal-fmt	0.1.1	0	\
+	colour	2.3.5	0	\
+	optparse-applicative	0.15.1.0	1	\
+	transformers-compat	0.6.5	0	\
