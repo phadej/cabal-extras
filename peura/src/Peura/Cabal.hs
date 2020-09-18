@@ -17,6 +17,8 @@ import Peura.Monad
 import Peura.Paths
 import Peura.Process
 import Peura.Temporary
+import Peura.Trace
+import Peura.Tracer
 
 import Text.PrettyPrint ((<+>))
 
@@ -90,11 +92,11 @@ emptyPlanInput = PlanInput
 -------------------------------------------------------------------------------
 
 -- | Solve for a ephemeral plan input.
-ephemeralPlanJson :: PlanInput -> Peu r (Maybe P.PlanJson)
-ephemeralPlanJson = fmap (fmap snd) . ephemeralPlanJson'
+ephemeralPlanJson :: Tracer (Peu r) (Trace w) -> PlanInput -> Peu r (Maybe P.PlanJson)
+ephemeralPlanJson tracer = fmap (fmap snd) . ephemeralPlanJson' tracer
 
-ephemeralPlanJson' :: PlanInput -> Peu r (Maybe (ByteString, P.PlanJson))
-ephemeralPlanJson' pi = do
+ephemeralPlanJson' :: Tracer (Peu r) (Trace w) -> PlanInput -> Peu r (Maybe (ByteString, P.PlanJson))
+ephemeralPlanJson' tracer pi = do
     let cabalFile :: String
         cabalFile = fakePackage pi
 
@@ -105,7 +107,7 @@ ephemeralPlanJson' pi = do
         writeByteString (tmpDir </> fromUnrootedFilePath "fake-package.cabal") $ toUTF8BS cabalFile
         writeByteString (tmpDir </> fromUnrootedFilePath "cabal.project") $ toUTF8BS projectFile
 
-        ec <- runProcessOutput tmpDir "cabal" $
+        ec <- runProcessOutput tracer tmpDir "cabal" $
             ["v2-build", "all", "--builddir=dist-newstyle"] ++ ["--dry-run" | piDryRun pi ]
 
         case ec of
@@ -115,10 +117,8 @@ ephemeralPlanJson' pi = do
                 planPath' <- makeAbsoluteFilePath planPath
                 planBS    <- readByteString planPath'
                 plan      <- case A.eitherDecodeStrict' planBS of
-                    Right x -> return x
-                    Left err -> do
-                        putError $ "Cannot parse plan.json: " ++ err
-                        exitFailure
+                    Right x  -> return x
+                    Left err -> die tracer $ "Cannot parse plan.json: " ++ err
 
                 return $ Just (planBS, plan)
 

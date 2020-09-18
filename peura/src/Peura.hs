@@ -20,5 +20,6 @@ import Peura.Paths      as A
 import Peura.Process    as A
 import Peura.Serialise  as A
 import Peura.Temporary  as A
+import Peura.Tracer     as A
 
 import Peura.Orphans ()

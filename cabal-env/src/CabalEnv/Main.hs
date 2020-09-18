@@ -31,19 +31,20 @@ import qualified Cabal.Config as Config
 import qualified Cabal.Plan   as Plan
 
 import CabalEnv.Environment
+import CabalEnv.Warning
 
 import Paths_cabal_env (version)
 
 main :: IO ()
-main = runPeu () $ do
+main = runPeu () $ \tracer -> do
     opts <- liftIO $ O.execParser optsP'
-    ghcInfo <- getGhcInfo (optCompiler opts)
+    ghcInfo <- getGhcInfo tracer (optCompiler opts)
 
     case optAction opts of
-        ActionInstall -> installAction opts ghcInfo
-        ActionShow    -> showAction opts ghcInfo
-        ActionList    -> listAction opts ghcInfo
-        ActionHide    -> hideAction opts ghcInfo
+        ActionInstall -> installAction tracer opts ghcInfo
+        ActionShow    -> showAction    tracer opts ghcInfo
+        ActionList    -> listAction    tracer opts ghcInfo
+        ActionHide    -> hideAction    tracer opts ghcInfo
   where
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat
         [ O.fullDesc
@@ -58,23 +59,23 @@ main = runPeu () $ do
 -- List
 -------------------------------------------------------------------------------
 
-listAction :: Opts -> GhcInfo -> Peu r ()
-listAction Opts {..} ghcInfo = do
+listAction :: TracerPeu r W -> Opts -> GhcInfo -> Peu r ()
+listAction tracer Opts {..} ghcInfo = do
     let envDir = ghcEnvDir ghcInfo
-    when optVerbose $ putInfo $ "Environments available in " ++ toFilePath envDir
+    when optVerbose $ putInfo tracer $ "Environments available in " ++ toFilePath envDir
     fs <- listDirectory envDir
     for_ (sort fs) $ \f ->
-        putInfo $ toUnrootedFilePath f ++ if optVerbose then " " ++ toFilePath (envDir </> f) else ""
+        putInfo tracer $ toUnrootedFilePath f ++ if optVerbose then " " ++ toFilePath (envDir </> f) else ""
 
 -------------------------------------------------------------------------------
 -- Show
 -------------------------------------------------------------------------------
 
-showAction :: Opts -> GhcInfo -> Peu r ()
-showAction Opts {..} ghcInfo = do
+showAction :: TracerPeu r W -> Opts -> GhcInfo -> Peu r ()
+showAction tracer Opts {..} ghcInfo = do
     let envPath = ghcEnvDir ghcInfo </> fromUnrootedFilePath optEnvName
-    withEnvironment envPath $ \env -> do
-        when optVerbose $ putInfo $ "Packages in " ++ optEnvName ++ " environment " ++ toFilePath envPath
+    withEnvironment tracer envPath $ \env -> do
+        when optVerbose $ putInfo tracer $ "Packages in " ++ optEnvName ++ " environment " ++ toFilePath envPath
 
         let depsPkgNames :: Set PackageName
             depsPkgNames = Set.fromList
@@ -88,21 +89,21 @@ showAction Opts {..} ghcInfo = do
             let shown = (envTransitive env || Set.member pkgName depsPkgNames || pkgName == mkPackageName "base")
                     && pkgName `notElem` envHidden env
 
-            output $ prettyShow pkgId ++ if shown then "" else " (hidden)"
+            output tracer $ prettyShow pkgId ++ if shown then "" else " (hidden)"
 
 -------------------------------------------------------------------------------
 -- Install
 -------------------------------------------------------------------------------
 
-installAction :: Opts -> GhcInfo -> Peu r ()
-installAction opts@Opts {..} ghcInfo = unless (null optDeps) $ do
+installAction :: TracerPeu r W -> Opts -> GhcInfo -> Peu r ()
+installAction tracer opts@Opts {..} ghcInfo = unless (null optDeps) $ do
     let envDir = ghcEnvDir ghcInfo
-    putDebug $ "GHC environment directory: " ++ toFilePath envDir
+    putDebug tracer $ "GHC environment directory: " ++ toFilePath envDir
 
     createDirectoryIfMissing True envDir
-    withEnvironmentMaybe (envDir </> fromUnrootedFilePath optEnvName) $ \menv ->
+    withEnvironmentMaybe tracer (envDir </> fromUnrootedFilePath optEnvName) $ \menv ->
         case menv of
-            Nothing  -> installActionDo opts
+            Nothing  -> installActionDo tracer opts
                 (Environment optDeps [] (fromMaybe defaultTransitive optTransitive) Map.empty ())
                 ghcInfo
             Just env -> do
@@ -117,9 +118,9 @@ installAction opts@Opts {..} ghcInfo = unless (null optDeps) $ do
                         }
                 if all (inThePlan plan) (envPackages oldEnv)
                 then do
-                    putDebug "Everything in plan, regenerating environment file"
-                    generateEnvironment opts oldEnv ghcInfo plan planBS
-                else installActionDo opts oldEnv ghcInfo
+                    putDebug tracer "Everything in plan, regenerating environment file"
+                    generateEnvironment tracer opts oldEnv ghcInfo plan planBS
+                else installActionDo tracer opts oldEnv ghcInfo
 
 inThePlan :: Plan.PlanJson -> Dependency -> Bool
 inThePlan plan (Dependency pn range _) = case Map.lookup pn pkgIds of
@@ -132,10 +133,10 @@ inThePlan plan (Dependency pn range _) = case Map.lookup pn pkgIds of
 -- Local packages
 -------------------------------------------------------------------------------
 
-getLocalPackages :: Opts -> Peu r (Map PackageName (Path Absolute))
-getLocalPackages Opts {..}
+getLocalPackages :: TracerPeu r W -> Opts -> Peu r (Map PackageName (Path Absolute))
+getLocalPackages tracer Opts {..}
     | optLocal = do
-        putInfo "SDisting local packages"
+        putInfo tracer "SDisting local packages"
         cwd <- getCurrentDirectory
 
         withSystemTempDirectory "cabal-env" $ \dir -> do
@@ -149,7 +150,7 @@ getLocalPackages Opts {..}
             createDirectoryIfMissing True localPkgDir
 
             -- 1. we sdist all, using empty --builddir
-            _ <- runProcessCheck cwd "cabal"
+            _ <- runProcessCheck tracer cwd "cabal"
                 [ "sdist"
                 , "--builddir=" ++ toFilePath (dir </> fromUnrootedFilePath "dist-newstyle")
                 , "all"
@@ -157,7 +158,7 @@ getLocalPackages Opts {..}
 
             -- 2. then we look for all packages in that directory.
             res  <- liftIO $ glob (toFilePath dir ++ "/dist-newstyle/sdist/*.tar.gz")
-            tarballs <- elaborateSdistLocation res
+            tarballs <- elaborateSdistLocation tracer res
 
             -- 3. We copy files to ~/.cabal/local-pkgs
             -- Naming them as pkgid-contenthash.tar.gz
@@ -173,8 +174,8 @@ getLocalPackages Opts {..}
     | otherwise =
         return Map.empty
 
-elaborateSdistLocation :: [FilePath] -> Peu r (Map PackageIdentifier (Path Absolute))
-elaborateSdistLocation = fmap Map.fromList . traverse go where
+elaborateSdistLocation :: forall r. TracerPeu r W -> [FilePath] -> Peu r (Map PackageIdentifier (Path Absolute))
+elaborateSdistLocation tracer = fmap Map.fromList . traverse go where
     go :: FilePath -> Peu r (PackageIdentifier, Path Absolute)
     go fp = do
         fp' <- makeAbsoluteFilePath fp
@@ -185,12 +186,12 @@ elaborateSdistLocation = fmap Map.fromList . traverse go where
     elaboratePkgId :: String -> Peu r PackageIdentifier
     elaboratePkgId str = case stripSuffix ".tar.gz" str of
         Nothing -> do
-            putError $ "tarball path doesn't end with .tar.gz -- " ++ str
+            putError tracer $ "tarball path doesn't end with .tar.gz -- " ++ str
             exitFailure
 
         Just pfx -> case eitherParsec pfx of
             Right pkgId -> return pkgId
-            Left  err   -> putError err *> exitFailure
+            Left  err   -> die tracer err
 
     stripSuffix :: Eq a => [a] -> [a] -> Maybe [a]
     stripSuffix sfx str = fmap reverse (stripPrefix (reverse sfx) (reverse str))
@@ -204,13 +205,13 @@ calculateHash1 fp = do
 --  Hide
 -------------------------------------------------------------------------------
 
-hideAction :: Opts -> GhcInfo -> Peu r ()
-hideAction opts@Opts {..} ghcInfo = unless (null optDeps) $ do
+hideAction :: TracerPeu r W -> Opts -> GhcInfo -> Peu r ()
+hideAction tracer opts@Opts {..} ghcInfo = unless (null optDeps) $ do
     let envDir = ghcEnvDir ghcInfo
-    putDebug $ "GHC environment directory: " ++ toFilePath envDir
+    putDebug tracer $ "GHC environment directory: " ++ toFilePath envDir
 
     createDirectoryIfMissing True envDir
-    withEnvironmentMaybe (envDir </> fromUnrootedFilePath optEnvName) $ \menv ->
+    withEnvironmentMaybe tracer (envDir </> fromUnrootedFilePath optEnvName) $ \menv ->
         case menv of
             Nothing  -> return ()
             Just env -> do
@@ -226,23 +227,23 @@ hideAction opts@Opts {..} ghcInfo = unless (null optDeps) $ do
 
                 if all (inThePlan plan) (envPackages oldEnv)
                 then do
-                    putDebug "Everything in plan, regenerating environment file"
-                    generateEnvironment opts oldEnv ghcInfo plan planBS
-                else installActionDo opts oldEnv ghcInfo
-
+                    putDebug tracer "Everything in plan, regenerating environment file"
+                    generateEnvironment tracer opts oldEnv ghcInfo plan planBS
+                else installActionDo tracer opts oldEnv ghcInfo
 
 -------------------------------------------------------------------------------
 -- Environment generation
 -------------------------------------------------------------------------------
 
 installActionDo
-    :: Opts
+    :: TracerPeu r W
+    -> Opts
     -> Environment () -- ^ old environment
     -> GhcInfo
     -> Peu r ()
-installActionDo opts@Opts {..} oldEnv ghcInfo = do
+installActionDo tracer opts@Opts {..} oldEnv ghcInfo = do
     -- new environment with added local packages
-    locals <- getLocalPackages opts
+    locals <- getLocalPackages tracer opts
     let env = oldEnv { envLocalPkgs = Map.union locals (envLocalPkgs oldEnv) }
 
     let planInput :: PlanInput
@@ -256,27 +257,28 @@ installActionDo opts@Opts {..} oldEnv ghcInfo = do
             , piTarballs = Map.elems $ envLocalPkgs env
             }
 
-    res <- ephemeralPlanJson' planInput
+    res <- ephemeralPlanJson' tracer planInput
     case res of
         Nothing -> do
-            putError "ERROR: cabal v2-build failed"
-            putError "This is might be due inconsistent dependencies (delete package env file, or try -a) or something else"
+            putError tracer "ERROR: cabal v2-build failed"
+            putError tracer "This is might be due inconsistent dependencies (delete package env file, or try -a) or something else"
             exitFailure
 
         Just _ | optDryRun ->
             return ()
 
         Just (planBS, plan) ->
-                generateEnvironment opts env ghcInfo plan planBS
+                generateEnvironment tracer opts env ghcInfo plan planBS
 
 generateEnvironment
-    :: Opts
+    :: TracerPeu r W
+    -> Opts
     -> Environment ()
     -> GhcInfo
     -> Plan.PlanJson
     -> ByteString
     -> Peu r ()
-generateEnvironment Opts {..} env ghcInfo plan planBS = do
+generateEnvironment tracer Opts {..} env ghcInfo plan planBS = do
     let units = Plan.pjUnits plan
 
     -- https://github.com/haskell/cabal/issues/6407
@@ -328,8 +330,8 @@ generateEnvironment Opts {..} env ghcInfo plan planBS = do
     let newEnvFileContents  :: String
         newEnvFileContents = unlines envFileLines
 
-    putDebug "writing environment file"
-    when optVerbose $ outputErr newEnvFileContents
+    putDebug tracer "writing environment file"
+    when optVerbose $ outputErr tracer newEnvFileContents
 
     writeByteString (ghcEnvDir ghcInfo </> fromUnrootedFilePath optEnvName) (toUTF8BS newEnvFileContents)
 

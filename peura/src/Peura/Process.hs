@@ -5,15 +5,17 @@ module Peura.Process (
     runProcess,
     runProcessCheck,
     runProcessOutput,
+    TraceProcess (..),
     ) where
 
+import Data.IORef (IORef, atomicModifyIORef', newIORef)
 import Control.Concurrent.Async (wait, withAsync)
 import Foreign.C.Error          (Errno (..), ePIPE)
 import System.Clock
-       (Clock (Monotonic), TimeSpec (TimeSpec), diffTimeSpec, getTime)
+       (Clock (Monotonic), TimeSpec, diffTimeSpec, getTime)
 import System.IO                (Handle, hClose)
+import System.IO.Unsafe (unsafePerformIO)
 import System.Process           (cwd, proc)
-import Text.Printf              (printf)
 
 import qualified Control.Exception             as E
 import qualified Data.ByteString               as BS
@@ -25,16 +27,28 @@ import qualified System.Process                as Proc
 import Peura.Exports
 import Peura.Monad
 import Peura.Paths
+import Peura.Tracer
+import Peura.Trace
+
+pidRef :: IORef TracePID
+pidRef = unsafePerformIO (newIORef 0)
+{-# NOINLINE pidRef #-}
+
+newPid :: Peu r TracePID
+newPid = liftIO $ atomicModifyIORef' pidRef $ \pid -> (pid + 1, pid)
 
 runProcess
-    :: Path Absolute -- ^ Working directory
+    :: TracerPeu r w
+    -> Path Absolute -- ^ Working directory
     -> String        -- ^ Command
     -> [String]      -- ^ Arguments
     -> ByteString    -- ^ Stdin
     -> Peu r (ExitCode, LazyByteString, LazyByteString)
-runProcess cwd' cmd args stdin = do
-    putDebug $ "runProcess " ++ unwords (("cwd=" ++ toFilePath cwd') : cmd : args)
-    runProcessImpl p stdin
+runProcess tracer cwd' cmd args stdin = do
+    pid <- newPid
+    let tracer' = contramap (TraceProcess pid) tracer
+    traceWith tracer' (TraceProcessStart cwd' cmd args)
+    runProcessImpl tracer' p stdin
   where
     p0 = proc cmd args
     p  = p0
@@ -43,31 +57,36 @@ runProcess cwd' cmd args stdin = do
 
 -- | 'runProcess', but check the exitcode and return stdin.
 runProcessCheck
-    :: Path Absolute -- ^ Working directory
+    :: TracerPeu r w
+    -> Path Absolute -- ^ Working directory
     -> String        -- ^ Command
     -> [String]      -- ^ Arguments
     -> Peu r LazyByteString
-runProcessCheck cwd' cmd args = do
-    (ec, out, err) <- runProcess cwd' cmd args mempty
+runProcessCheck tracer cwd' cmd args = do
+    (ec, out, err) <- runProcess tracer cwd' cmd args mempty
     case ec of
         ExitSuccess   -> return out
         ExitFailure c -> do
-            putError $ "ExitFailure " ++ show c
-            putError "stdout"
-            output out
-            putError "stderr"
-            output err
+            -- TODO: special trace
+            putError tracer $ "ExitFailure " ++ show c
+            putError tracer "stdout"
+            output tracer out
+            putError tracer "stderr"
+            output tracer err
             exitFailure
 
 -- | 'runProcess' but stream the output directly to the output.
 runProcessOutput
-    :: Path Absolute -- ^ Working directory
+    :: TracerPeu r w
+    -> Path Absolute -- ^ Working directory
     -> String        -- ^ Command
     -> [String]      -- ^ Arguments
     -> Peu r ExitCode
-runProcessOutput cwd' cmd args = do
-    putDebug $ "runProcessOutput " ++ unwords (("cwd=" ++ toFilePath cwd') : cmd : args)
-    runProcessOutputImpl p
+runProcessOutput tracer cwd' cmd args = do
+    pid <- newPid
+    let tracer' = contramap (TraceProcess pid) tracer
+    traceWith tracer' (TraceProcessStart cwd' cmd args)
+    runProcessOutputImpl tracer' p
   where
     p0 = proc cmd args
     p  = p0
@@ -79,10 +98,11 @@ runProcessOutput cwd' cmd args = do
 -------------------------------------------------------------------------------
 
 runProcessImpl
-    :: Proc.CreateProcess
+    :: Tracer (Peu r) TraceProcess
+    -> Proc.CreateProcess
     -> ByteString
     -> Peu r (ExitCode, LazyByteString, LazyByteString)
-runProcessImpl cp input = withRunInIO $ \runInIO -> do
+runProcessImpl tracer cp input = withRunInIO $ \runInIO -> do
     startTime <- getTime Monotonic
     Proc.withCreateProcess cp' $ \mi mo me ph -> case (mi, mo, me) of
         (Just inh, Just outh, Just errh) ->
@@ -101,8 +121,7 @@ runProcessImpl cp input = withRunInIO $ \runInIO -> do
                 ec <- Proc.waitForProcess ph
 
                 endTime <- getTime Monotonic
-                runInIO $ displayRunTime startTime endTime
-
+                runInIO $ displayRunTime tracer startTime endTime
 
                 return (ec, out, err)
 
@@ -119,15 +138,16 @@ runProcessImpl cp input = withRunInIO $ \runInIO -> do
         }
 
 runProcessOutputImpl
-    :: Proc.CreateProcess
+    :: Tracer (Peu r) TraceProcess
+    -> Proc.CreateProcess
     -> Peu r ExitCode
-runProcessOutputImpl cp = withRunInIO $ \runInIO -> do
+runProcessOutputImpl tracer cp = withRunInIO $ \runInIO -> do
     startTime <- getTime Monotonic
     Proc.withCreateProcess cp' $ \_ _ _ ph -> do
         ec <- Proc.waitForProcess ph
 
         endTime <- getTime Monotonic
-        runInIO $ displayRunTime startTime endTime
+        runInIO $ displayRunTime tracer startTime endTime
 
         return ec
   where
@@ -142,14 +162,9 @@ runProcessOutputImpl cp = withRunInIO $ \runInIO -> do
 -- Helpers
 -------------------------------------------------------------------------------
 
-displayRunTime :: TimeSpec -> TimeSpec -> Peu r ()
-displayRunTime start end = do
-    let TimeSpec s ns = diffTimeSpec end start
-    let durr = fromIntegral s + fromIntegral ns / 1e9 :: Double
-
-    if durr > 10
-    then putDebug $ printf "Process run for %.03f seconds" durr
-    else return ()
+displayRunTime :: Tracer m TraceProcess -> TimeSpec -> TimeSpec -> m ()
+displayRunTime tracer start end = do
+    traceWith tracer (TraceProcessRunTime (diffTimeSpec end start))
 
 ignoreSigPipe :: IO () -> IO ()
 ignoreSigPipe = E.handle $ \e -> case e of

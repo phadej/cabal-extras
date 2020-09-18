@@ -41,7 +41,7 @@ import Paths_cabal_deps (version)
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    runPeu () $ doDeps opts
+    runPeu () $ \tracer -> doDeps tracer opts
   where
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat
         [ O.fullDesc
@@ -86,37 +86,37 @@ actionP = builddirP <|> cabalP where
 --
 -------------------------------------------------------------------------------
 
-doDeps :: Opts -> Peu r ()
-doDeps opts = do
-    putInfo "Reading Hackage metadata"
+doDeps :: TracerPeu r W -> Opts -> Peu r ()
+doDeps tracer opts = do
+    putInfo tracer "Reading Hackage metadata"
     meta <- liftIO I.cachedHackageMetadata
 
     case optAction opts of
-        ActionCabal []     -> doPlanDeps meta (optExclude opts) (P.ProjectRelativeToDir ".")
-        ActionCabal (x:xs) -> doGpdDeps  meta (optExclude opts) (x :| xs)
+        ActionCabal []     -> doPlanDeps tracer meta (optExclude opts) (P.ProjectRelativeToDir ".")
+        ActionCabal (x:xs) -> doGpdDeps  tracer meta (optExclude opts) (x :| xs)
         ActionBuilddir p   -> do
             p' <- makeAbsolute p
-            doPlanDeps meta (optExclude opts) (P.InBuildDir (toFilePath p'))
+            doPlanDeps tracer meta (optExclude opts) (P.InBuildDir (toFilePath p'))
 
 -------------------------------------------------------------------------------
 -- Check GPD
 -------------------------------------------------------------------------------
 
-doGpdDeps :: Map PackageName I.PackageInfo -> Set PackageName -> NonEmpty FsPath -> Peu r ()
-doGpdDeps meta excl fps = do
+doGpdDeps :: TracerPeu r W -> Map PackageName I.PackageInfo -> Set PackageName -> NonEmpty FsPath -> Peu r ()
+doGpdDeps tracer meta excl fps = do
     gpds <- for fps $ \fp -> do
         fp' <- makeAbsolute fp
         liftIO $ Pkg.readPackage $ toFilePath fp'
 
     for_ gpds $ \gpd ->
-        checkGpd meta excl gpd
+        checkGpd tracer meta excl gpd
 
     -- TODO: use exitCode to indicate
 
 -- TODO: return True or False if fine or not.
 
-checkGpd :: Map PackageName I.PackageInfo -> Set PackageName -> C.GenericPackageDescription -> Peu r ()
-checkGpd meta excl gpd = do
+checkGpd :: TracerPeu r W -> Map PackageName I.PackageInfo -> Set PackageName -> C.GenericPackageDescription -> Peu r ()
+checkGpd tracer meta excl gpd = do
     let PackageIdentifier packageName _ = C.package (C.packageDescription gpd)
 
     let comps :: Map C.ComponentName (C.CondTree C.ConfVar () C.BuildInfo)
@@ -144,14 +144,14 @@ checkGpd meta excl gpd = do
         setup = C.setupBuildInfo $ C.packageDescription gpd
 
     for_ setup $ \s ->
-        checkDepMap meta (C.prettyShow packageName ++ ":setup") $ DepMap $ Map.fromListWith C.intersectVersionRanges
+        checkDepMap tracer meta (C.prettyShow packageName ++ ":setup") $ DepMap $ Map.fromListWith C.intersectVersionRanges
             [ (pn, vr)
             | C.Dependency pn vr _ <- C.setupDepends s
             , Set.notMember pn excl
             ]
 
     ifor_ comps $ \n c ->
-        checkDepMap meta (C.prettyShow packageName ++ ":" ++ C.prettyShow n) (condTreeToDepMap excl c)
+        checkDepMap tracer meta (C.prettyShow packageName ++ ":" ++ C.prettyShow n) (condTreeToDepMap excl c)
 
 --    ifor_ comps $ \n c -> do
 --        output (show n)
@@ -172,20 +172,20 @@ instance Monoid DepMap where
 unionDepMap :: DepMap -> DepMap -> DepMap
 unionDepMap (DepMap a) (DepMap b) = DepMap (Map.unionWith C.unionVersionRanges a b)
 
-checkDepMap :: Map PackageName I.PackageInfo -> String -> DepMap -> Peu r ()
-checkDepMap meta cname (DepMap depMap) =
+checkDepMap :: TracerPeu r W -> Map PackageName I.PackageInfo -> String -> DepMap -> Peu r ()
+checkDepMap tracer meta cname (DepMap depMap) =
     ifor_ depMap $ \pn vr -> case Map.lookup pn meta of
-        Nothing -> putWarning WNotOnHackage $ cname ++ " depends on " ++ C.prettyShow pn ++ ", which is not on Hackage"
+        Nothing -> putWarning tracer WNotOnHackage $ cname ++ " depends on " ++ C.prettyShow pn ++ ", which is not on Hackage"
         Just pi -> case Map.lookupMax (I.piPreferredVersions pi) of
             Nothing       ->
-                putWarning WNoPreferredVersions $ C.prettyShow pn ++ " doesn't have preferred versions"
+                putWarning tracer WNoPreferredVersions $ C.prettyShow pn ++ " doesn't have preferred versions"
             Just (ver, _)
                 | C.withinRange ver vr ->
                     -- putDebug $ C.prettyShow pn ++ " is latest version"
                     return ()
-                | lessThanLowerBound ver (vrLowerBound vr) -> putWarning WNotOnHackage $
+                | lessThanLowerBound ver (vrLowerBound vr) -> putWarning tracer WNotOnHackage $
                     cname ++ " depends on " ++ C.prettyShow pn ++ " " ++ C.prettyShow vr ++ "; latest on Hackage " ++ C.prettyShow ver
-                | otherwise -> putWarning WNotLatest $
+                | otherwise -> putWarning tracer WNotLatest $
                     cname ++ " doesn't accept " ++ C.prettyShow (PackageIdentifier pn ver)
                     ++ "; depends " ++ C.prettyShow vr
 
@@ -240,9 +240,9 @@ lessThanLowerBound v (C.LowerBound v' C.ExclusiveBound) = v <= v'
 -- Check plan
 -------------------------------------------------------------------------------
 
-doPlanDeps :: Map PackageName I.PackageInfo -> Set PackageName -> P.SearchPlanJson -> Peu r ()
-doPlanDeps meta excl search = do
-    putInfo "Reading plan.json for current project"
+doPlanDeps :: TracerPeu r W -> Map PackageName I.PackageInfo -> Set PackageName -> P.SearchPlanJson -> Peu r ()
+doPlanDeps tracer meta excl search = do
+    putInfo tracer "Reading plan.json for current project"
     plan <- liftIO $ P.findAndDecodePlanJson search
 
     let pkgIds :: Set C.PackageIdentifier
@@ -254,32 +254,32 @@ doPlanDeps meta excl search = do
             ]
 
     for_ pkgIds $ \pkgId@(PackageIdentifier pn _) ->
-        unless (Set.member pn excl) $ checkPlan meta pkgId
+        unless (Set.member pn excl) $ checkPlan tracer meta pkgId
 
     -- TODO: use exitCode to indicate
 
 -- TODO: return True or False if fine or not.
 checkPlan
-    :: Map PackageName I.PackageInfo
+    :: TracerPeu r W
+    -> Map PackageName I.PackageInfo
     -> C.PackageIdentifier
     -> Peu r ()
-checkPlan meta pid@(C.PackageIdentifier pn ver) =
+checkPlan tracer meta pid@(C.PackageIdentifier pn ver) =
     case Map.lookup pn meta of
-        Nothing -> putWarning WNotOnHackage $ C.prettyShow pn ++ " is not on Hackage"
+        Nothing -> putWarning tracer WNotOnHackage $ C.prettyShow pn ++ " is not on Hackage"
         Just pi -> case Map.lookupMax (I.piPreferredVersions pi) of
             Nothing        ->
-                putWarning WNoPreferredVersions $ C.prettyShow pn ++ " doesn't have preferred versions"
+                putWarning tracer WNoPreferredVersions $ C.prettyShow pn ++ " doesn't have preferred versions"
             Just (ver', _)
                 | ver == ver' ->
                     -- putDebug $ C.prettyShow pid ++ " is latest version"
                     return ()
-                | ver <  ver' -> putWarning WNotLatest $
+                | ver <  ver' -> putWarning tracer WNotLatest $
                     C.prettyShow pn ++ " doesn't use latest version"
                     ++ "; latest " ++ C.prettyShow ver'
                     ++ "; used " ++ C.prettyShow ver
-                | otherwise   -> putWarning WNotOnHackage $
+                | otherwise   -> putWarning tracer WNotOnHackage $
                     C.prettyShow pid ++ " is not on Hackage"
-
 
 -------------------------------------------------------------------------------
 -- Warnings

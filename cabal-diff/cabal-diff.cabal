@@ -65,7 +65,7 @@ library cabal-diff-internal
     , optparse-applicative   ^>=0.15.1.0
     , semialign              ^>=1.1
     , stm
-    , these                  ^>=1
+    , these                  ^>=1.1.1.1
 
 executable cabal-diff
   default-language: Haskell2010

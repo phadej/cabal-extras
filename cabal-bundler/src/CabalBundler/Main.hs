@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module CabalBundler.Main (main) where
 
 import Peura
@@ -25,7 +26,7 @@ import CabalBundler.Curl
 -------------------------------------------------------------------------------
 
 main :: IO ()
-main = runPeu () $ do
+main = runPeu () $ \(tracer :: TracerPeu () Void) -> do
     opts <- liftIO $ O.execParser optsP'
 
     meta <- liftIO I.cachedHackageMetadata
@@ -44,15 +45,13 @@ main = runPeu () $ do
             liftIO $ P.decodePlanJson (toFilePath planPath')
 
         Nothing -> do
-            mplan <- ephemeralPlanJson $ emptyPlanInput
+            mplan <- ephemeralPlanJson tracer $ emptyPlanInput
                 { piExecutables = M.singleton pn (C.thisVersion ver, S.singleton exeName)
                 , piCompiler = Just (optCompiler opts)
                 }
 
             case mplan of
-                Nothing -> do
-                    putError $ "Cannot find an install plan for " ++ prettyShow pid
-                    exitFailure
+                Nothing   -> die tracer $ "Cannot find an install plan for " ++ prettyShow pid
                 Just plan -> return plan
 
     -- Generate derivation
@@ -62,7 +61,7 @@ main = runPeu () $ do
         Curl      -> generateCurl          pn exeName plan meta
 
     case optOutput opts of
-        Nothing -> output rendered
+        Nothing -> output tracer rendered
         Just fp -> do
             fp' <- makeAbsolute fp
             writeByteString fp' (toUTF8BS rendered)

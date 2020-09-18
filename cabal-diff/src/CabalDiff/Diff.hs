@@ -8,12 +8,9 @@ import Peura
 import Prelude ()
 
 import Data.Align              (alignWith)
-import Data.These              (These (..))
 import Distribution.ModuleName (ModuleName)
 import System.Console.ANSI
-       (Color (..), ConsoleLayer (Foreground), ColorIntensity(Vivid), SGR (..))
-
-import qualified Data.ByteString as BS
+       (Color (..), ColorIntensity (Vivid), ConsoleLayer (Foreground), SGR (..))
 
 import CabalDiff.Hoogle
 
@@ -42,34 +39,34 @@ apiDiff = alignWith $ \m' -> case m' of
         | a == b    = Same a
         | otherwise = Changed a b
 
-outputApiDiff :: Map ModuleName (Map Key Diff) -> Peu r ()
-outputApiDiff ad = withSetSgrCode $ \setSgrCode -> do
-    let colored c s = setSgrCode [SetColor Foreground Vivid c] ++ s ++ setSgrCode []
+outputApiDiff :: TracerPeu r w -> Map ModuleName (Map Key Diff) -> Peu r ()
+outputApiDiff tracer ad = do
+    let colored c = [SetColor Foreground Vivid c]
     ifor_ ad $ \moduleName moduleDiff ->
         if all isSame moduleDiff
-        then output $ "    " ++ prettyShow moduleName
+        then output tracer $ "    " ++ prettyShow moduleName
         else do
-            output $ colored Cyan "@@@" ++ " " ++ prettyShow moduleName
+            outputSgr tracer (colored Cyan) $ "@@@" ++ " " ++ prettyShow moduleName
             ifor_ moduleDiff $ \key change -> case change of
                 Same _rest   -> return ()
-                Added rest   -> output $ colored Green $ "++ " ++ renderKey key rest
-                Removed rest -> output $ colored Red   $ "-- " ++ renderKey key rest
+                Added rest   -> outputSgr tracer (colored Green) $ "++ " ++ renderKey key rest
+                Removed rest -> outputSgr tracer (colored Red)   $ "-- " ++ renderKey key rest
                 Changed a b  -> do
-                                output $ colored Blue    $ " - " ++ renderKey key a
-                                output $ colored Yellow  $ " + " ++ renderKey key b
+                                outputSgr tracer (colored Blue)    $ " - " ++ renderKey key a
+                                outputSgr tracer (colored Yellow)  $ " + " ++ renderKey key b
 
 -------------------------------------------------------------------------------
 -- Test examples
 -------------------------------------------------------------------------------
 
-_test1 :: IO ()
-_test1 = runPeu () $ do
-    a <- liftIO $ BS.readFile "fixtures/colour-2.3.4.txt" >>= either fail return . parseFile
-    b <- liftIO $ BS.readFile "fixtures/colour-2.3.5.txt" >>= either fail return . parseFile
-    outputApiDiff (apiDiff a b)
-
-_test2 :: IO ()
-_test2 = runPeu () $ do
-    a <- liftIO $ BS.readFile "fixtures/optics-core.txt" >>= either fail return . parseFile
-    b <- liftIO $ BS.readFile "fixtures/servant.txt" >>= either fail return . parseFile
-    outputApiDiff (apiDiff a b)
+-- _test1 :: IO ()
+-- _test1 = runPeu () $ do
+--     a <- liftIO $ BS.readFile "fixtures/colour-2.3.4.txt" >>= either fail return . parseFile
+--     b <- liftIO $ BS.readFile "fixtures/colour-2.3.5.txt" >>= either fail return . parseFile
+--     outputApiDiff (let x = x in x) (apiDiff a b)
+--
+-- _test2 :: IO ()
+-- _test2 = runPeu () $ do
+--     a <- liftIO $ BS.readFile "fixtures/optics-core.txt" >>= either fail return . parseFile
+--     b <- liftIO $ BS.readFile "fixtures/servant.txt" >>= either fail return . parseFile
+--     outputApiDiff (let x = x in x) (apiDiff a b)
