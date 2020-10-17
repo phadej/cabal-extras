@@ -18,8 +18,11 @@ import Peura.Glob       as A
 import Peura.Monad      as A
 import Peura.Paths      as A
 import Peura.Process    as A
+import Peura.Run        as A
 import Peura.Serialise  as A
 import Peura.Temporary  as A
+import Peura.Trace      as A
 import Peura.Tracer     as A
+import Peura.Warning    as A
 
 import Peura.Orphans ()

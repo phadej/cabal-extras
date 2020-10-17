@@ -32,7 +32,8 @@ import Paths_cabal_store_check (version)
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    runPeu () $ \tracer -> checkConsistency (tracer :: TracerPeu () Void) opts
+    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
+    runPeu tracer () $ checkConsistency tracer opts
   where
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat
         [ O.fullDesc
@@ -50,12 +51,14 @@ main = do
 data Opts = Opts
     { optCompiler :: FilePath
     , optRepair   :: Bool
+    , optTracer   :: TracerOptions Void -> TracerOptions Void
     }
 
 optsP :: O.Parser Opts
 optsP = Opts
     <$> O.strOption (O.short 'w' <> O.long "with-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Specify compiler to use")
     <*> repairP
+    <*> tracerOptionsParser
   where
     repairP = O.flag' True (O.long "repair" <> O.help "Try to repair the db, i.e. remove invalid packages") <|> pure False
 
@@ -69,7 +72,7 @@ checkConsistency tracer opts = do
     cblCfg  <- liftIO Cbl.readConfig
 
     putInfo tracer "Reading global package db"
-    dbG <- readPackageDb (ghcGlobalDb ghcInfo)
+    dbG <- readPackageDb tracer (ghcGlobalDb ghcInfo)
     putInfo tracer $ show (Map.size dbG) ++ " packages in " ++ toFilePath (ghcGlobalDb ghcInfo)
 
     -- TODO: handle non-existence of store-db
@@ -77,7 +80,7 @@ checkConsistency tracer opts = do
     storeDir <- makeAbsoluteFilePath $ runIdentity $ Cbl.cfgStoreDir cblCfg
     let storeDir' = storeDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion ghcInfo))
     let storeDb = storeDir' </> fromUnrootedFilePath "package.db"
-    dbS <- readPackageDb storeDb
+    dbS <- readPackageDb tracer storeDb
     putInfo tracer $ show (Map.size dbS) ++ " packages in " ++ toFilePath storeDb
 
     let db = dbG <> dbS

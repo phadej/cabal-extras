@@ -5,16 +5,15 @@ module Peura.Process (
     runProcess,
     runProcessCheck,
     runProcessOutput,
+    MakeProcessTracer (..),
     TraceProcess (..),
     ) where
 
-import Data.IORef (IORef, atomicModifyIORef', newIORef)
 import Control.Concurrent.Async (wait, withAsync)
 import Foreign.C.Error          (Errno (..), ePIPE)
 import System.Clock
        (Clock (Monotonic), TimeSpec, diffTimeSpec, getTime)
 import System.IO                (Handle, hClose)
-import System.IO.Unsafe (unsafePerformIO)
 import System.Process           (cwd, proc)
 
 import qualified Control.Exception             as E
@@ -28,25 +27,17 @@ import Peura.Exports
 import Peura.Monad
 import Peura.Paths
 import Peura.Tracer
-import Peura.Trace
-
-pidRef :: IORef TracePID
-pidRef = unsafePerformIO (newIORef 0)
-{-# NOINLINE pidRef #-}
-
-newPid :: Peu r TracePID
-newPid = liftIO $ atomicModifyIORef' pidRef $ \pid -> (pid + 1, pid)
 
 runProcess
-    :: TracerPeu r w
+    :: (HasCallStack, MakeProcessTracer t)
+    => Tracer (Peu r) t
     -> Path Absolute -- ^ Working directory
     -> String        -- ^ Command
     -> [String]      -- ^ Arguments
     -> ByteString    -- ^ Stdin
     -> Peu r (ExitCode, LazyByteString, LazyByteString)
 runProcess tracer cwd' cmd args stdin = do
-    pid <- newPid
-    let tracer' = contramap (TraceProcess pid) tracer
+    tracer' <- makeProcessTracer tracer
     traceWith tracer' (TraceProcessStart cwd' cmd args)
     runProcessImpl tracer' p stdin
   where
@@ -57,34 +48,37 @@ runProcess tracer cwd' cmd args stdin = do
 
 -- | 'runProcess', but check the exitcode and return stdin.
 runProcessCheck
-    :: TracerPeu r w
+    :: (HasCallStack, MakeProcessTracer t, MakePeuTracer t)
+    => Tracer (Peu r) t
     -> Path Absolute -- ^ Working directory
     -> String        -- ^ Command
     -> [String]      -- ^ Arguments
     -> Peu r LazyByteString
 runProcessCheck tracer cwd' cmd args = do
-    (ec, out, err) <- runProcess tracer cwd' cmd args mempty
+    tracer' <- makeProcessTracer tracer
+    traceWith tracer' (TraceProcessStart cwd' cmd args)
+    (ec, out, err) <- runProcessImpl tracer' p mempty
     case ec of
         ExitSuccess   -> return out
         ExitFailure c -> do
-            -- TODO: special trace
-            putError tracer $ "ExitFailure " ++ show c
-            putError tracer "stdout"
-            output tracer out
-            putError tracer "stderr"
-            output tracer err
-            exitFailure
+            traceWith tracer' (TraceProcessFailedCheck c out err)
+            die tracer "process check failed"
+  where
+    p0 = proc cmd args
+    p  = p0
+        { cwd = Just (toFilePath cwd')
+        }
 
 -- | 'runProcess' but stream the output directly to the output.
 runProcessOutput
-    :: TracerPeu r w
+    :: (HasCallStack, MakeProcessTracer t)
+    => Tracer (Peu r) t
     -> Path Absolute -- ^ Working directory
     -> String        -- ^ Command
     -> [String]      -- ^ Arguments
     -> Peu r ExitCode
 runProcessOutput tracer cwd' cmd args = do
-    pid <- newPid
-    let tracer' = contramap (TraceProcess pid) tracer
+    tracer' <- makeProcessTracer tracer
     traceWith tracer' (TraceProcessStart cwd' cmd args)
     runProcessOutputImpl tracer' p
   where
@@ -92,6 +86,22 @@ runProcessOutput tracer cwd' cmd args = do
     p  = p0
         { cwd = Just (toFilePath cwd')
         }
+
+-------------------------------------------------------------------------------
+-- Trace
+-------------------------------------------------------------------------------
+
+data TraceProcess
+    = TraceProcessStart (Path Absolute) String [String]
+    | TraceProcessRunTime TimeSpec
+    | TraceProcessFailedCheck Int LazyByteString LazyByteString
+  deriving (Show)
+
+class MakeProcessTracer t where
+    makeProcessTracer :: Tracer (Peu r) t -> Peu r (Tracer (Peu r) TraceProcess)
+
+instance MakeProcessTracer TraceProcess where
+    makeProcessTracer = return
 
 -------------------------------------------------------------------------------
 -- Internal implementation

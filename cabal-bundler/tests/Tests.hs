@@ -24,25 +24,25 @@ main = do
             segment : _ | "cabal-bundler" `isPrefixOf` segment -> cwd
             _                                                  -> cwd FP.</> "cabal-bundler"
 
-    let golden :: TestName -> (TracerPeu () Void -> Peu () ByteString) -> TestTree
+    let golden :: TestName -> Peu () ByteString -> TestTree
         golden name action = goldenVsStringDiff
             name
             diffProc
             (pwd FP.</> "fixtures" FP.</>name )
-            (runPeu () (fmap toLazy . action))
+            (runPeu (nullTracer :: TracerPeu () Void) () (fmap toLazy action))
 
     let pn      = mkPackageName "cabal-fmt"
         exeName = "cabal-fmt"
 
     defaultMain $ testGroup "cabal-bundler"
-        [ golden "derivation.nix" $ \_tracer ->  do
+        [ golden "derivation.nix" $ do
             planPath <- makeAbsoluteFilePath $ pwd FP.</> "fixtures/cabal-fmt.plan.json"
             plan     <- liftIO $ P.decodePlanJson (toFilePath planPath)
             script   <- generateDerivationNix pn exeName plan meta
 
             return (toUTF8BS script)
 
-        , golden "fetch-with-curl.sh"$ \_tracer ->  do
+        , golden "fetch-with-curl.sh"$  do
             planPath <- makeAbsoluteFilePath $ pwd FP.</> "fixtures/cabal-fmt.plan.json"
             plan     <- liftIO $ P.decodePlanJson (toFilePath planPath)
             script   <- generateCurl pn exeName plan meta
