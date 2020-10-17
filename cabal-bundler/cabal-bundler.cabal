@@ -9,7 +9,8 @@ description:
   Bundle cabal packages for installation in different environments.
   Supported variants:
   .
-  * `nix-single`: A single Nix-derivation 
+  * @nix-single@: A single Nix-derivation
+  * @curl@: Fetch packages with cURL
 
 license:            GPL-3.0-or-later AND BSD-3-Clause
 license-file:       LICENSE
@@ -19,6 +20,9 @@ tested-with:        GHC ==8.4.4 || ==8.6.5 || ==8.8.3 || ==8.10.1
 extra-source-files:
   Changelog.md
   data/single.nix
+  fixtures/cabal-fmt.plan.json
+  fixtures/derivation.nix
+  fixtures/fetch-with-curl.sh
 
 source-repository head
   type:     git
@@ -29,8 +33,8 @@ library cabal-bundler-internal
   hs-source-dirs:     src
   ghc-options:        -Wall
   exposed-modules:
-    CabalBundler.Main
     CabalBundler.Curl
+    CabalBundler.Main
     CabalBundler.NixBase32
     CabalBundler.NixSingle
     CabalBundler.NixSingle.Input
@@ -80,3 +84,23 @@ executable cabal-bundler
   build-depends:
     , base
     , cabal-bundler-internal
+
+test-suite cabal-bundler-tests
+  default-language: Haskell2010
+  type:             exitcode-stdio-1.0
+  ghc-options:      -Wall -threaded
+  hs-source-dirs:   tests
+  main-is:          Tests.hs
+  build-depends:
+    , base
+    , cabal-bundler-internal
+    , cabal-install-parsers
+    , cabal-plan
+    , directory
+    , filepath
+    , peura
+
+  -- test dependencies
+  build-depends:
+    , tasty         ^>=1.3.1
+    , tasty-golden  ^>=2.3.4

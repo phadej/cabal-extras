@@ -80,6 +80,7 @@ stdenv.mkDerivation {
 
     echo "Tools: $CC $HC $HCPKG $CABAL"
 
+    export LANG=C.utf8
     export CABAL_DIR=$TOPDIR/.cabal
     export CABAL_CONFIG=$CABAL_DIR/config
 
@@ -87,7 +88,7 @@ stdenv.mkDerivation {
     cat > $CABAL_CONFIG <<EOF
     -- doesn't work
     -- https://github.com/haskell/cabal/issues/5956
-    verbose: normal +nowrap +markoutput
+    verbose: normal +nowrap
     jobs: $NIX_BUILD_CORES
 
     -- No global repository, all deps should exist in global package-db
@@ -141,7 +142,7 @@ stdenv.mkDerivation {
     echo "Building project"
     #######################
 
-    $CABAL new-build -v2 --with-compiler=$HC --with-ghc=$CC "$targetComp"
+    $CABAL new-build -vverbose+nowrap --with-compiler=$HC --with-ghc=$CC "$targetComp"
 
     echo "Install built artifact"
     ##########################################
@@ -167,10 +168,10 @@ stdenv.mkDerivation {
   hsdeps  = builtins.attrValues {
     Cabal = hackageTarball "Cabal" "3.0.0.0" "11yjd0cmqngi1yr7v0dr55n59rq78kk6121sr44abha0swkfqhsi" {};
     ansi-terminal = hackageTarball "ansi-terminal" "0.10.1" "1b168z688b1lg4d2bmbxmm2mj51mwm2wv0smfb1vcwjp2vzpqf9i" {};
-    ansi-wl-pprint = hackageTarball "ansi-wl-pprint" "0.6.9" "1b2fg8px98dzbaqyns10kvs8kn6cl1hdq5wb9saz40izrpkyicm7" {};
+    ansi-wl-pprint = hackageTarball "ansi-wl-pprint" "0.6.9" "1b2fg8px98dzbaqyns10kvs8kn6cl1hdq5wb9saz40izrpkyicm7" { rev = 2; sha256 = "1xrv66v5hqchjhj8a0g3awy1qpsswk2jqb4w4yh3mm1py5s0dlr0"; };
     cabal-fmt = hackageTarball "cabal-fmt" "0.1.1" "07hx1s7l5zmh7vs2zmmm56msz2m7wnzn919mvnpypvrsswmmnnd9" {};
     colour = hackageTarball "colour" "2.3.5" "1rq4l46jx4lpdppy71wf7m1n7pw2jwy788rm35ycwzb1g4clg39v" {};
-    optparse-applicative = hackageTarball "optparse-applicative" "0.15.1.0" "1ws6y3b3f6hsgv0ff0yp6lw4hba1rps4dnvry3yllng0s5gngcsd" {};
+    optparse-applicative = hackageTarball "optparse-applicative" "0.15.1.0" "1ws6y3b3f6hsgv0ff0yp6lw4hba1rps4dnvry3yllng0s5gngcsd" { rev = 1; sha256 = "0zmhqkd96v2z1ilhqdkd9z4jgsnsxb8yi2479ind8m5zm9363zr9"; };
     transformers-compat = hackageTarball "transformers-compat" "0.6.5" "02v2fjbvcrlpvhcsssap8dy8y9pp95jykrlc5arm39sxa48wyrys" {};
   };
 }
