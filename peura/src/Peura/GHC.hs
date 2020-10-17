@@ -7,6 +7,9 @@ module Peura.GHC (
     -- * Package databases
     PackageDb,
     readPackageDb,
+    -- * Trace
+    TraceGhc (..),
+    MakeGhcTracer (..),
     ) where
 
 import Data.Char           (isSpace)
@@ -28,7 +31,10 @@ import Peura.Monad
 import Peura.Paths
 import Peura.Process
 import Peura.Tracer
-import Peura.Trace
+
+-------------------------------------------------------------------------------
+-- GHC info
+-------------------------------------------------------------------------------
 
 data GhcInfo = GhcInfo
     { ghcPath     :: FilePath
@@ -39,8 +45,13 @@ data GhcInfo = GhcInfo
     }
   deriving Show
 
-getGhcInfo :: Tracer (Peu r) (Trace w) -> FilePath -> Peu r GhcInfo
+getGhcInfo 
+    :: (MakeGhcTracer t, MakePeuTracer t, MakeProcessTracer t)
+    => Tracer (Peu r) t -> FilePath -> Peu r GhcInfo
 getGhcInfo tracer ghc = do
+    tracer' <- makeGhcTracer tracer
+    traceWith tracer' $ TraceGhcGetInfo ghc
+
     ghcDir   <- getAppUserDataDirectory "ghc"
 
     infoBS <- LBS.toStrict <$> runProcessCheck tracer ghcDir ghc ["--info"]
@@ -79,8 +90,17 @@ getGhcInfo tracer ghc = do
 
         _ -> die tracer "Your compiler is not GHC"
 
-findGhcPkg :: Tracer (Peu r) (Trace w) -> GhcInfo -> Peu r FilePath
+-------------------------------------------------------------------------------
+-- ghc-pkg
+-------------------------------------------------------------------------------
+
+findGhcPkg
+    :: (MakeGhcTracer t, MakePeuTracer t, MakeProcessTracer t)
+    => Tracer (Peu r) t -> GhcInfo -> Peu r FilePath
 findGhcPkg tracer ghcInfo = do
+    tracer' <- makeGhcTracer tracer
+    traceWith tracer' $ TraceGhcFindGhcPkg ghcInfo
+
     let guess = toFilePath $ ghcLibDir ghcInfo </> fromUnrootedFilePath "bin/ghc-pkg"
 
     ghcDir   <- getAppUserDataDirectory "ghc"
@@ -89,41 +109,10 @@ findGhcPkg tracer ghcInfo = do
     let expected = "GHC package manager version " ++ prettyShow (ghcVersion ghcInfo)
         actual   = trim $ fromUTF8BS verBS
     if actual == expected
-    then return guess
-    else do
-        putError tracer $ guess ++ " --version returned " ++ actual ++ "; expecting " ++ expected
-        exitFailure
-
-{-
-
--- This is old variant, which uses heuristics
-findGhcPkg :: GhcInfo -> Peu r FilePath
-findGhcPkg ghcInfo = do
-    let ghc = ghcPath ghcInfo
-        dir = FP.takeDirectory ghc
-        file = FP.takeFileName ghc
-
-    guess' <- case () of
-        _ | file == "ghc"                       -> return "ghc-pkg"
-          | Just sfx <- stripPrefix "ghc-" file -> return $ "ghc-pkg-" ++ sfx
-          | otherwise                           -> do
-              putError $ "Cannot guess ghc-pkg location from " ++ file
-              exitFailure
-
-    let guess | dir == "." = guess'
-              | otherwise  = dir FP.</> guess'
-
-    ghcDir   <- getAppUserDataDirectory "ghc"
-    verBS <- LBS.toStrict <$> runProcessCheck ghcDir guess ["--version"]
-
-    let expected = "GHC package manager version " ++ prettyShow (ghcVersion ghcInfo)
-        actual   = trim $ fromUTF8BS verBS
-    if actual == expected
-    then return guess
-    else do
-        putError $ guess ++ " --version returned " ++ actual ++ "; expecting " ++ expected
-        exitFailure
--}
+    then do
+        traceWith tracer' $ TraceGhcFindGhcPkgResult guess
+        return guess
+    else die tracer $ guess ++ " --version returned " ++ actual ++ "; expecting " ++ expected
 
 -- | One of missing functions for lists in Prelude.
 --
@@ -151,8 +140,11 @@ trim = let tr = dropWhile isSpace . reverse in tr . tr
 
 type PackageDb = Map UnitId C.InstalledPackageInfo
 
-readPackageDb :: Path Absolute -> Peu r PackageDb
-readPackageDb db = do
+readPackageDb :: MakeGhcTracer t => Tracer (Peu r) t -> Path Absolute -> Peu r PackageDb
+readPackageDb tracer db = do
+    tracer' <- makeGhcTracer tracer
+    traceWith tracer' (TraceGhcReadPackageDb db)
+
     files <- listDirectory db
     fmap (Map.fromList . concat) $ for files $ \p' -> do
         let p = db </> p'
@@ -165,3 +157,20 @@ readPackageDb db = do
   where
     parseIpi fields = case C.partitionFields fields of
         (fields', _) -> C.parseFieldGrammar C.cabalSpecLatest fields' C.ipiFieldGrammar
+
+-------------------------------------------------------------------------------
+-- Trace
+-------------------------------------------------------------------------------
+
+data TraceGhc
+    = TraceGhcReadPackageDb (Path Absolute)
+    | TraceGhcGetInfo FilePath
+    | TraceGhcFindGhcPkg GhcInfo
+    | TraceGhcFindGhcPkgResult FilePath
+  deriving (Show)
+ 
+class MakeGhcTracer t where
+    makeGhcTracer :: Tracer (Peu r) t -> Peu r (Tracer (Peu r) TraceGhc)
+
+instance MakeGhcTracer TraceGhc where
+    makeGhcTracer = return

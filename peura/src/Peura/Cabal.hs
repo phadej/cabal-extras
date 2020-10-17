@@ -9,6 +9,9 @@ module Peura.Cabal (
     emptyPlanInput,
     ephemeralPlanJson,
     ephemeralPlanJson',
+    -- * Trace
+    TraceCabal (..),
+    MakeCabalTracer (..),
     ) where
 
 import Peura.ByteString
@@ -17,7 +20,6 @@ import Peura.Monad
 import Peura.Paths
 import Peura.Process
 import Peura.Temporary
-import Peura.Trace
 import Peura.Tracer
 
 import Text.PrettyPrint ((<+>))
@@ -88,15 +90,40 @@ emptyPlanInput = PlanInput
     }
 
 -------------------------------------------------------------------------------
+-- Trace
+-------------------------------------------------------------------------------
+
+data TraceCabal = TraceCabalEphemeralPlan PlanInput
+  deriving (Show)
+
+class MakeCabalTracer t where
+    makeCabalTracer :: Tracer (Peu r) t -> Peu r (Tracer (Peu r) TraceCabal)
+
+instance MakeCabalTracer TraceCabal where
+    makeCabalTracer = return
+
+-------------------------------------------------------------------------------
 -- Procedure to get PlanInput
 -------------------------------------------------------------------------------
 
 -- | Solve for a ephemeral plan input.
-ephemeralPlanJson :: Tracer (Peu r) (Trace w) -> PlanInput -> Peu r (Maybe P.PlanJson)
+ephemeralPlanJson
+    :: (MakeCabalTracer t, MakeProcessTracer t, MakePeuTracer t)
+    => Tracer (Peu r) t
+    -> PlanInput
+    -> Peu r (Maybe P.PlanJson)
 ephemeralPlanJson tracer = fmap (fmap snd) . ephemeralPlanJson' tracer
 
-ephemeralPlanJson' :: Tracer (Peu r) (Trace w) -> PlanInput -> Peu r (Maybe (ByteString, P.PlanJson))
+-- | Like 'ephemeralPlanJson', but also return the @plan.json@ original contents.
+ephemeralPlanJson'
+    :: (MakeCabalTracer t, MakeProcessTracer t, MakePeuTracer t)
+    => Tracer (Peu r) t
+    -> PlanInput
+    -> Peu r (Maybe (ByteString, P.PlanJson))
 ephemeralPlanJson' tracer pi = do
+    tracer' <- makeCabalTracer tracer
+    traceWith tracer' (TraceCabalEphemeralPlan pi)
+
     let cabalFile :: String
         cabalFile = fakePackage pi
 

@@ -29,98 +29,101 @@ import qualified CabalIfaceQuery.GHC.All as GHC
 -------------------------------------------------------------------------------
 
 main :: IO ()
-main = runPeu () $ \tracer -> do
+main = do
     -- options
-    opts <- liftIO $ O.execParser optsP'
+    opts <- O.execParser optsP'
+    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
 
-    -- ghc info, in particular storeDir
-    ghcInfo <- getGhcInfo tracer $ optCompiler opts
-    cblCfg  <- liftIO Cbl.readConfig
-    storeDir <- makeAbsoluteFilePath $ runIdentity $ Cbl.cfgStoreDir cblCfg
-    let storeDir' = storeDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion ghcInfo))
-    let globalDir = takeDirectory $ ghcGlobalDb ghcInfo
+    runPeu tracer () $ do
 
-    -- read plan
-    plan <- case optPlan opts of
-        Just planPath -> do
-            planPath' <- makeAbsolute planPath
-            putInfo tracer $ "Reading plan.json: " ++ toFilePath planPath'
-            liftIO $ P.decodePlanJson (toFilePath planPath')
-        Nothing -> do
-            putInfo tracer "Reading plan.json for current project"
-            liftIO $ P.findAndDecodePlanJson (P.ProjectRelativeToDir ".")
+        -- ghc info, in particular storeDir
+        ghcInfo <- getGhcInfo tracer $ optCompiler opts
+        cblCfg  <- liftIO Cbl.readConfig
+        storeDir <- makeAbsoluteFilePath $ runIdentity $ Cbl.cfgStoreDir cblCfg
+        let storeDir' = storeDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion ghcInfo))
+        let globalDir = takeDirectory $ ghcGlobalDb ghcInfo
 
-    -- TODO: check that ghcInfo version and plan one are the same
+        -- read plan
+        plan <- case optPlan opts of
+            Just planPath -> do
+                planPath' <- makeAbsolute planPath
+                putInfo tracer $ "Reading plan.json: " ++ toFilePath planPath'
+                liftIO $ P.decodePlanJson (toFilePath planPath')
+            Nothing -> do
+                putInfo tracer "Reading plan.json for current project"
+                liftIO $ P.findAndDecodePlanJson (P.ProjectRelativeToDir ".")
 
-    dflags <- getDynFlags tracer ghcInfo
+        -- TODO: check that ghcInfo version and plan one are the same
 
-    -- read destination directories of units in the plan
-    unitDistDirs <- traverse makeAbsoluteFilePath
-            [ distDir
-            | unit <- M.elems (P.pjUnits plan)
-            , P.uType unit == P.UnitTypeLocal
-            , distDir <- toList (P.uDistDir unit)
-            ]
+        dflags <- getDynFlags tracer ghcInfo
 
-    -- interface files
-    hiFiles <- fmap concat $ for unitDistDirs $ \distDir ->  do
-        hiFiles <- globDir1 "build/**/*.hi" distDir
-        return $ (,) distDir <$> hiFiles
+        -- read destination directories of units in the plan
+        unitDistDirs <- traverse makeAbsoluteFilePath
+                [ distDir
+                | unit <- M.elems (P.pjUnits plan)
+                , P.uType unit == P.UnitTypeLocal
+                , distDir <- toList (P.uDistDir unit)
+                ]
 
-    -- name cache updater, needed for reading interface files
-    ncu <- liftIO makeNameCacheUpdater
+        -- interface files
+        hiFiles <- fmap concat $ for unitDistDirs $ \distDir ->  do
+            hiFiles <- globDir1 "build/**/*.hi" distDir
+            return $ (,) distDir <$> hiFiles
 
-    -- For each of .hi file we found, let us see if there are orphans
-    modules <- fmap (ordNub  . concat) $ for hiFiles $ \(distDir, hiFile) -> do
-        modIface <- liftIO $ easyReadBinIface dflags ncu hiFile
-        putInfo tracer $ "Found interface file for " ++ ghcShow dflags (GHC.mi_module modIface)
+        -- name cache updater, needed for reading interface files
+        ncu <- liftIO makeNameCacheUpdater
 
-        let deps = GHC.mi_deps modIface
-        let orphs = GHC.dep_orphs deps
+        -- For each of .hi file we found, let us see if there are orphans
+        modules <- fmap (ordNub  . concat) $ for hiFiles $ \(distDir, hiFile) -> do
+            modIface <- liftIO $ easyReadBinIface dflags ncu hiFile
+            putInfo tracer $ "Found interface file for " ++ ghcShow dflags (GHC.mi_module modIface)
 
-        return
-            [ (distDir', orph)
-            | orph@(GHC.Module unitId _) <- orphs
-            , let distDir' = if ghcShow dflags unitId == "main"
-                             then Just (distDir </> fromUnrootedFilePath "build")
-                             else Nothing
-            ]
+            let deps = GHC.mi_deps modIface
+            let orphs = GHC.dep_orphs deps
 
-    for_ modules $ \(mDistDir, GHC.Module unitId md) -> do
-        let strUnitId = ghcShow dflags unitId
+            return
+                [ (distDir', orph)
+                | orph@(GHC.Module unitId _) <- orphs
+                , let distDir' = if ghcShow dflags unitId == "main"
+                                 then Just (distDir </> fromUnrootedFilePath "build")
+                                 else Nothing
+                ]
 
-        let moduleName = MN.fromString (ghcShow dflags md)
-        let moduleNamePath' = MN.toFilePath moduleName ++ ".hi"
+        for_ modules $ \(mDistDir, GHC.Module unitId md) -> do
+            let strUnitId = ghcShow dflags unitId
 
-        case mDistDir of
-            Just distDir -> do
-                putWarning tracer WModuleWithOrphans $ "Orphans in " ++ ghcShow dflags md ++ " (" ++ strUnitId ++ ")"
+            let moduleName = MN.fromString (ghcShow dflags md)
+            let moduleNamePath' = MN.toFilePath moduleName ++ ".hi"
 
-                moduleNamePath <- globDir1First ("**/" ++ moduleNamePath') distDir
-                modIface <- liftIO $ easyReadBinIface dflags ncu moduleNamePath
+            case mDistDir of
+                Just distDir -> do
+                    putWarning tracer WModuleWithOrphans $ "Orphans in " ++ ghcShow dflags md ++ " (" ++ strUnitId ++ ")"
 
-                for_ (GHC.mi_insts modIface) $ \ifClsInst ->
-                    when (GHC.isOrphan $ GHC.ifInstOrph ifClsInst) $
-                    putWarning tracer WOrphans $ ghcShowIfaceClsInst dflags ifClsInst
+                    moduleNamePath <- globDir1First ("**/" ++ moduleNamePath') distDir
+                    modIface <- liftIO $ easyReadBinIface dflags ncu moduleNamePath
 
-            Nothing -> case M.lookup (P.UnitId $ T.pack strUnitId) (P.pjUnits plan) of
-                Nothing   -> when (strUnitId `notElem` ["base", "ghc"]) $
-                    putWarning tracer WUnknownUnit $ "Cannot find unit info for " ++ strUnitId ++ " " ++ ghcShow dflags md
+                    for_ (GHC.mi_insts modIface) $ \ifClsInst ->
+                        when (GHC.isOrphan $ GHC.ifInstOrph ifClsInst) $
+                        putWarning tracer WOrphans $ ghcShowIfaceClsInst dflags ifClsInst
 
-                Just unit -> do
-                    let P.PkgId pname _ = P.uPId unit
+                Nothing -> case M.lookup (P.UnitId $ T.pack strUnitId) (P.pjUnits plan) of
+                    Nothing   -> when (strUnitId `notElem` ["base", "ghc"]) $
+                        putWarning tracer WUnknownUnit $ "Cannot find unit info for " ++ strUnitId ++ " " ++ ghcShow dflags md
 
-                    unless (toCabal pname `S.member` optSkipPackages opts) $ do
-                        putWarning tracer WModuleWithOrphans $ "Orphans in " ++ ghcShow dflags md ++ " (" ++ strUnitId ++ ")"
+                    Just unit -> do
+                        let P.PkgId pname _ = P.uPId unit
 
-                        distDir <- unitDistDir tracer globalDir storeDir' unit
+                        unless (toCabal pname `S.member` optSkipPackages opts) $ do
+                            putWarning tracer WModuleWithOrphans $ "Orphans in " ++ ghcShow dflags md ++ " (" ++ strUnitId ++ ")"
 
-                        moduleNamePath <- globDir1First ("**/" ++ moduleNamePath') distDir
-                        modIface <- liftIO $ easyReadBinIface dflags ncu moduleNamePath
+                            distDir <- unitDistDir tracer globalDir storeDir' unit
 
-                        for_ (GHC.mi_insts modIface) $ \ifClsInst ->
-                            when (GHC.isOrphan $ GHC.ifInstOrph ifClsInst) $
-                            putWarning tracer WOrphans $ ghcShowIfaceClsInst dflags ifClsInst
+                            moduleNamePath <- globDir1First ("**/" ++ moduleNamePath') distDir
+                            modIface <- liftIO $ easyReadBinIface dflags ncu moduleNamePath
+
+                            for_ (GHC.mi_insts modIface) $ \ifClsInst ->
+                                when (GHC.isOrphan $ GHC.ifInstOrph ifClsInst) $
+                                putWarning tracer WOrphans $ ghcShowIfaceClsInst dflags ifClsInst
 
 
   where
@@ -168,6 +171,7 @@ data Opts = Opts
     { optCompiler     :: FilePath
     , optPlan         :: Maybe FsPath
     , optSkipPackages :: Set C.PackageName
+    , optTracer       :: TracerOptions W -> TracerOptions W
     }
 
 optsP :: O.Parser Opts
@@ -180,6 +184,7 @@ optsP = Opts
         , O.metavar "PKGNAME..."
         , O.help "Don't report following packages"
         ]))
+    <*> tracerOptionsParser
 
 -------------------------------------------------------------------------------
 -- Warnings
@@ -190,6 +195,10 @@ data W
     | WModuleWithOrphans
     | WUnknownUnit
     | WMissingIfaceFile
+  deriving (Eq, Ord, Enum, Bounded)
+
+instance Universe W where universe = [minBound .. maxBound]
+instance Finite W
 
 instance Warning W where
     warningToFlag WOrphans             = "orphans"

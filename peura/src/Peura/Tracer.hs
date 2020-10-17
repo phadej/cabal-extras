@@ -7,7 +7,7 @@ module Peura.Tracer (
     hoistTracer,
 ) where
 
-import GHC.Stack (callStack, HasCallStack, CallStack)
+import GHC.Stack (callStack, CallStack)
 
 import Peura.Exports
 

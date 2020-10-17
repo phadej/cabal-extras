@@ -36,15 +36,17 @@ import CabalEnv.Warning
 import Paths_cabal_env (version)
 
 main :: IO ()
-main = runPeu () $ \tracer -> do
-    opts <- liftIO $ O.execParser optsP'
-    ghcInfo <- getGhcInfo tracer (optCompiler opts)
+main = do
+    opts <- O.execParser optsP'
+    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
+    runPeu tracer () $ do
+        ghcInfo <- getGhcInfo tracer (optCompiler opts)
 
-    case optAction opts of
-        ActionInstall -> installAction tracer opts ghcInfo
-        ActionShow    -> showAction    tracer opts ghcInfo
-        ActionList    -> listAction    tracer opts ghcInfo
-        ActionHide    -> hideAction    tracer opts ghcInfo
+        case optAction opts of
+            ActionInstall -> installAction tracer opts ghcInfo
+            ActionShow    -> showAction    tracer opts ghcInfo
+            ActionList    -> listAction    tracer opts ghcInfo
+            ActionHide    -> hideAction    tracer opts ghcInfo
   where
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat
         [ O.fullDesc
@@ -423,6 +425,7 @@ data Opts = Opts
     , optDeps       :: [Dependency]
     , optLocal      :: Bool
     , optAction     :: Action
+    , optTracer     :: TracerOptions W -> TracerOptions W
     }
 
 data Action
@@ -443,6 +446,7 @@ optsP = Opts
     <*> O.switch (O.long "local" <> O.help "Include local packages")
     -- behaviour flags
     <*> actionP
+    <*> tracerOptionsParser
   where
     transitiveP =
         O.flag' True (O.short 't' <> O.long "transitive" <> O.help "Expose transitive dependencies")

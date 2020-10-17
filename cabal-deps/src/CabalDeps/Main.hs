@@ -41,7 +41,8 @@ import Paths_cabal_deps (version)
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    runPeu () $ \tracer -> doDeps tracer opts
+    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
+    runPeu tracer () $ doDeps tracer opts
   where
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat
         [ O.fullDesc
@@ -59,6 +60,7 @@ main = do
 data Opts = Opts
     { optAction  :: Action
     , optExclude :: Set PackageName
+    , optTracer  :: TracerOptions W -> TracerOptions W
     }
 
 data Action
@@ -74,6 +76,7 @@ optsP = Opts
         , O.metavar "PKGNAME..."
         , O.help "Don't report following packages"
         ]))
+    <*> tracerOptionsParser
 
 actionP :: O.Parser Action
 actionP = builddirP <|> cabalP where
@@ -289,6 +292,10 @@ data W
     = WNotOnHackage
     | WNoPreferredVersions
     | WNotLatest
+  deriving (Eq, Ord, Show, Enum, Bounded)
+
+instance Universe W where universe = [minBound .. maxBound]
+instance Finite W
 
 instance Warning W where
     warningToFlag WNotOnHackage        = "not-on-hackage"

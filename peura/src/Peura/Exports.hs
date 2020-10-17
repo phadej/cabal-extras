@@ -96,8 +96,13 @@ module Peura.Exports (
     for,
     -- ** Data.Typeable
     typeRep,
+    -- ** Data.Universe.Class
+    Universe (..),
+    Finite (..),
     -- ** Data.Void
     absurd,
+    -- ** GHC.Stack
+    HasCallStack,
     -- * Cabal
     prettyShow,
     mkPackageName,
@@ -172,6 +177,7 @@ import Data.Text                       (Text)
 import Data.These                      (These (..))
 import Data.Traversable                (for)
 import Data.Typeable                   (Typeable, typeRep)
+import Data.Universe.Class             (Finite (..), Universe (..))
 import Data.Void                       (Void, absurd)
 import Data.Word                       (Word16, Word32, Word64, Word8)
 import Distribution.Pretty             (prettyShow)
@@ -182,6 +188,7 @@ import Distribution.Types.UnitId       (UnitId)
 import Distribution.Types.Version      (Version, mkVersion)
 import Distribution.Types.VersionRange (VersionRange)
 import GHC.Generics                    (Generic, Generic1)
+import GHC.Stack                       (HasCallStack)
 import Numeric.Natural                 (Natural)
 import Optics.Extra
        (at, ifor, ifor_, itraverse, itraverse_, ix, preview, view)

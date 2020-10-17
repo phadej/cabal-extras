@@ -33,7 +33,8 @@ import Paths_cabal_diff (version)
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    runPeu () $ \(tracer :: TracerPeu () Void) -> doDiff tracer opts
+    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
+    runPeu tracer () $ doDiff tracer opts
   where
     optsP' = O.info (versionP <*> optsP <**> O.helper) $ mconcat
         [ O.fullDesc
@@ -53,8 +54,8 @@ data Opts c = Opts
     , _optPkgName  :: PackageName
     , _optVerA     :: DiffVersion
     , _optVerB     :: DiffVersion
+    , optTracer    :: TracerOptions Void -> TracerOptions Void
     }
-  deriving (Show)
 
 data OneTwo a
     = One a
@@ -72,6 +73,7 @@ optsP = Opts
     <*> O.argument (O.eitherReader eitherParsec) (O.metavar "PKGNAME" <> O.help "package name")
     <*> O.argument readDiffVersion (O.metavar "OLDVER" <> O.help "new version")
     <*> O.argument readDiffVersion (O.metavar "NEWVER" <> O.help "new package")
+    <*> tracerOptionsParser
   where
     compilerP :: O.Parser (OneTwo FilePath)
     compilerP = one <|> two
@@ -98,7 +100,7 @@ cacheDir = root </> fromUnrootedFilePath "cabal-diff"
 -------------------------------------------------------------------------------
 
 doDiff :: TracerPeu r w -> Opts FilePath -> Peu r ()
-doDiff tracer (Opts withCompiler pn pkgVerA pkgVerB) = do
+doDiff tracer (Opts withCompiler pn pkgVerA pkgVerB _) = do
     buildSem <- liftIO $ atomically (newTSem 1)
 
     (withCompilerA, withCompilerB) <- getGhcInfos tracer withCompiler

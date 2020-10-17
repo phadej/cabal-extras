@@ -37,7 +37,8 @@ import CabalStoreGC.Deps
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    runPeu () $ \(tracer :: TracerPeu () Void) -> case optAction opts of
+    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
+    runPeu tracer () $ case optAction opts of
         Default        -> doDefault tracer opts
         Count          -> doCount tracer opts
         Collect        -> doCollect tracer opts
@@ -61,6 +62,7 @@ main = do
 data Opts = Opts
     { optCompiler :: FilePath
     , optAction   :: Action
+    , optTracer   :: TracerOptions Void -> TracerOptions Void
     }
 
 data Action
@@ -75,6 +77,7 @@ optsP :: O.Parser Opts
 optsP = Opts
     <$> O.strOption (O.short 'w' <> O.long "with-compiler" <> O.value "ghc" <> O.showDefault <> O.help "Specify compiler to use")
     <*> actionP
+    <*> tracerOptionsParser
 
 actionP :: O.Parser Action
 actionP = defaultP <|> countP <|>  collectP <|> addProjectRootP <|> addRootP <|> cleanupRootsP <|> pure Default where
@@ -176,7 +179,7 @@ doCountImpl tracer opts = do
     cblCfg  <- liftIO Cbl.readConfig
 
     putInfo tracer "Reading global package db"
-    dbG <- readPackageDb (ghcGlobalDb ghcInfo)
+    dbG <- readPackageDb tracer (ghcGlobalDb ghcInfo)
     putInfo tracer $ show (Map.size dbG) ++ " packages in " ++ toFilePath (ghcGlobalDb ghcInfo)
 
     putInfo tracer "Reading store package db"
@@ -185,7 +188,7 @@ doCountImpl tracer opts = do
     let storeDb = storeDir' </> fromUnrootedFilePath "package.db"
     dbS <- doesDirectoryExist storeDb >>= \exists ->
         if exists
-        then readPackageDb storeDb
+        then readPackageDb tracer storeDb
         else return Map.empty
     putInfo tracer $ show (Map.size dbS) ++ " packages in " ++ toFilePath storeDb
 
