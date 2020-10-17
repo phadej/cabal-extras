@@ -4,7 +4,7 @@ module Peura.Trace (
     TracerPeu,
     makeTracerPeu,
     -- * Tracer options
-    TracerOptions,
+    TracerOptions (..),
     defaultTracerOptions,
     tracerOptionsParser,
     -- *
