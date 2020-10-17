@@ -33,7 +33,7 @@ import Paths_cabal_diff (version)
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    runPeu () $ doDiff opts
+    runPeu () $ \(tracer :: TracerPeu () Void) -> doDiff tracer opts
   where
     optsP' = O.info (versionP <*> optsP <**> O.helper) $ mconcat
         [ O.fullDesc
@@ -97,44 +97,45 @@ cacheDir = root </> fromUnrootedFilePath "cabal-diff"
 -- Diffing
 -------------------------------------------------------------------------------
 
-doDiff :: Opts FilePath -> Peu () ()
-doDiff (Opts withCompiler pn pkgVerA pkgVerB) = do
+doDiff :: TracerPeu r w -> Opts FilePath -> Peu r ()
+doDiff tracer (Opts withCompiler pn pkgVerA pkgVerB) = do
     buildSem <- liftIO $ atomically (newTSem 1)
 
-    (withCompilerA, withCompilerB) <- getGhcInfos withCompiler
+    (withCompilerA, withCompilerB) <- getGhcInfos tracer withCompiler
 
-    dbA' <- async $ getHoogleTxt withCompilerA buildSem pn pkgVerA
-    dbB' <- async $ getHoogleTxt withCompilerB buildSem pn pkgVerB
+    dbA' <- async $ getHoogleTxt tracer withCompilerA buildSem pn pkgVerA
+    dbB' <- async $ getHoogleTxt tracer withCompilerB buildSem pn pkgVerB
 
     dbA <- wait dbA'
     dbB <- wait dbB'
 
-    outputApiDiff (apiDiff dbA dbB)
+    outputApiDiff tracer (apiDiff dbA dbB)
 
-getGhcInfos :: OneTwo FilePath -> Peu r (GhcInfo, GhcInfo)
-getGhcInfos = fmap toPair . traverse getGhcInfo where
+getGhcInfos :: TracerPeu r w -> OneTwo FilePath -> Peu r (GhcInfo, GhcInfo)
+getGhcInfos tracer = fmap toPair . traverse (getGhcInfo tracer) where
     toPair (One x)   = (x, x)
     toPair (Two x y) = (x, y)
 
-getHoogleTxt :: GhcInfo -> TSem -> PackageName -> DiffVersion -> Peu () API
-getHoogleTxt withCompiler buildSem pn LocalVersion =
-    getLocalHoogleTxt withCompiler buildSem pn
-getHoogleTxt withCompiler buildSem pn (HackageVersion ver) =
-    getHackageHoogleTxt withCompiler buildSem (PackageIdentifier pn ver)
+getHoogleTxt :: TracerPeu r w -> GhcInfo -> TSem -> PackageName -> DiffVersion -> Peu r API
+getHoogleTxt tracer withCompiler buildSem pn LocalVersion =
+    getLocalHoogleTxt tracer withCompiler buildSem pn
+getHoogleTxt tracer withCompiler buildSem pn (HackageVersion ver) =
+    getHackageHoogleTxt tracer withCompiler buildSem (PackageIdentifier pn ver)
 
 -------------------------------------------------------------------------------
 -- Local
 -------------------------------------------------------------------------------
 
 getLocalHoogleTxt
-    :: GhcInfo            -- ^ compiler to use
+    :: forall r w. TracerPeu r w
+    -> GhcInfo            -- ^ compiler to use
     -> TSem               -- ^ is someone building dependencies
     -> PackageName
-    -> Peu () API
-getLocalHoogleTxt gi buildSem pn = do
+    -> Peu r API
+getLocalHoogleTxt tracer gi buildSem pn = do
     cwd <- getCurrentDirectory
     withSystemTempDirectory "cabal-diff" $ \dir -> do
-        _ <- runProcessCheck cwd "cabal"
+        _ <- runProcessCheck tracer cwd "cabal"
             [ "sdist"
             , "--builddir=" ++ toFilePath (dir </> fromUnrootedFilePath "dist-newstyle")
             , "all"
@@ -157,17 +158,17 @@ getLocalHoogleTxt gi buildSem pn = do
         exists <- doesFileExist cacheFile
         if exists
         then do
-            putInfo $ "Using cached hoogle.txt for local " ++ prettyShow pkgId
+            putInfo tracer $ "Using cached hoogle.txt for local " ++ prettyShow pkgId
             liftIO $ Binary.decodeFile (toFilePath cacheFile)
         else do
             -- untar
-            _ <- runProcessCheck dir "tar" ["-xzf", toFilePath tarball]
+            _ <- runProcessCheck tracer dir "tar" ["-xzf", toFilePath tarball]
 
             -- directory we expect things got untarred to
             let dir' = dir </> fromUnrootedFilePath (prettyShow pkgId)
 
             -- build hoogle.txt
-            api <- buildHoogleTxt gi buildSem pkgId tarballs dir'
+            api <- buildHoogleTxt tracer gi buildSem pkgId tarballs dir'
 
             -- write cache
             liftIO $ Binary.encodeFile (toFilePath cacheFile) api
@@ -175,15 +176,14 @@ getLocalHoogleTxt gi buildSem pn = do
             -- return
             return api
   where
-    elaborateSdistLocation :: forall r. [FilePath] -> Peu r ([Path Absolute], Path Absolute, PackageIdentifier)
+    elaborateSdistLocation :: [FilePath] -> Peu r ([Path Absolute], Path Absolute, PackageIdentifier)
     elaborateSdistLocation = go Nothing [] where
         go :: Maybe (Path Absolute, PackageIdentifier) -> [Path Absolute] -> [FilePath]
            -> Peu r ([Path Absolute], Path Absolute, PackageIdentifier)
         go (Just (fp, pid)) acc [] =
             return (acc, fp, pid)
         go Nothing _acc [] = do
-            putError "Cannot find sdist tarball"
-            exitFailure
+            die tracer "Cannot find sdist tarball"
         go mpid acc (fp:fps) = do
             fp' <- makeAbsoluteFilePath fp
             let fn = toUnrootedFilePath (takeFileName fp')
@@ -191,22 +191,20 @@ getLocalHoogleTxt gi buildSem pn = do
             if pkgName pid == pn
             then case mpid of
                 Nothing -> go (Just (fp', pid)) acc fps
-                Just _  ->  do
-                    putError $ "Found multiple sdist tarballs " ++ show fps
-                    exitFailure
+                Just _  ->
+                    die tracer $ "Found multiple sdist tarballs " ++ show fps
             else go mpid (fp' : acc) fps
 
     elaboratePkgId :: String -> Peu r PackageIdentifier
     elaboratePkgId str = case stripSuffix ".tar.gz" str of
         Nothing -> do
-            putError $ "tarball path doesn't end with .tar.gz -- " ++ str
-            exitFailure
+            die tracer $ "tarball path doesn't end with .tar.gz -- " ++ str
 
         Just pfx -> case eitherParsec pfx of
             Right pkgId -> return pkgId
-            Left  err   -> putError err *> exitFailure
+            Left  err   -> die tracer err
 
-calculateHash :: [Path Absolute] -> Peu () String
+calculateHash :: [Path Absolute] -> Peu r String
 calculateHash xs = fmap post (foldM step SHA256.init (sort xs)) where
     post ctx =
         let hash = Base16.encode $ SHA256.finalize ctx
@@ -224,11 +222,12 @@ stripSuffix sfx str = fmap reverse (stripPrefix (reverse sfx) (reverse str))
 -------------------------------------------------------------------------------
 
 getHackageHoogleTxt
-    :: GhcInfo            -- ^ compiler to use
+    :: TracerPeu r w
+    -> GhcInfo            -- ^ compiler to use
     -> TSem               -- ^ is someone building dependencies
     -> PackageIdentifier
-    -> Peu () API
-getHackageHoogleTxt gi buildSem pkgId = do
+    -> Peu r API
+getHackageHoogleTxt tracer gi buildSem pkgId = do
     cacheDir' <- makeAbsolute $ cacheDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion gi))
     createDirectoryIfMissing True cacheDir'
 
@@ -237,36 +236,38 @@ getHackageHoogleTxt gi buildSem pkgId = do
     exists <- doesFileExist cacheFile
     if exists
     then do
-        putInfo $ "Using cached hoogle.txt for " ++ prettyShow pkgId
+        putInfo tracer $ "Using cached hoogle.txt for " ++ prettyShow pkgId
         liftIO $ Binary.decodeFile (toFilePath cacheFile)
     else do
-        api <- getHackageHoogleTxt' gi buildSem pkgId
+        api <- getHackageHoogleTxt' tracer gi buildSem pkgId
         liftIO $ Binary.encodeFile (toFilePath cacheFile) api
         return api
 
 getHackageHoogleTxt'
-    :: GhcInfo
+    :: TracerPeu r w
+    -> GhcInfo
     -> TSem
     -> PackageIdentifier
-    -> Peu () API
-getHackageHoogleTxt' gi buildSem pkgId =
+    -> Peu r API
+getHackageHoogleTxt' tracer gi buildSem pkgId =
     withSystemTempDirectory "cabal-diff" $ \dir -> do
         -- fetch the package
-        _ <- runProcessCheck dir "cabal" ["get", prettyShow pkgId]
+        _ <- runProcessCheck tracer dir "cabal" ["get", prettyShow pkgId]
 
         -- directory cabal got
         let dir' = dir </> fromUnrootedFilePath (prettyShow pkgId)
 
         -- build hoogle.txt
-        buildHoogleTxt gi buildSem pkgId [] dir'
+        buildHoogleTxt tracer gi buildSem pkgId [] dir'
 
 buildHoogleTxt
-    :: GhcInfo
+    :: TracerPeu r w
+    -> GhcInfo
     -> TSem
     -> PackageIdentifier
     -> [Path Absolute] -- ^ additional tarballs 
     -> Path Absolute -> Peu r API
-buildHoogleTxt gi buildSem pkgId tarballs dir = do
+buildHoogleTxt tracer gi buildSem pkgId tarballs dir = do
     let cabalProjectLines :: [String]
         cabalProjectLines = "packages: ." :
             [ "packages: " ++ toFilePath t
@@ -279,19 +280,17 @@ buildHoogleTxt gi buildSem pkgId tarballs dir = do
     -- build dependencies, for one package at the time
     when (null tarballs) $ void $
         bracket acquire release $ \_ ->
-            runProcessCheck dir "cabal" ["v2-build", "--with-compiler", ghcPath gi, "--dependencies-only", "."]
+            runProcessCheck tracer dir "cabal" ["v2-build", "--with-compiler", ghcPath gi, "--dependencies-only", "."]
 
     -- build packages concurrently
-    _ <- runProcessCheck dir "cabal" ["v2-haddock", "--with-compiler", ghcPath gi, "--haddock-hoogle", "-O0", "."]
+    _ <- runProcessCheck tracer dir "cabal" ["v2-haddock", "--with-compiler", ghcPath gi, "--haddock-hoogle", "-O0", "."]
 
     -- find, read, and parse hoogle.txt
-    hoogle <- globHoogle dir pkgId
+    hoogle <- globHoogle tracer dir pkgId
     contents <- readByteString hoogle
     case parseFile contents of
         Right x  -> return x
-        Left err -> do
-            putError err
-            exitFailure
+        Left err -> die tracer err
   where
     acquire   = liftIO $ atomically (waitTSem buildSem)
     release _ = liftIO $ atomically (signalTSem buildSem)
@@ -300,14 +299,10 @@ buildHoogleTxt gi buildSem pkgId tarballs dir = do
 -- Hoogle utils
 -------------------------------------------------------------------------------
 
-globHoogle :: Path Absolute -> PackageIdentifier -> Peu r (Path Absolute)
-globHoogle dir (PackageIdentifier name _) = do
+globHoogle :: TracerPeu r w -> Path Absolute -> PackageIdentifier -> Peu r (Path Absolute)
+globHoogle tracer dir (PackageIdentifier name _) = do
     found <- liftIO  $  glob (toFilePath dir ++ "/**/" ++ prettyShow name ++ ".txt")
     case found of
         [p] -> makeAbsoluteFilePath p
-        []  -> do
-            putError $ "cannot find " ++ prettyShow name ++ ".txt (hoogle file)"
-            exitFailure
-        _   -> do
-            putError $ "found multiple " ++ prettyShow name ++ ".txt (hoogle files)"
-            exitFailure
+        []  -> die tracer $ "cannot find " ++ prettyShow name ++ ".txt (hoogle file)"
+        _   -> die tracer $ "found multiple " ++ prettyShow name ++ ".txt (hoogle files)"

@@ -116,19 +116,21 @@ parseEnvironment fields0 = do
 -------------------------------------------------------------------------------
 
 withEnvironment
-    :: Path Absolute
+    :: TracerPeu r W
+    -> Path Absolute
     -> (Environment Plan.PlanJson -> Peu r ())
     -> Peu r ()
-withEnvironment fp k = withEnvironmentMaybe fp $ \menv ->
+withEnvironment tracer fp k = withEnvironmentMaybe tracer fp $ \menv ->
     case menv of
-        Nothing  -> putWarning WMissingCabalEnvData $ "No cabal-env data found in " ++ toFilePath fp
+        Nothing  -> putWarning tracer WMissingCabalEnvData $ "No cabal-env data found in " ++ toFilePath fp
         Just env -> k $ env { envPlan = snd (envPlan env) }
 
 withEnvironmentMaybe
-    :: Path Absolute
+    :: TracerPeu r W
+    -> Path Absolute
     -> (Maybe (Environment (BS.ByteString, Plan.PlanJson)) -> Peu r a)
     -> Peu r a
-withEnvironmentMaybe fp k = do
+withEnvironmentMaybe tracer fp k = do
     exists <- doesFileExist fp
     if exists
     then do
@@ -143,14 +145,10 @@ withEnvironmentMaybe fp k = do
         if null ls
         then k Nothing
         else case Parse.parseWith parseEnvironment (toFilePath fp) (BS8.unlines ls) of
+            Left err  -> die tracer (displayException err)
             Right env -> case A.eitherDecodeStrict' (envPlan env) of
+                Left err   -> die tracer err
                 Right plan -> k (Just (env { envPlan = (envPlan env, plan) }))
-                Left err   -> do
-                    putError err
-                    die ""
-            Left err  -> do
-                putError $ displayException err
-                die ""
     else k Nothing
 
 -------------------------------------------------------------------------------

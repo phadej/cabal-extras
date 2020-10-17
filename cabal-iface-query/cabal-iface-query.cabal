@@ -2,14 +2,11 @@ cabal-version:      2.2
 name:               cabal-iface-query
 version:            0.1
 synopsis:
-  Bundle cabal packages for installation in different environments.
+  Read GHC interface files
 
 category:           Development
 description:
-  Bundle cabal packages for installation in different environments.
-  Supported variants:
-  .
-  * `nix-single`: A single Nix-derivation 
+  Read GHC interface files.
 
 license:            GPL-3.0-or-later AND BSD-3-Clause
 license-file:       LICENSE

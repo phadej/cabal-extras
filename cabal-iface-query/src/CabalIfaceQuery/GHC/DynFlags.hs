@@ -17,12 +17,11 @@ import SysTools   (initLlvmTargets, initSysTools)
 #endif
 
 -- | Get 'DynFlags' given 'GhcInfo' for this GHC.
-getDynFlags :: GhcInfo -> Peu r DynFlags
-getDynFlags ghcInfo = do
+getDynFlags :: TracerPeu r w -> GhcInfo -> Peu r DynFlags
+getDynFlags tracer ghcInfo = do
     unless (VERSION_ghc == prettyShow (ghcVersion ghcInfo)) $ do
-        putError $ "Compiler version mismatch: " ++
+        die tracer $ "Compiler version mismatch: " ++
             VERSION_ghc ++ " /= " ++ prettyShow (ghcVersion ghcInfo)
-        exitFailure
 
 #if MIN_VERSION_ghc(8,8,0)
     let libDir = toFilePath $ ghcLibDir ghcInfo

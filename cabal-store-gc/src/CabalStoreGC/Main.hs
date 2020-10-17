@@ -37,13 +37,13 @@ import CabalStoreGC.Deps
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    runPeu () $ case optAction opts of
-        Default        -> doDefault opts
-        Count          -> doCount opts
-        Collect        -> doCollect opts
-        AddRoot p      -> doAddRoot p
-        AddProjectRoot -> doAddProjectRoot
-        CleanupRoots   -> doCleanupRoots
+    runPeu () $ \(tracer :: TracerPeu () Void) -> case optAction opts of
+        Default        -> doDefault tracer opts
+        Count          -> doCount tracer opts
+        Collect        -> doCollect tracer opts
+        AddRoot p      -> doAddRoot tracer p
+        AddProjectRoot -> doAddProjectRoot tracer
+        CleanupRoots   -> doCleanupRoots tracer
   where
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat
         [ O.fullDesc
@@ -90,28 +90,28 @@ actionP = defaultP <|> countP <|>  collectP <|> addProjectRootP <|> addRootP <|>
 -- Default
 -------------------------------------------------------------------------------
 
-doDefault :: Opts -> Peu r ()
-doDefault opts = do
+doDefault :: TracerPeu r w -> Opts -> Peu r ()
+doDefault tracer opts = do
     -- First add current project plan.json as an indirect root
     p <- handle (\(_ :: IOException) -> return Nothing)
         $ fmap Just $ liftIO $ P.findPlanJson $ P.ProjectRelativeToDir "."
 
     for_ p $ \p' -> do
         p'' <- makeAbsoluteFilePath p'
-        doAddRoot (FsPath p'')
+        doAddRoot tracer (FsPath p'')
 
     -- then count
-    doCount opts
+    doCount tracer opts
 
 -------------------------------------------------------------------------------
 -- Count packages
 -------------------------------------------------------------------------------
 
-doCount :: Opts -> Peu r ()
-doCount opts = do
-    Counted _ _ storeDir' storeDb removableUnitIds <- doCountImpl opts
+doCount :: TracerPeu r w -> Opts -> Peu r ()
+doCount tracer opts = do
+    Counted _ _ storeDir' storeDb removableUnitIds <- doCountImpl tracer opts
 
-    putInfo $ show (Set.size removableUnitIds) ++ " components can be removed from the store"
+    putInfo tracer $ show (Set.size removableUnitIds) ++ " components can be removed from the store"
 
     sizes <- flippedFoldlM removableUnitIds 0 $ \acc unitId -> do
         let pkgDir = storeDir' </> fromUnrootedFilePath (prettyShow unitId)
@@ -122,18 +122,17 @@ doCount opts = do
 
         return $! acc + pkgDirSize + pkgConfSize
 
-    putInfo $ show (sizes `div` (1024 * 1024)) ++ " MB can be freed"
+    putInfo tracer $ show (sizes `div` (1024 * 1024)) ++ " MB can be freed"
 
+doCollect :: TracerPeu r w -> Opts -> Peu r ()
+doCollect tracer opts = do
+    Counted ghcInfo storeDir storeDir' storeDb removableUnitIds <- doCountImpl tracer opts
+    putInfo tracer $ show (Set.size removableUnitIds) ++ " components will be removed from the store"
 
-doCollect :: Opts -> Peu r ()
-doCollect opts = do
-    Counted ghcInfo storeDir storeDir' storeDb removableUnitIds <- doCountImpl opts
-    putInfo $ show (Set.size removableUnitIds) ++ " components will be removed from the store"
-
-    ghcPkg <- findGhcPkg ghcInfo
+    ghcPkg <- findGhcPkg tracer ghcInfo
 
     for_ removableUnitIds $ \unitId -> do
-        putInfo $ "Removing " ++ prettyShow unitId
+        putInfo tracer $ "Removing " ++ prettyShow unitId
 
         let pkgDir = storeDir' </> fromUnrootedFilePath (prettyShow unitId)
             pkgConf = storeDb </> fromUnrootedFilePath (prettyShow unitId ++ ".conf")
@@ -147,13 +146,13 @@ doCollect opts = do
             | otherwise                             = "--package-conf=" ++ toFilePath storeDb
 
     -- finally recache the db.
-    void $ runProcessCheck storeDir ghcPkg
+    void $ runProcessCheck tracer storeDir ghcPkg
         [ "recache"
         , packageDbFlag
         ]
 
     -- and run vanilla ghc-pkg check on the db
-    void $ runProcessOutput storeDir ghcPkg
+    void $ runProcessOutput tracer storeDir ghcPkg
         [ "check"
         , packageDbFlag
         , "--simple-output"
@@ -171,16 +170,16 @@ data Counted = Counted
     , cRemovableUnitIds :: Set UnitId
     }
 
-doCountImpl :: Opts -> Peu r Counted
-doCountImpl opts = do
-    ghcInfo <- getGhcInfo $ optCompiler opts
+doCountImpl :: TracerPeu r w -> Opts -> Peu r Counted
+doCountImpl tracer opts = do
+    ghcInfo <- getGhcInfo tracer $ optCompiler opts
     cblCfg  <- liftIO Cbl.readConfig
 
-    putInfo "Reading global package db"
+    putInfo tracer "Reading global package db"
     dbG <- readPackageDb (ghcGlobalDb ghcInfo)
-    putInfo $ show (Map.size dbG) ++ " packages in " ++ toFilePath (ghcGlobalDb ghcInfo)
+    putInfo tracer $ show (Map.size dbG) ++ " packages in " ++ toFilePath (ghcGlobalDb ghcInfo)
 
-    putInfo "Reading store package db"
+    putInfo tracer "Reading store package db"
     storeDir <- makeAbsoluteFilePath $ runIdentity $ Cbl.cfgStoreDir cblCfg
     let storeDir' = storeDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion ghcInfo))
     let storeDb = storeDir' </> fromUnrootedFilePath "package.db"
@@ -188,11 +187,11 @@ doCountImpl opts = do
         if exists
         then readPackageDb storeDb
         else return Map.empty
-    putInfo $ show (Map.size dbS) ++ " packages in " ++ toFilePath storeDb
+    putInfo tracer $ show (Map.size dbS) ++ " packages in " ++ toFilePath storeDb
 
     let db = dbG <> dbS
 
-    putInfo "Reading installdir roots"
+    putInfo tracer "Reading installdir roots"
     installDir <- makeAbsoluteFilePath $ runIdentity $ Cbl.cfgInstallDir cblCfg
     exes <- listDirectory installDir
 
@@ -208,10 +207,10 @@ doCountImpl opts = do
 
     installDirUnitIds <- Set.fromList . concat <$> traverse (readExeDeps storeDir') exes''
 
-    putDebug $ "Found " ++ show (Set.size installDirUnitIds) ++ " installdir roots from "
+    putDebug tracer $ "Found " ++ show (Set.size installDirUnitIds) ++ " installdir roots from "
         ++ show (length exes'') ++ " executables"
 
-    putInfo "Reading environment roots"
+    putInfo tracer "Reading environment roots"
     envs <- handle (\(_ :: IOException) -> return [])
         $ listDirectory $ ghcEnvDir ghcInfo
 
@@ -224,9 +223,9 @@ doCountImpl opts = do
     let envUnitIds :: Set UnitId
         envUnitIds = setOf (folded % folded % _Just) envs'
 
-    putDebug $ "Found " ++ show (Set.size envUnitIds) ++ " environment roots"
+    putDebug tracer $ "Found " ++ show (Set.size envUnitIds) ++ " environment roots"
 
-    putInfo "Reading indirect roots"
+    putInfo tracer "Reading indirect roots"
     let rootsDir = storeDir </> fromUnrootedFilePath "roots"
     indirects <- listDirectory rootsDir
     plans <- fmap catMaybes $ for indirects $ \indirect ->
@@ -242,20 +241,19 @@ doCountImpl opts = do
             , unitId <- Map.keys (P.pjUnits plan)
             ]
 
-    putDebug $ "Found " ++ show (Set.size envUnitIds) ++ " indirect roots"
+    putDebug tracer $ "Found " ++ show (Set.size envUnitIds) ++ " indirect roots"
 
     let rootUnitIds :: Set UnitId
         rootUnitIds = installDirUnitIds <> envUnitIds <> indirectUnitIds
 
-    putInfo $ "Found " ++ show (Set.size rootUnitIds) ++ " roots"
+    putInfo tracer $ "Found " ++ show (Set.size rootUnitIds) ++ " roots"
 
-    putInfo "Finding dependencies"
+    putInfo tracer "Finding dependencies"
     -- reverse dependencies
     let dbAm :: Map UnitId (Set UnitId)
         dbAm = Map.map (Set.fromList . C.depends) db
         reportLoop unitIds = do
-            putError $ "There is a loop in package-db " ++ intercalate " -> " (map prettyShow unitIds)
-            exitFailure
+            die tracer $ "There is a loop in package-db " ++ intercalate " -> " (map prettyShow unitIds)
 
     closure <- either reportLoop (return . Set.union rootUnitIds . Set.fromList) $ TG.runG dbAm $ \g ->
         [ TG.gFromVertex g' dep
@@ -265,8 +263,8 @@ doCountImpl opts = do
         , dep     <- TG.gEdges g' broken'
         ]
 
-    putInfo $ show (Set.size closure) ++ " components are referenced from the roots"
-    putInfo $ show (Set.size $ Map.keysSet dbS `Set.intersection` closure) ++ " components are in the store"
+    putInfo tracer $ show (Set.size closure) ++ " components are referenced from the roots"
+    putInfo tracer $ show (Set.size $ Map.keysSet dbS `Set.intersection` closure) ++ " components are in the store"
 
     let removableUnitIds :: Set UnitId
         removableUnitIds = Map.keysSet dbS `Set.difference` closure
@@ -301,8 +299,8 @@ isInStore storeDir p = do
 -- Add package root
 -------------------------------------------------------------------------------
 
-doAddRoot :: FsPath -> Peu r ()
-doAddRoot p' = do
+doAddRoot :: TracerPeu r w -> FsPath -> Peu r ()
+doAddRoot tracer p' = do
     cblCfg  <- liftIO Cbl.readConfig
 
     p <- makeAbsolute p'
@@ -316,24 +314,24 @@ doAddRoot p' = do
 
     createDirectoryIfMissing True rootsDir
 
-    putInfo $ "Creating indirect root " ++ toFilePath rootFile ++ " pointing to " ++ toFilePath p
+    putInfo tracer $ "Creating indirect root " ++ toFilePath rootFile ++ " pointing to " ++ toFilePath p
 
     -- remove existing path, before creating the link
     removePathForcibly rootFile
     createFileLink p rootFile
 
-doAddProjectRoot :: Peu r ()
-doAddProjectRoot = do
+doAddProjectRoot :: TracerPeu r w -> Peu r ()
+doAddProjectRoot tracer = do
     p <- liftIO $ P.findPlanJson $ P.ProjectRelativeToDir "."
     p' <- makeAbsoluteFilePath p
-    doAddRoot (FsPath p')
+    doAddRoot tracer (FsPath p')
 
 -------------------------------------------------------------------------------
 -- Cleaning up roots
 -------------------------------------------------------------------------------
 
-doCleanupRoots :: Peu r ()
-doCleanupRoots = do
+doCleanupRoots :: TracerPeu r w -> Peu r ()
+doCleanupRoots tracer = do
     cblCfg  <- liftIO Cbl.readConfig
     storeDir <- makeAbsoluteFilePath $ runIdentity $ Cbl.cfgStoreDir cblCfg
     let rootsDir = storeDir </> fromUnrootedFilePath "roots"
@@ -348,10 +346,10 @@ doCleanupRoots = do
             if isLink
             then do
                 l <- getSymbolicLinkTarget r'
-                putInfo $ "Indirect root " ++ toFilePath l ++ " is gone; cleaning up"
+                putInfo tracer $ "Indirect root " ++ toFilePath l ++ " is gone; cleaning up"
                 removePathForcibly r'
             else
-                putError $ "Doesn't exist, but isn't a link either: " ++ toFilePath r'
+                putError tracer $ "Doesn't exist, but isn't a link either: " ++ toFilePath r'
 
 -------------------------------------------------------------------------------
 -- getPathSize

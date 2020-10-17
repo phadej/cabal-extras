@@ -27,6 +27,8 @@ import Peura.Exports
 import Peura.Monad
 import Peura.Paths
 import Peura.Process
+import Peura.Tracer
+import Peura.Trace
 
 data GhcInfo = GhcInfo
     { ghcPath     :: FilePath
@@ -37,33 +39,33 @@ data GhcInfo = GhcInfo
     }
   deriving Show
 
-getGhcInfo :: FilePath -> Peu r GhcInfo
-getGhcInfo ghc = do
+getGhcInfo :: Tracer (Peu r) (Trace w) -> FilePath -> Peu r GhcInfo
+getGhcInfo tracer ghc = do
     ghcDir   <- getAppUserDataDirectory "ghc"
 
-    infoBS <- LBS.toStrict <$> runProcessCheck ghcDir ghc ["--info"]
-    info <- maybe (die "Cannot parse compilers --info output") return $
+    infoBS <- LBS.toStrict <$> runProcessCheck tracer ghcDir ghc ["--info"]
+    info <- maybe (die tracer "Cannot parse compilers --info output") return $
         readMaybe (fromUTF8BS infoBS)
 
     case lookup ("Project name" :: String) info of
         Just "The Glorious Glasgow Haskell Compilation System" -> do
-            versionStr <- maybe (die "cannot find 'Project version' in ghc --info") return $
+            versionStr <- maybe (die tracer "cannot find 'Project version' in ghc --info") return $
                 lookup "Project version" info
             ver <- case eitherParsec versionStr of
                 Right ver -> return (ver :: Version)
-                Left err  -> die $ "Project version cannot be parsed\n" ++ err
+                Left err  -> die tracer $ "Project version cannot be parsed\n" ++ err
 
-            targetStr <- maybe (die "cannot find 'Target platform' in ghc --info") return $
+            targetStr <- maybe (die tracer "cannot find 'Target platform' in ghc --info") return $
                 lookup "Target platform" info
             (x,y) <- case splitOn '-' targetStr of
                 x :| [_, y] -> return (x, y)
-                _           -> die "Target platform is not a triple"
+                _           -> die tracer "Target platform is not a triple"
 
-            globalDbStr <- maybe (die "Cannot find 'Global Package DB' in ghc --info") return $
+            globalDbStr <- maybe (die tracer "Cannot find 'Global Package DB' in ghc --info") return $
                 lookup "Global Package DB" info
             globalDb <- makeAbsoluteFilePath globalDbStr
 
-            libDirStr <- maybe (die "Cannot find 'LibDir' in ghc --info") return $
+            libDirStr <- maybe (die tracer "Cannot find 'LibDir' in ghc --info") return $
                 lookup "LibDir" info
             libDir <- makeAbsoluteFilePath libDirStr
 
@@ -75,21 +77,21 @@ getGhcInfo ghc = do
                 , ghcLibDir   = libDir
                 }
 
-        _ -> die "Your compiler is not GHC"
+        _ -> die tracer "Your compiler is not GHC"
 
-findGhcPkg :: GhcInfo -> Peu r FilePath
-findGhcPkg ghcInfo = do
+findGhcPkg :: Tracer (Peu r) (Trace w) -> GhcInfo -> Peu r FilePath
+findGhcPkg tracer ghcInfo = do
     let guess = toFilePath $ ghcLibDir ghcInfo </> fromUnrootedFilePath "bin/ghc-pkg"
 
     ghcDir   <- getAppUserDataDirectory "ghc"
-    verBS <- LBS.toStrict <$> runProcessCheck ghcDir guess ["--version"]
+    verBS <- LBS.toStrict <$> runProcessCheck tracer ghcDir guess ["--version"]
 
     let expected = "GHC package manager version " ++ prettyShow (ghcVersion ghcInfo)
         actual   = trim $ fromUTF8BS verBS
     if actual == expected
     then return guess
     else do
-        putError $ guess ++ " --version returned " ++ actual ++ "; expecting " ++ expected
+        putError tracer $ guess ++ " --version returned " ++ actual ++ "; expecting " ++ expected
         exitFailure
 
 {-
@@ -142,9 +144,6 @@ splitOn sep = go where
 
 trim :: String -> String
 trim = let tr = dropWhile isSpace . reverse in tr . tr
-
-die :: String -> Peu r a
-die msg = putError msg *> exitFailure
 
 -------------------------------------------------------------------------------
 -- PackageDb

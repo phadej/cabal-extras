@@ -12,11 +12,13 @@ module Peura.Exports (
     Bifunctor (..),
     Bitraversable (..),
     Coercible,
+    Contravariant (..),
     Generic,
     Generic1,
     IsString (..),
     NFData (..),
     Semigroup (..),
+    Strict (..),
     Typeable,
     -- ** MTL
     MonadCatch (..),
@@ -39,12 +41,15 @@ module Peura.Exports (
     PackageIdentifier (..),
     Set,
     Text,
+    These (..),
     Version,
     VersionRange,
+    Void,
     UnitId,
     -- ** Numerals
     Int8, Int16, Int32, Int64,
     Word8, Word16, Word32, Word64,
+    Natural,
     -- * Functors
     Proxy (..),
     Const (..),
@@ -91,6 +96,8 @@ module Peura.Exports (
     for,
     -- ** Data.Typeable
     typeRep,
+    -- ** Data.Void
+    absurd,
     -- * Cabal
     prettyShow,
     mkPackageName,
@@ -114,14 +121,13 @@ import Data.Foldable as A (Foldable (..), notElem)
 
 -- Basic prelude stuff
 import Prelude as A
-       (Applicative (..), Bool (..), Bounded (..), Char, Either (..),
-       Enum (..), Eq (..), FilePath, Functor (..), IO, Maybe (..),
-       Monad (return, (>>=)), Monoid (..), Ord (..), Show (..), String,
-       Traversable (..), all, and, any, concat, concatMap, const, curry,
-       dropWhile, either, filter, flip, fst, id, map, maybe, not, or,
-       otherwise, replicate, return, reverse, snd, span, take, takeWhile,
-       uncurry, unlines, unwords, zipWith, ($), ($!), (&&), (++), (.), (<$>),
-       (||))
+       (Applicative (..), Bool (..), Bounded (..), Char, Either (..), Enum (..),
+       Eq (..), FilePath, Functor (..), IO, Maybe (..), Monad (return, (>>=)),
+       Monoid (..), Ord (..), Show (..), String, Traversable (..), all, and,
+       any, concat, concatMap, const, curry, dropWhile, either, filter, flip,
+       fst, id, map, maybe, not, or, otherwise, replicate, return, reverse, snd,
+       span, take, takeWhile, uncurry, unlines, unwords, zipWith, ($!), ($),
+       (&&), (++), (.), (<$>), (||))
 
 -- numerics
 import Prelude as A
@@ -150,6 +156,7 @@ import Data.ByteString                 (ByteString)
 import Data.Coerce                     (Coercible, coerce)
 import Data.Foldable                   (for_, traverse_)
 import Data.Functor.Compat             (void, (<&>))
+import Data.Functor.Contravariant      (Contravariant (..))
 import Data.Functor.Identity           (Identity (..))
 import Data.Int                        (Int16, Int32, Int64, Int8)
 import Data.List                       (sortBy, sortOn)
@@ -159,10 +166,13 @@ import Data.Maybe                      (catMaybes, fromMaybe, mapMaybe)
 import Data.Proxy                      (Proxy (..))
 import Data.Semigroup                  (Semigroup (..))
 import Data.Set                        (Set)
+import Data.Strict.Classes             (Strict (..))
 import Data.String                     (IsString (..))
 import Data.Text                       (Text)
+import Data.These                      (These (..))
 import Data.Traversable                (for)
 import Data.Typeable                   (Typeable, typeRep)
+import Data.Void                       (Void, absurd)
 import Data.Word                       (Word16, Word32, Word64, Word8)
 import Distribution.Pretty             (prettyShow)
 import Distribution.Simple.Utils       (fromUTF8BS, ordNub, toUTF8BS)
@@ -172,6 +182,7 @@ import Distribution.Types.UnitId       (UnitId)
 import Distribution.Types.Version      (Version, mkVersion)
 import Distribution.Types.VersionRange (VersionRange)
 import GHC.Generics                    (Generic, Generic1)
+import Numeric.Natural                 (Natural)
 import Optics.Extra
        (at, ifor, ifor_, itraverse, itraverse_, ix, preview, view)
 import System.Exit                     (ExitCode (..))

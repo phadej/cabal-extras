@@ -32,7 +32,7 @@ import Paths_cabal_store_check (version)
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    runPeu () $ checkConsistency opts
+    runPeu () $ \tracer -> checkConsistency (tracer :: TracerPeu () Void) opts
   where
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat
         [ O.fullDesc
@@ -63,35 +63,34 @@ optsP = Opts
 -- check consistency
 -------------------------------------------------------------------------------
 
-checkConsistency :: Opts -> Peu r ()
-checkConsistency opts = do
-    ghcInfo <- getGhcInfo $ optCompiler opts
+checkConsistency :: forall r w. TracerPeu r w -> Opts -> Peu r ()
+checkConsistency tracer opts = do
+    ghcInfo <- getGhcInfo tracer $ optCompiler opts
     cblCfg  <- liftIO Cbl.readConfig
 
-    putInfo "Reading global package db"
+    putInfo tracer "Reading global package db"
     dbG <- readPackageDb (ghcGlobalDb ghcInfo)
-    putInfo $ show (Map.size dbG) ++ " packages in " ++ toFilePath (ghcGlobalDb ghcInfo)
+    putInfo tracer $ show (Map.size dbG) ++ " packages in " ++ toFilePath (ghcGlobalDb ghcInfo)
 
     -- TODO: handle non-existence of store-db
-    putInfo "Reading store package db"
+    putInfo tracer "Reading store package db"
     storeDir <- makeAbsoluteFilePath $ runIdentity $ Cbl.cfgStoreDir cblCfg
     let storeDir' = storeDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion ghcInfo))
     let storeDb = storeDir' </> fromUnrootedFilePath "package.db"
     dbS <- readPackageDb storeDb
-    putInfo $ show (Map.size dbS) ++ " packages in " ++ toFilePath storeDb
+    putInfo tracer $ show (Map.size dbS) ++ " packages in " ++ toFilePath storeDb
 
     let db = dbG <> dbS
 
     -- report broken packages.
     brokenUnitIds <- fmap (Set.fromList . concat) $ ifor dbS $ \unitId ipi -> do
-        b <- checkIpi storeDir' db ipi
+        b <- checkIpi tracer storeDir' db ipi
         return $ if b then [] else [unitId]
 
     -- reverse dependencies
     let dbAm = Map.map (Set.fromList . C.depends) db
         reportLoop unitIds = do
-            putError $ "There is a loop in package-db " ++ intercalate " -> " (map prettyShow unitIds)
-            exitFailure
+            die tracer $ "There is a loop in package-db " ++ intercalate " -> " (map prettyShow unitIds)
 
     closure <- either reportLoop (return . Set.fromList) $ TG.runG dbAm $ \g ->
         [ TG.gFromVertex g' dep
@@ -102,7 +101,7 @@ checkConsistency opts = do
         ]
 
     for_ closure $ \unitId ->
-        putError $ prettyShow unitId ++ " is broken transitively"
+        putError tracer $ prettyShow unitId ++ " is broken transitively"
 
     let brokenLibs :: Set UnitId
         brokenLibs = brokenUnitIds <> closure
@@ -124,7 +123,7 @@ checkConsistency opts = do
 
         let handler :: IOException -> Peu r (Maybe UnitId)
             handler exc = do
-                putError $ prettyShow unitId ++ " executable is broken: " ++ displayException exc
+                putError tracer $ prettyShow unitId ++ " executable is broken: " ++ displayException exc
                 return (Just unitId)
 
         handle handler $ do
@@ -144,14 +143,14 @@ checkConsistency opts = do
             case broken of
                 Right () -> return Nothing
                 Left err -> do
-                    putError $ prettyShow unitId ++ " executable is broken: " ++ show err
+                    putError tracer $ prettyShow unitId ++ " executable is broken: " ++ show err
                     return (Just unitId)
 
     -- totals
 
-    putInfo $ show (Set.size brokenUnitIds) ++ " directly broken library components"
-    putInfo $ show (Set.size closure) ++ " transitively broken libraries"
-    putInfo $ show (Set.size brokenExes) ++ " broken executable components"
+    putInfo tracer $ show (Set.size brokenUnitIds) ++ " directly broken library components"
+    putInfo tracer $ show (Set.size closure) ++ " transitively broken libraries"
+    putInfo tracer $ show (Set.size brokenExes) ++ " broken executable components"
 
     -- Repairing
 
@@ -162,14 +161,14 @@ checkConsistency opts = do
             ed <- doesDirectoryExist pkgDir
             if ed
             then do
-                putDebug $ "Removing " ++ toFilePath pkgDir
+                putDebug tracer $ "Removing " ++ toFilePath pkgDir
                 removePathForcibly pkgDir
             -- TODO: Warning
-            else putError $ toFilePath pkgDir ++ " does not exist"
+            else putError tracer $ toFilePath pkgDir ++ " does not exist"
 
     when (not (null brokenLibs) && optRepair opts) $ do
-        putInfo "Repairing db"
-        ghcPkg <- findGhcPkg ghcInfo
+        putInfo tracer "Repairing db"
+        ghcPkg <- findGhcPkg tracer ghcInfo
 
         for_ brokenLibs $ \unitId -> do
             let pkgDir = storeDir' </> fromUnrootedFilePath (prettyShow unitId)
@@ -177,12 +176,12 @@ checkConsistency opts = do
 
             ed <- doesDirectoryExist pkgDir
             when ed $ do
-                putDebug $ "Removing " ++ toFilePath pkgDir
+                putDebug tracer $ "Removing " ++ toFilePath pkgDir
                 removePathForcibly pkgDir
 
             ec <- doesFileExist pkgConf
             when ec $ do
-                putDebug $ "Removing " ++ toFilePath pkgConf
+                putDebug tracer $ "Removing " ++ toFilePath pkgConf
                 removePathForcibly pkgConf
 
         let packageDbFlag :: String
@@ -191,13 +190,13 @@ checkConsistency opts = do
                 | otherwise                             = "--package-conf=" ++ toFilePath storeDb
 
         -- finally recache the db.
-        void $ runProcessCheck storeDir ghcPkg
+        void $ runProcessCheck tracer storeDir ghcPkg
             [ "recache"
             , packageDbFlag
             ]
 
         -- and run vanilla ghc-pkg check on the db
-        void $ runProcessOutput storeDir ghcPkg
+        void $ runProcessOutput tracer storeDir ghcPkg
             [ "check"
             , packageDbFlag
             , "--simple-output"
@@ -213,8 +212,8 @@ checkConsistency opts = do
 --
 -- * module files are there
 --
-checkIpi :: Path Absolute -> PackageDb -> C.InstalledPackageInfo -> Peu r Bool
-checkIpi storeDir db ipi = fmap isJust $ validate (reportV . NE.head) $
+checkIpi :: TracerPeu r w -> Path Absolute -> PackageDb -> C.InstalledPackageInfo -> Peu r Bool
+checkIpi tracer storeDir db ipi = fmap isJust $ validate (reportV tracer . NE.head) $
     checkDirectory *>
     traverse_ checkDep           (C.depends ipi) *>
     traverse_ checkExposedModule (C.exposedModules ipi) *>
@@ -271,12 +270,12 @@ data V
 
 type Validate r = ValidateT (NonEmpty V) (Peu r)
 
-reportV :: V -> Peu r ()
-reportV (VMissingDir pkg) = putError $
+reportV :: TracerPeu r w -> V -> Peu r ()
+reportV tracer (VMissingDir pkg) = putError tracer $
     prettyShow pkg ++ " unit directory is missing"
-reportV (VMissingDep pkg dep) = putError $
+reportV tracer (VMissingDep pkg dep) = putError tracer $
     prettyShow pkg ++ " dependency " ++ prettyShow dep ++ " is missing"
-reportV (VMissingModuleFile pkg mdl) = putError $
+reportV tracer (VMissingModuleFile pkg mdl) = putError tracer $
     prettyShow pkg ++ " interface file for " ++ prettyShow mdl ++ " is missing"
 
 -------------------------------------------------------------------------------
