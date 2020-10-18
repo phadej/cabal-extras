@@ -64,7 +64,7 @@ library
   -- Extra dependencies
   build-depends:
     , aeson                  ^>=1.5.0.0
-    , ansi-terminal          ^>=0.10.1
+    , ansi-terminal          ^>=0.11
     , async                  ^>=2.2.2
     , base-compat            ^>=0.11.0
     , cabal-install-parsers  ^>=0.3.0.1
@@ -75,7 +75,7 @@ library
     , Glob                   ^>=0.10.0
     , optics-core            ^>=0.3
     , optics-extra           ^>=0.3
-    , optparse-applicative   ^>=0.15.0.0
+    , optparse-applicative   ^>=0.16.0.0
     , paths                  ^>=0.2.0.0
     , serialise              ^>=0.2.1.0
     , stm                    ^>=2.4.5.1 || ^>=2.5.0.0

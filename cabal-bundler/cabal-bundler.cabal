@@ -68,7 +68,7 @@ library cabal-bundler-internal
   build-depends:
     , cabal-install-parsers
     , cabal-plan
-    , optparse-applicative   ^>=0.15.1.0
+    , optparse-applicative   ^>=0.16.0.0
     , topograph
     , vector
     , zinza                  ^>=0.2
