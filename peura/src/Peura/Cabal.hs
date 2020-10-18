@@ -9,6 +9,8 @@ module Peura.Cabal (
     emptyPlanInput,
     ephemeralPlanJson,
     ephemeralPlanJson',
+    -- * Index
+    cachedHackageMetadata,
     -- * Trace
     TraceCabal (..),
     MakeCabalTracer (..),
@@ -24,6 +26,7 @@ import Peura.Tracer
 
 import Text.PrettyPrint ((<+>))
 
+import qualified Cabal.Index                as I
 import qualified Cabal.Plan                 as P
 import qualified Data.Aeson                 as A
 import qualified Data.Map.Strict            as Map
@@ -61,6 +64,20 @@ instance CabalPlanConvert P.UnitId C.UnitId where
     fromCabal u          = P.UnitId (T.pack (C.unUnitId u))
 
 -------------------------------------------------------------------------------
+-- Index
+-------------------------------------------------------------------------------
+
+cachedHackageMetadata
+    :: MakeCabalTracer t
+    => Tracer (Peu r) t
+    -> Peu r (Map PackageName I.PackageInfo)
+cachedHackageMetadata tracer = do
+    tracer' <- makeCabalTracer tracer
+    traceWith tracer' TraceCabalHackageIndexMetadata
+    (_, meta) <- liftIO I.cachedHackageMetadata
+    return meta
+
+-------------------------------------------------------------------------------
 -- plan.json input
 -------------------------------------------------------------------------------
 
@@ -93,7 +110,9 @@ emptyPlanInput = PlanInput
 -- Trace
 -------------------------------------------------------------------------------
 
-data TraceCabal = TraceCabalEphemeralPlan PlanInput
+data TraceCabal
+    = TraceCabalEphemeralPlan PlanInput
+    | TraceCabalHackageIndexMetadata
   deriving (Show)
 
 class MakeCabalTracer t where

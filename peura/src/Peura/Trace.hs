@@ -219,6 +219,9 @@ makeTracerPeu TracerOptions {..} = do
             TraceCabal (TraceCabalEphemeralPlan _pi) -> do
                 traceImpl setSgr ANSI.Blue off ["cabal","plan"] "... plan input summary TODO ..."
 
+            TraceCabal TraceCabalHackageIndexMetadata -> do
+                traceImpl setSgr ANSI.Green off ["cabal","hackage"] "Reading Hackage index metadata"
+
             TraceGhc (TraceGhcReadPackageDb p) -> do
                 traceImpl setSgr ANSI.Blue off ["ghc", "read-package-db"] $
                     toFilePath p

@@ -12,7 +12,7 @@ import qualified Data.List.NonEmpty   as NE
 import qualified Data.Map.Strict      as M
 import qualified Data.Set             as S
 import qualified Distribution.Package as C
-import qualified System.FilePath as FP
+import qualified System.FilePath      as FP
 import qualified Topograph            as TG
 
 -------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ generateCurl _packageName _exeName plan meta = do
             r -> do
                 let cabal = DownloadFile (prettyShow pkgId ++ ".cabal") (hackageRevisionUrl pkgId r) (I.riCabal ri)
                 [ tarGz, cabal ]
-    
+
     return $ concat
         [ unlines
             [ "#!/bin/sh"
@@ -150,7 +150,7 @@ strictLookup :: (Exception e, Ord k) => k -> (k -> e) -> Map k v -> Peu r v
 strictLookup k mkExc = maybe (throwM (mkExc k)) return . M.lookup k
 
 -------------------------------------------------------------------------------
--- 
+--
 -------------------------------------------------------------------------------
 
 curlScript :: [DownloadFile] -> String
@@ -173,7 +173,7 @@ hackagePackageUrl pid = hackagePackageBaseUrl
     FP.</> prettyShow pid
     FP.</> prettyShow pid ++ ".tar.gz"
 
-hackageRevisionUrl :: C.PackageIdentifier -> Word -> String
+hackageRevisionUrl :: C.PackageIdentifier -> Word32 -> String
 hackageRevisionUrl pid rev = hackagePackageBaseUrl
     FP.</> prettyShow pid
     FP.</> "revision"
