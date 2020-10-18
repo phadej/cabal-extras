@@ -8,7 +8,6 @@ import Control.Applicative ((<**>))
 import Data.Version        (showVersion)
 import Distribution.Parsec (eitherParsec)
 
-import qualified Cabal.Index          as I
 import qualified Cabal.Plan           as P
 import qualified Data.Map.Strict      as M
 import qualified Data.Set             as S
@@ -31,9 +30,7 @@ main = do
     opts <- O.execParser optsP'
     tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
     runPeu tracer () $ do
-
-        -- TODO: add to Peura
-        meta <- liftIO I.cachedHackageMetadata
+        meta <- cachedHackageMetadata tracer
 
         -- TODO: check that package is in metadata
 

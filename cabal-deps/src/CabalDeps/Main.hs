@@ -91,8 +91,7 @@ actionP = builddirP <|> cabalP where
 
 doDeps :: TracerPeu r W -> Opts -> Peu r ()
 doDeps tracer opts = do
-    putInfo tracer "Reading Hackage metadata"
-    meta <- liftIO I.cachedHackageMetadata
+    meta <- cachedHackageMetadata tracer
 
     case optAction opts of
         ActionCabal []     -> doPlanDeps tracer meta (optExclude opts) (P.ProjectRelativeToDir ".")

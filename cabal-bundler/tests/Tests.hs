@@ -18,7 +18,7 @@ import CabalBundler.OpenBSD   (generateOpenBSD)
 
 main :: IO ()
 main = do
-    meta <- liftIO I.cachedHackageMetadata
+    (_, meta) <- liftIO I.cachedHackageMetadata
 
     cwd <- Dir.getCurrentDirectory
     let pwd = case reverse (FP.splitPath cwd) of
