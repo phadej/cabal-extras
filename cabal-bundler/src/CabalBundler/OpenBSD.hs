@@ -5,25 +5,33 @@ module CabalBundler.OpenBSD (
 import Peura
 
 import Data.Function (on)
-import Data.List (intercalate, nubBy)
+import Data.List     (intercalate, nubBy)
 
-import qualified Cabal.Index                    as I
-import qualified Cabal.Plan                     as P
-import qualified Data.Map.Strict                as M
-import qualified Data.Set                       as S
-import qualified Data.Text                      as T
-import qualified Distribution.Types.PackageName as C
-import qualified Distribution.Types.Version     as C
-import qualified Topograph                      as TG
+import qualified Cabal.Index                            as I
+import qualified Cabal.Plan                             as P
+import qualified Data.Map.Strict                        as M
+import qualified Data.Set                               as S
+import qualified Data.Text                              as T
+import qualified Distribution.Types.PackageName         as C
+import qualified Distribution.Types.UnqualComponentName as C
+import qualified Distribution.Types.Version             as C
+import qualified Topograph                              as TG
+
+import CabalBundler.ExeOption
 
 generateOpenBSD
     :: TracerPeu r w
     -> PackageName
-    -> String
+    -> ExeOption C.UnqualComponentName
     -> P.PlanJson
     -> Map PackageName I.PackageInfo
     -> Peu r String
-generateOpenBSD tracer packageName exeName plan meta = do
+generateOpenBSD tracer packageName exeName' plan meta = do
+    exeName <- case exeName' of
+        ExeOptionPkg x -> return $ C.unUnqualComponentName x
+        ExeOption x    -> return $ C.unUnqualComponentName x
+        ExeOptionAll   -> die tracer "--exe-all isn't supported for openbsd output"
+
     let units :: Map P.UnitId P.Unit
         units = P.pjUnits plan
 
