@@ -6,14 +6,16 @@ import Peura
 
 import Data.Maybe (maybeToList)
 
-import qualified Cabal.Index          as I
-import qualified Cabal.Plan           as P
-import qualified Data.List.NonEmpty   as NE
-import qualified Data.Map.Strict      as M
-import qualified Data.Set             as S
-import qualified Distribution.Package as C
-import qualified Topograph            as TG
+import qualified Cabal.Index                            as I
+import qualified Cabal.Plan                             as P
+import qualified Data.List.NonEmpty                     as NE
+import qualified Data.Map.Strict                        as M
+import qualified Data.Set                               as S
+import qualified Distribution.Package                   as C
+import qualified Distribution.Types.UnqualComponentName as C
+import qualified Topograph                              as TG
 
+import CabalBundler.ExeOption
 import CabalBundler.NixBase32
 import CabalBundler.NixSingle.Input
 import CabalBundler.NixSingle.Template
@@ -23,12 +25,18 @@ import CabalBundler.NixSingle.Template
 -------------------------------------------------------------------------------
 
 generateDerivationNix
-    :: PackageName
-    -> String
+    :: TracerPeu r w
+    -> PackageName
+    -> ExeOption C.UnqualComponentName
     -> P.PlanJson
     -> Map PackageName I.PackageInfo
     -> Peu r String
-generateDerivationNix packageName exeName plan meta = do
+generateDerivationNix tracer packageName exeName' plan meta = do
+    exeName <- case exeName' of
+        ExeOptionPkg x -> return $ C.unUnqualComponentName x
+        ExeOption x    -> return $ C.unUnqualComponentName x
+        ExeOptionAll   -> die tracer "--exe-all isn't supported for openbsd output"
+
     let units :: Map P.UnitId P.Unit
         units = P.pjUnits plan
 

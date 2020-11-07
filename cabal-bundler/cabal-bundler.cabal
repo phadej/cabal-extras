@@ -34,6 +34,7 @@ library cabal-bundler-internal
   ghc-options:        -Wall
   exposed-modules:
     CabalBundler.Curl
+    CabalBundler.ExeOption
     CabalBundler.Main
     CabalBundler.NixBase32
     CabalBundler.NixSingle
@@ -94,6 +95,7 @@ test-suite cabal-bundler-tests
   main-is:          Tests.hs
   build-depends:
     , base
+    , Cabal
     , cabal-bundler-internal
     , cabal-install-parsers
     , cabal-plan

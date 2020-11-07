@@ -7,12 +7,14 @@ import Data.List         (isPrefixOf)
 import Test.Tasty        (TestName, TestTree, defaultMain, testGroup)
 import Test.Tasty.Golden (goldenVsStringDiff)
 
-import qualified Cabal.Index      as I
-import qualified Cabal.Plan       as P
-import qualified System.Directory as Dir
-import qualified System.FilePath  as FP
+import qualified Cabal.Index                            as I
+import qualified Cabal.Plan                             as P
+import qualified Distribution.Types.UnqualComponentName as C
+import qualified System.Directory                       as Dir
+import qualified System.FilePath                        as FP
 
 import CabalBundler.Curl      (generateCurl)
+import CabalBundler.ExeOption
 import CabalBundler.NixSingle (generateDerivationNix)
 import CabalBundler.OpenBSD   (generateOpenBSD)
 
@@ -35,20 +37,20 @@ main = do
             (runPeu nullTracer' () (fmap toLazy action))
 
     let pn      = mkPackageName "cabal-fmt"
-        exeName = "cabal-fmt"
+        exeName = ExeOption (C.mkUnqualComponentName "cabal-fmt")
 
     defaultMain $ testGroup "cabal-bundler"
         [ golden "derivation.nix" $ do
             planPath <- makeAbsoluteFilePath $ pwd FP.</> "fixtures/cabal-fmt.plan.json"
             plan     <- liftIO $ P.decodePlanJson (toFilePath planPath)
-            script   <- generateDerivationNix pn exeName plan meta
+            script   <- generateDerivationNix nullTracer' pn exeName plan meta
 
             return (toUTF8BS script)
 
         , golden "fetch-with-curl.sh"$ do
             planPath <- makeAbsoluteFilePath $ pwd FP.</> "fixtures/cabal-fmt.plan.json"
             plan     <- liftIO $ P.decodePlanJson (toFilePath planPath)
-            script   <- generateCurl pn exeName plan meta
+            script   <- generateCurl nullTracer' pn exeName plan meta
 
             return (toUTF8BS script)
 

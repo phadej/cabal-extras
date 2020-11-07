@@ -6,26 +6,31 @@ import Peura
 
 import Data.Maybe (maybeToList)
 
-import qualified Cabal.Index          as I
-import qualified Cabal.Plan           as P
-import qualified Data.List.NonEmpty   as NE
-import qualified Data.Map.Strict      as M
-import qualified Data.Set             as S
-import qualified Distribution.Package as C
-import qualified System.FilePath      as FP
-import qualified Topograph            as TG
+import qualified Cabal.Index                            as I
+import qualified Cabal.Plan                             as P
+import qualified Data.List.NonEmpty                     as NE
+import qualified Data.Map.Strict                        as M
+import qualified Data.Set                               as S
+import qualified Distribution.Package                   as C
+import qualified Distribution.Types.UnqualComponentName as C
+import qualified System.FilePath                        as FP
+import qualified Topograph                              as TG
+
+import CabalBundler.ExeOption
 
 -------------------------------------------------------------------------------
 -- generating output
 -------------------------------------------------------------------------------
 
+-- TODO: use ExeOption
 generateCurl
-    :: PackageName
-    -> String
+    :: TracerPeu r w
+    -> PackageName
+    -> ExeOption C.UnqualComponentName
     -> P.PlanJson
     -> Map PackageName I.PackageInfo
     -> Peu r String
-generateCurl _packageName _exeName plan meta = do
+generateCurl _tracer _packageName _exeName plan meta = do
     let units :: Map P.UnitId P.Unit
         units = P.pjUnits plan
 
@@ -33,6 +38,10 @@ generateCurl _packageName _exeName plan meta = do
         pkgs = M.fromListWith S.union
             [ (P.uPId unit, S.singleton (P.uId unit))
             | unit <- M.elems units
+            -- TODO: better check. this can fail.
+            , case P.uPkgSrc unit of
+                Just (P.RepoTarballPackage _) -> True
+                _                             -> False
             ]
 
     pkgIds <- packageGranularity units pkgs
