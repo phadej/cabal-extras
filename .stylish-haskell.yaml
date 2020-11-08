@@ -9,7 +9,7 @@ steps:
       style: vertical
       remove_redundant: true
   - trailing_whitespace: {}
-columns: 80
+columns: 120
 language_extensions:
   - BangPatterns
   - DataKinds

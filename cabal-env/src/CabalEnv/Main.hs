@@ -9,7 +9,7 @@ module CabalEnv.Main (main) where
 import Peura
 
 import Control.Applicative           ((<**>))
-import Data.List                     (lines, sort, stripPrefix)
+import Data.List                     (sort, stripPrefix)
 import Data.Version                  (showVersion)
 import Distribution.Parsec           (eitherParsec)
 import Distribution.Types.Dependency (Dependency (..))

@@ -8,9 +8,7 @@ module CabalStoreCheck.Main (main) where
 import Peura
 
 import Control.Applicative ((<**>))
-import Data.Char           (isSpace)
 import Data.List           (intercalate, isPrefixOf)
-import Data.Maybe          (isJust)
 import Data.Version        (showVersion)
 
 import qualified Cabal.Config                            as Cbl

@@ -12,7 +12,7 @@ module CabalDiff.Hoogle (
 import Peura
 import Prelude ()
 
-import Data.Char                           (isPrint, isSpace)
+import Data.Char                           (isPrint)
 import Distribution.Compat.CharParsing
        (char, eof, manyTill, satisfy, skipMany, spaces, string, try,
        unexpected)

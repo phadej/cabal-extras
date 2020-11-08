@@ -12,10 +12,8 @@ module Peura.GHC (
     MakeGhcTracer (..),
     ) where
 
-import Data.Char           (isSpace)
 import Data.List           (isSuffixOf, lookup)
 import Distribution.Parsec (eitherParsec)
-import Text.Read           (readMaybe)
 
 import qualified Cabal.Parse                                          as Cbl
 import qualified Data.ByteString.Lazy                                 as LBS

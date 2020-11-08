@@ -6,7 +6,7 @@ import CabalBundler.NixSingle.Input
 type Writer a = (String, a)
 tell :: String -> Writer (); tell x = (x, ())
 execWriter :: Writer a -> String; execWriter = fst
-render :: Z -> String
+render :: ZZ -> String
 render z_root = execWriter $ do
   tell "{ stdenv\n"
   tell ", ghc\n"
