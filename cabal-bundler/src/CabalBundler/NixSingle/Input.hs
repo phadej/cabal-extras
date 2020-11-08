@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 module CabalBundler.NixSingle.Input (
-    Z (..),
+    ZZ (..),
     ZDep (..),
     ) where
 
@@ -12,12 +12,12 @@ import qualified Zinza
 -- import Prelude (writeFile)
 -- Zinza.parseAndCompileModuleIO _moduleConfig "data/single.nix" >>= writeFile "src/CabalBundler/NixSingle/Template.hs"
 
-_moduleConfig :: Zinza.ModuleConfig Z
+_moduleConfig :: Zinza.ModuleConfig ZZ
 _moduleConfig = Zinza.simpleConfig "CabalBundler.NixSingle.Template"
     [ "CabalBundler.NixSingle.Input"
     ]
 
-data Z = Z
+data ZZ = ZZ
     { zDerivationName :: String
     , zComponentName  :: String
     , zExecutableName :: String
@@ -26,7 +26,7 @@ data Z = Z
     }
   deriving (Show, Generic)
 
-instance Zinza.Zinza Z where
+instance Zinza.Zinza ZZ where
     toType    = Zinza.genericToTypeSFP
     toValue   = Zinza.genericToValueSFP
     fromValue = Zinza.genericFromValueSFP

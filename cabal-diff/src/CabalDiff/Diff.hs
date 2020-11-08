@@ -7,7 +7,6 @@ module CabalDiff.Diff (
 import Peura
 import Prelude ()
 
-import Data.Align              (alignWith)
 import Distribution.ModuleName (ModuleName)
 import System.Console.ANSI
        (Color (..), ColorIntensity (Vivid), ConsoleLayer (Foreground), SGR (..))

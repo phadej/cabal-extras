@@ -4,8 +4,6 @@ module CabalBundler.Curl (
 
 import Peura
 
-import Data.Maybe (maybeToList)
-
 import qualified Cabal.Index                            as I
 import qualified Cabal.Plan                             as P
 import qualified Data.List.NonEmpty                     as NE

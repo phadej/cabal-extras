@@ -9,13 +9,13 @@ module CabalDiff.Main (main) where
 import Peura
 import Prelude ()
 
+import Control.Monad        (foldM)
 import Data.Version         (showVersion)
 import System.FilePath.Glob (glob)
 
 import Control.Applicative         ((<**>))
-import Control.Concurrent.STM      (atomically)
 import Control.Concurrent.STM.TSem (TSem, newTSem, signalTSem, waitTSem)
-import Data.List                   (stripPrefix, sort)
+import Data.List                   (sort, stripPrefix)
 import Distribution.Parsec         (eitherParsec)
 
 import qualified Crypto.Hash.SHA256     as SHA256
@@ -28,7 +28,6 @@ import CabalDiff.Diff
 import CabalDiff.Hoogle
 
 import Paths_cabal_diff (version)
-
 
 main :: IO ()
 main = do
@@ -267,14 +266,14 @@ buildHoogleTxt
     -> GhcInfo
     -> TSem
     -> PackageIdentifier
-    -> [Path Absolute] -- ^ additional tarballs 
+    -> [Path Absolute] -- ^ additional tarballs
     -> Path Absolute -> Peu r API
 buildHoogleTxt tracer gi buildSem pkgId tarballs dir = do
     let cabalProjectLines :: [String]
         cabalProjectLines = "packages: ." :
             [ "packages: " ++ toFilePath t
             | t <- tarballs
-            ] 
+            ]
 
     writeByteString (dir </> fromUnrootedFilePath "cabal.project")
         $ toUTF8BS $ unlines cabalProjectLines

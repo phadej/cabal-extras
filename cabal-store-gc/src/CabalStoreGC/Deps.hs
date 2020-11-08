@@ -2,8 +2,6 @@ module CabalStoreGC.Deps (extractDeps) where
 
 import Peura
 
-import Data.Char (isSpace)
-
 import qualified Data.ByteString.Char8        as BS8
 import qualified Distribution.Compat.Newtype  as C
 import qualified Distribution.Parsec          as C

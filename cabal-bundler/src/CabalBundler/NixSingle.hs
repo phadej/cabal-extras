@@ -4,8 +4,6 @@ module CabalBundler.NixSingle (
 
 import Peura
 
-import Data.Maybe (maybeToList)
-
 import qualified Cabal.Index                            as I
 import qualified Cabal.Plan                             as P
 import qualified Data.List.NonEmpty                     as NE
@@ -61,7 +59,7 @@ generateDerivationNix tracer packageName exeName' plan meta = do
                 r -> "{ rev = " ++ show r ++ "; sha256 = \"" ++ encodeHash (I.riCabal ri) ++ "\"; }"
             }
 
-    return $ render Z
+    return $ render ZZ
         { zDerivationName = exeName
         , zComponentName  = C.unPackageName packageName ++ ":exe:" ++ exeName
         , zExecutableName = exeName

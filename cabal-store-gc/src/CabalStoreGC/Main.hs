@@ -8,26 +8,22 @@ module CabalStoreGC.Main (main) where
 import Peura
 
 import Control.Applicative ((<**>))
-import Data.Char           (isSpace)
 import Data.Foldable       (foldlM)
 import Data.List           (intercalate, stripPrefix)
 import Data.Version        (showVersion)
 
-import Data.Set.Optics (setOf)
-import Optics.Core     (folded, _Just, (%))
-
-import qualified Cabal.Config                                         as Cbl
-import qualified Cabal.Plan                                           as P
-import qualified Crypto.Hash.SHA256                                   as SHA256
-import qualified Data.ByteString.Base64.URL                           as Base64
-import qualified Data.ByteString.Char8                                as BS8
-import qualified Data.Map.Strict                                      as Map
-import qualified Data.Set                                             as Set
-import qualified Distribution.Types.InstalledPackageInfo              as C
-import qualified Distribution.Types.UnitId                            as C
-import qualified Options.Applicative                                  as O
-import qualified System.Path                                          as P
-import qualified Topograph                                            as TG
+import qualified Cabal.Config                            as Cbl
+import qualified Cabal.Plan                              as P
+import qualified Crypto.Hash.SHA256                      as SHA256
+import qualified Data.ByteString.Base64.URL              as Base64
+import qualified Data.ByteString.Char8                   as BS8
+import qualified Data.Map.Strict                         as Map
+import qualified Data.Set                                as Set
+import qualified Distribution.Types.InstalledPackageInfo as C
+import qualified Distribution.Types.UnitId               as C
+import qualified Options.Applicative                     as O
+import qualified System.Path                             as P
+import qualified Topograph                               as TG
 
 import Paths_cabal_store_gc (version)
 

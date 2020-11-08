@@ -241,7 +241,7 @@ makeTracerPeu TracerOptions {..} = do
 -------------------------------------------------------------------------------
 
 typeNameOf :: forall x. Typeable x => x -> String
-typeNameOf _ = show $ typeRep (Proxy :: Proxy x)
+typeNameOf _ = show $ (typeRep :: TypeRep x)
 
 timespecToDurr :: TimeSpec -> Double
 timespecToDurr (TimeSpec s ns) = fromIntegral s + fromIntegral ns / 1e9
