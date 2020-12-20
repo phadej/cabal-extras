@@ -1,0 +1,195 @@
+.TH CABAL-DOCSPEC 1 "December 26, 2020" "cabal-docspec development version" "Cabal Extras"
+.SH NAME
+.PP
+cabal-docspec - another doctest for Haskell
+.SH SYNOPSIS
+.PP
+\f[B]cabal-docspec\f[R] \f[I][OPTION]\f[R]\&...
+.PD 0
+.P
+.PD
+\f[B]cabal-docspec\f[R] \f[B]--no-cabal-plan\f[R]
+\f[I][OPTION]\f[R]\&... \f[I][CABALFILE]\f[R]\&...
+.SH DESCRIPTION
+.PP
+\f[I]cabal-docspec\f[R] is a doctest runner closely integrated with
+\f[I]cabal-install\f[R].
+In common scenarious cabal-docspec is able to self-configure using
+cabal-install generated metadata (\f[I]plan.json\f[R]).
+Another important difference is that cabal-docspec doesn\[cq]t depend on
+\f[I]ghc\f[R] library, but rather invoke the \f[I]ghci\f[R] executable.
+.PP
+cabal-docspec doesn\[cq]t use GHC to parse input files, but rather
+relies on \f[I]haskell-lexer\f[R] for comment extraction.
+This approach is resilient, but not 100 per cent accurate.
+.PP
+cabal-docspec doesn\[cq]t interpret library code in \f[I]ghci\f[R], but
+instead loads precompiled code.
+The effect is similar as using \f[B]-fobject-code\f[R] in GHCi (which is
+mandatory for packages with FFI, for example).
+The consequence is that cabal-docspec is unable to evaluate doctest
+examples in non-exported modules (\f[B]other-modules\f[R]), or which use
+non-exposed symbols.
+.PP
+GHCi is invoked in a package directory, however it is told to not look
+for modules anywhere (with bare \f[B]-i\f[R] flag).
+This way doctests may use package local files, but the code is not
+re-intepreted.
+.SH OPTIONS
+.PP
+In general, all boolean options are enabled with \f[B]\[en]option\f[R]
+and yet again disabled with \f[B]--no-option\f[R].
+That is, you use the exact same option name but prefix it with
+\[lq]no-\[rq].
+However, in this list we mostly only list and show the \[en]option
+version of them.
+.TP
+\f[B]-w, --with-compiler\f[R] \f[I]path\f[R]
+A path to compiler to use to run doctest examples.
+Must have the same version as in the cabal plan.
+.TP
+\f[B]--ghc\f[R]
+Indicate the used compiler is GHC.
+Currently this options is no-op.
+.TP
+\f[B]--cabal-plan\f[R]
+Read \f[I]plan.json\f[R] produced by cabal-install to find out project
+packages and their dependencies.
+When turned (with \f[B]--no-cabal-plan\f[R]), paths to the cabal files
+have to be given.
+Also only the global package db is considered for dependencies.
+Default \f[B]--cabal-plan\f[R].
+.TP
+\f[B]--preserve-it\f[R]
+Preserve \f[B]it\f[R] variable, i.e.\ the result in of previous
+expression.
+Default \f[B]--no-preserve-it\f[R].
+.TP
+\f[B]--strip-comments\f[R]
+Strip Haskell comments from examples and the outputs.
+Especially outputs are assumed to be Haskell-like.
+Default \f[B]--no-strip-comments\f[R].
+.TP
+\f[B]--extra-package\f[R] \f[I]pkgname\f[R]
+An extra package to make available in GHCi session.
+The package must exist in the plan.
+.TP
+\f[B]--timeout\f[R] \f[I]seconds\f[R]
+Timeout for evaluation of single expression.
+Default: 3 seconds.
+Long timeouts may allow GHCi to acquire a lot of resources.
+On the other hand, too short timeout may cause false negatives.
+.TP
+\f[B]-X\f[R] \f[I]extension\f[R]
+Language extension to start GHCi session with.
+Can be specified multiple times.
+.TP
+\f[B]--phase1\f[R]
+Stop after the first phase.
+First phase consists of discovering the modules, and extracting the
+doctest examples from their comments.
+.TP
+\f[B]--phase2\f[R]
+Stop after the second phase, i.e.\ evaluation in GHCi phase.
+.TP
+\f[B]--builddir\f[R] \f[I]dir\f[R]
+Directory to look for \f[B]plan.json\f[R] and local package database.
+.TP
+\f[B]-v, --verbose\f[R]
+Increase verbosity level.
+Can be specified multiple times.
+.TP
+\f[B]-q, --quiet\f[R]
+Decrease verbosity level.
+Can be specified multiple times.
+.TP
+\f[B]--version\f[R]
+Display numeric version.
+.TP
+\f[B]--help\f[R]
+Display short help message.
+.TP
+\f[B]--man\f[R]
+Display this manual.
+.SH EXAMPLES
+.PP
+A simplest example, which should work for most packages is to run
+\f[B]cabal-docspec\f[R] after \f[B]cabal v2-build all\f[R]:
+.IP
+.nf
+\f[C]
+cabal v2-build all
+cabal-docspec
+\f[R]
+.fi
+.PP
+Testing base library inside GHC source tree.
+The GHC source tree doesn\[cq]t have cabal-install generated
+\f[B]plan.json\f[R], therefore we use \f[B]\[en]no-cabal-plan\f[R] and
+supply the \f[I]libraries/base/base.cabal\f[R] path.
+There are some examples using explanatory comments,
+\f[B]\[en]strip-comments\f[R] makes them work.
+Some examples are illustrating non-termination, therefore short
+\f[B]\[en]timeout\f[R] is justified.
+Few examples are using symbols from \f[I]mtl\f[R] and \f[I]deepseq\f[R]
+packages, we make them available.
+Finally, some modules are documented with no-Prelude assumption,
+therefore we have to turn it off.
+.IP
+.nf
+\f[C]
+cabal-docspec -w $PWD/_build/stage1/bin/ghc \[rs]
+    --no-cabal-plan \[rs]
+    --strip-comments \[rs]
+    --timeout 2 \[rs]
+    --extra-package=mtl --extra-package=deepseq \[rs]
+    -XNoImplicitPrelude \[rs]
+    libraries/base/base.cabal
+\f[R]
+.fi
+.SH WARNINGS
+.PP
+All warnings are enabled by default.
+.TP
+\f[B]-Wmultiple-module-files\f[R]
+Found multiple files matching the exposed module.
+.TP
+\f[B]-Wmissing-module-file\f[R]
+No files found matching a module.
+For example modules which are preprocessed (\f[I].hsc\f[R] etc).
+.TP
+\f[B]-Wtimeout\f[R]
+Evaluation of an expression timed out.
+.TP
+\f[B]-Wunknown-extension\f[R]
+Warn if extension passed via \f[B]-X\f[R] seems to be unknown.
+The known extension list is from \f[I]Cabal\f[R] library.
+.SH KNOWN BUGS AND INFECILITIES
+.PP
+Multiline input is not well supported for GHC prior 7.8, as these lack
+way to suppress secondary prompt output.
+.PP
+Properties (\f[B]prop>\f[R]) are recognized but not evaluated.
+.PP
+Literate Haskell is not supported.
+.PP
+C preprocessor (\f[I]cpphs\f[R]) warnings are not part of warning
+framework.
+.SH SEE ALSO
+.PP
+doctest(1) https://hackage.haskell.org/package/doctest
+.SH WWW (REPORTING BUGS)
+.PP
+https://github.com/phadej/cabal-extras
+.SH COPYRIGHT
+.PP
+Copyright \[co] 2020-2021 Oleg Grenrus.
+License GPLv2-or-later: GNU GPL version 2 or later
+<http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+.SH AUTHOR
+.PP
+Written by Oleg Grenrus.
+Doctest comment extraction and comparison functions are originally from
+\f[I]doctest\f[R] by Simon Hengel.

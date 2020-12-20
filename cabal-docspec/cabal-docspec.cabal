@@ -1,0 +1,98 @@
+cabal-version:      2.2
+name:               cabal-docspec
+version:            0.1
+synopsis:           Run examples in your docs
+category:           Development
+description:
+  Main difference to @doctest@ is that @cabal-docspec@ doesn't
+  rely on @ghc@ library.
+
+license:            GPL-2.0-or-later
+license-files:      LICENSE LICENSE.GPLv2 LICENSE.GPLv3
+author:             Oleg Grenrus <oleg.grenrus@iki.fi>
+maintainer:         Oleg Grenrus <oleg.grenrus@iki.fi>
+tested-with:        GHC ==8.6.5 || ==8.8.4 || ==8.10.2
+extra-source-files:
+  Changelog.md
+  cabal-docspec.1
+
+source-repository head
+  type:     git
+  location: https://github.com/phadej/cabal-extras.git
+  subdir:   cabal-docspec
+
+library cabal-docspec-internal
+  default-language:   Haskell2010
+  hs-source-dirs:     src
+  ghc-options:        -Wall
+
+  -- Main module
+  exposed-modules:    CabalDocspec.Main
+
+  -- rest of the implementation
+  exposed-modules:
+    CabalDocspec.Cpp
+    CabalDocspec.Doctest.Example
+    CabalDocspec.Doctest.Extract
+    CabalDocspec.Doctest.Parse
+    CabalDocspec.GHCi
+    CabalDocspec.Lexer
+    CabalDocspec.Located
+    CabalDocspec.Man
+    CabalDocspec.Man.Content
+    CabalDocspec.Opts
+    CabalDocspec.Package
+    CabalDocspec.Phase1
+    CabalDocspec.Phase2
+    CabalDocspec.Summary
+    CabalDocspec.Trace
+    CabalDocspec.Warning
+    System.Process.Interactive
+
+  -- ghc-boot dependencies
+  build-depends:
+    , base              ^>=4.12.0.0 || ^>=4.13.0.0 || ^>=4.14.0.0
+    , bytestring        ^>=0.10.8.2
+    , containers        ^>=0.5.10.2 || ^>=0.6.0.1
+    , deepseq           ^>=1.4.3.0
+    , directory         ^>=1.3.0.2
+    , filepath          ^>=1.4.1.2
+    , mtl               ^>=2.2.2
+    , parsec            ^>=3.1.13.0
+    , pretty            ^>=1.1.3.3
+    , process           ^>=1.6.1.0
+    , stm               ^>=2.5.0.0
+    , template-haskell
+    , text              ^>=1.2.3.0
+
+  -- We use Cabal-3.2
+  build-depends:      Cabal ^>=3.2
+
+  -- We also use peura
+  build-depends:      peura
+
+  -- dependencies in library
+  build-depends:
+    , ansi-terminal          ^>=0.11
+    , async                  ^>=2.2.2
+    , cabal-install-parsers  ^>=0.4
+    , cabal-plan             ^>=0.7.0.0
+    , cpphs                  ^>=1.20.9.1
+    , Glob                   ^>=0.10.0
+    , haskell-lexer          ^>=1.1
+    , optparse-applicative   ^>=0.16.0.0
+    , splitmix               ^>=0.1.0.3
+    , unliftio-core          ^>=0.2.0.1
+
+  default-extensions:
+    NoImplicitPrelude
+    OverloadedStrings
+
+executable cabal-docspec
+  default-language: Haskell2010
+  hs-source-dirs:   cli
+  main-is:          Main.hs
+  ghc-options:      -Wall -threaded
+  build-depends:
+    , base
+    , cabal-docspec-internal

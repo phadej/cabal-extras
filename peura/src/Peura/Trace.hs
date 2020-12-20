@@ -20,6 +20,8 @@ module Peura.Trace (
     putWarning,
     putError,
     -- * Implementation functions
+    putStrErr,
+    putStrOut,
 ) where
 
 import Data.Foldable    (asum)
