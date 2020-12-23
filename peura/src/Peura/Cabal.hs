@@ -35,6 +35,7 @@ import qualified Data.Text                  as T
 import qualified Distribution.Fields.Pretty as C
 import qualified Distribution.Package       as C
 import qualified Distribution.Pretty        as C
+import qualified Distribution.Types.Flag    as C
 import qualified Distribution.Version       as C
 import qualified Text.PrettyPrint           as PP
 
@@ -62,6 +63,10 @@ instance CabalPlanConvert P.PkgId C.PackageIdentifier where
 instance CabalPlanConvert P.UnitId C.UnitId where
     toCabal (P.UnitId u) = C.mkUnitId (T.unpack u)
     fromCabal u          = P.UnitId (T.pack (C.unUnitId u))
+
+instance CabalPlanConvert P.FlagName C.FlagName where
+    toCabal (P.FlagName u) = C.mkFlagName (T.unpack u)
+    fromCabal u            = P.FlagName (T.pack (C.unFlagName u))
 
 -------------------------------------------------------------------------------
 -- Index

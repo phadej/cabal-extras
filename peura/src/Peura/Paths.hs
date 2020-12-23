@@ -12,8 +12,9 @@ module Peura.Paths (
     root,
     -- * Directory
     getCurrentDirectory,
-    makeAbsoluteFilePath,
+    getTemporaryDirectory,
     getAppUserDataDirectory,
+    makeAbsoluteFilePath,
     doesPathExist,
     doesFileExist,
     doesDirectoryExist,
@@ -59,6 +60,9 @@ fromAbsoluteFilePathMaybe fp
 
 getCurrentDirectory :: Peu r (Path Absolute)
 getCurrentDirectory = liftIO P.getCurrentDirectory
+
+getTemporaryDirectory :: Peu r (Path Absolute)
+getTemporaryDirectory = liftIO P.getTemporaryDirectory
 
 makeAbsoluteFilePath :: FilePath -> Peu r (Path Absolute)
 makeAbsoluteFilePath = liftIO . P.makeAbsolute . fromFilePath

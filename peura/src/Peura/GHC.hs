@@ -130,7 +130,7 @@ splitOn sep = go where
         (ys :| yss) = go xs
 
 trim :: String -> String
-trim = let tr = dropWhile isSpace . reverse in tr . tr
+trim = dropWhile isSpace . dropWhileEnd isSpace
 
 -------------------------------------------------------------------------------
 -- PackageDb
