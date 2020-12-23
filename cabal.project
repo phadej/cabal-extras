@@ -31,4 +31,4 @@ constraints: directory     installed
 constraints: process       installed
 constraints: transformers  installed
 
-packages: https://oleg.fi/gentle-introduction-2020.11.tar.gz
+packages: http://oleg.fi/gentle-introduction-2020.11.tar.gz
