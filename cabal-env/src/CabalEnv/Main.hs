@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE TypeApplications    #-}
 {-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 -- |
@@ -38,7 +39,7 @@ import Paths_cabal_env (version)
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
+    tracer <- makeTracerPeu @(V1 W) (optTracer opts defaultTracerOptions)
     runPeu tracer () $ do
         ghcInfo <- getGhcInfo tracer (optCompiler opts)
 
@@ -61,7 +62,7 @@ main = do
 -- List
 -------------------------------------------------------------------------------
 
-listAction :: TracerPeu r W -> Opts -> GhcInfo -> Peu r ()
+listAction :: TracerPeu r (V1 W) -> Opts -> GhcInfo -> Peu r ()
 listAction tracer Opts {..} ghcInfo = do
     let envDir = ghcEnvDir ghcInfo
     when optVerbose $ putInfo tracer $ "Environments available in " ++ toFilePath envDir
@@ -73,7 +74,7 @@ listAction tracer Opts {..} ghcInfo = do
 -- Show
 -------------------------------------------------------------------------------
 
-showAction :: TracerPeu r W -> Opts -> GhcInfo -> Peu r ()
+showAction :: TracerPeu r (V1 W) -> Opts -> GhcInfo -> Peu r ()
 showAction tracer Opts {..} ghcInfo = do
     let envPath = ghcEnvDir ghcInfo </> fromUnrootedFilePath optEnvName
     withEnvironment tracer envPath $ \env -> do
@@ -97,7 +98,7 @@ showAction tracer Opts {..} ghcInfo = do
 -- Install
 -------------------------------------------------------------------------------
 
-installAction :: TracerPeu r W -> Opts -> GhcInfo -> Peu r ()
+installAction :: TracerPeu r (V1 W) -> Opts -> GhcInfo -> Peu r ()
 installAction tracer opts@Opts {..} ghcInfo = unless (null optDeps) $ do
     let envDir = ghcEnvDir ghcInfo
     putDebug tracer $ "GHC environment directory: " ++ toFilePath envDir
@@ -135,7 +136,7 @@ inThePlan plan (Dependency pn range _) = case Map.lookup pn pkgIds of
 -- Local packages
 -------------------------------------------------------------------------------
 
-getLocalPackages :: TracerPeu r W -> Opts -> Peu r (Map PackageName (Path Absolute))
+getLocalPackages :: TracerPeu r (V1 W) -> Opts -> Peu r (Map PackageName (Path Absolute))
 getLocalPackages tracer Opts {..}
     | optLocal = do
         putInfo tracer "SDisting local packages"
@@ -176,7 +177,7 @@ getLocalPackages tracer Opts {..}
     | otherwise =
         return Map.empty
 
-elaborateSdistLocation :: forall r. TracerPeu r W -> [FilePath] -> Peu r (Map PackageIdentifier (Path Absolute))
+elaborateSdistLocation :: forall r. TracerPeu r (V1 W) -> [FilePath] -> Peu r (Map PackageIdentifier (Path Absolute))
 elaborateSdistLocation tracer = fmap Map.fromList . traverse go where
     go :: FilePath -> Peu r (PackageIdentifier, Path Absolute)
     go fp = do
@@ -207,7 +208,7 @@ calculateHash1 fp = do
 --  Hide
 -------------------------------------------------------------------------------
 
-hideAction :: TracerPeu r W -> Opts -> GhcInfo -> Peu r ()
+hideAction :: TracerPeu r (V1 W) -> Opts -> GhcInfo -> Peu r ()
 hideAction tracer opts@Opts {..} ghcInfo = unless (null optDeps) $ do
     let envDir = ghcEnvDir ghcInfo
     putDebug tracer $ "GHC environment directory: " ++ toFilePath envDir
@@ -238,7 +239,7 @@ hideAction tracer opts@Opts {..} ghcInfo = unless (null optDeps) $ do
 -------------------------------------------------------------------------------
 
 installActionDo
-    :: TracerPeu r W
+    :: TracerPeu r (V1 W)
     -> Opts
     -> Environment () -- ^ old environment
     -> GhcInfo
@@ -273,7 +274,7 @@ installActionDo tracer opts@Opts {..} oldEnv ghcInfo = do
                 generateEnvironment tracer opts env ghcInfo plan planBS
 
 generateEnvironment
-    :: TracerPeu r W
+    :: TracerPeu r (V1 W)
     -> Opts
     -> Environment ()
     -> GhcInfo

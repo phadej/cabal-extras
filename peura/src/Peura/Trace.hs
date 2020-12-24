@@ -1,8 +1,14 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE EmptyCase            #-}
+{-# LANGUAGE FlexibleContexts     #-}
+{-# LANGUAGE RecordWildCards      #-}
+{-# LANGUAGE StandaloneDeriving   #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Peura.Trace (
     Trace (..),
+    IsPeuraTrace (..),
     TracerPeu,
     makeTracerPeu,
+    traceApp,
     -- * Tracer options
     TracerOptions (..),
     defaultTracerOptions,
@@ -17,8 +23,7 @@ module Peura.Trace (
 import Data.Foldable             (asum)
 import Data.IORef                (IORef, atomicModifyIORef', newIORef)
 import Data.List                 (intercalate)
-import System.Clock
-       (Clock (Monotonic), TimeSpec (..), diffTimeSpec, getTime)
+import System.Clock              (Clock (Monotonic), TimeSpec (..), diffTimeSpec, getTime)
 import System.Console.Concurrent (errorConcurrent, outputConcurrent)
 import System.IO                 (stderr)
 import System.IO.Unsafe          (unsafePerformIO)
@@ -42,27 +47,30 @@ import Peura.Warning
 -------------------------------------------------------------------------------
 
 -- | Combining 'Trace' for all @peura@ trace messages
-data Trace w
+data Trace tr
     = TraceStdout [ANSI.SGR] String
     | TraceStderr String
 
     | TraceDebug String
     | TraceInfo String
-    | TraceWarning w String
     | TraceError String
+
+    | TraceWarning (TraceW tr) String
 
     | TracePeu TracePeu
     | TraceProcess TracePID TraceProcess
     | TraceCabal TraceCabal
     | TraceGhc TraceGhc
 
-  deriving (Show)
+    | TraceApp tr
+
+deriving instance (Show (TraceW tr), Show tr) => Show (Trace tr)
 
 -------------------------------------------------------------------------------
 -- Process
 -------------------------------------------------------------------------------
 
-instance MakeProcessTracer (Trace w) where
+instance MakeProcessTracer (Trace tr) where
     makeProcessTracer tracer = do
         pid <- newPid
         return (contramap (TraceProcess pid) tracer)
@@ -81,22 +89,43 @@ newPid = liftIO $ atomicModifyIORef' pidRef $ \pid -> (pid + 1, pid)
 -- Cabal
 -------------------------------------------------------------------------------
 
-instance MakeCabalTracer (Trace w) where
+instance MakeCabalTracer (Trace tr) where
     makeCabalTracer = return . contramap TraceCabal
 
 -------------------------------------------------------------------------------
 -- Peu
 -------------------------------------------------------------------------------
 
-instance MakePeuTracer (Trace w) where
+instance MakePeuTracer (Trace tr) where
     makePeuTracer = contramap TracePeu
 
 -------------------------------------------------------------------------------
 -- GHC
 -------------------------------------------------------------------------------
 
-instance MakeGhcTracer (Trace w) where
+instance MakeGhcTracer (Trace tr) where
     makeGhcTracer = return . contramap TraceGhc
+
+-------------------------------------------------------------------------------
+-- Warning
+-------------------------------------------------------------------------------
+
+class Warning (TraceW tr) => IsPeuraTrace tr where
+    type TraceW tr :: Type
+
+    -- | Way to show tracer, used by console printer
+    showTrace :: tr -> (ANSI.Color, [String], String)
+
+instance IsPeuraTrace Void where
+    type TraceW Void = Void
+    showTrace = absurd
+
+instance Warning w => IsPeuraTrace (V1 w) where
+    type TraceW (V1 w) = w
+    showTrace x = case x of {}
+
+traceApp :: TracerPeu r tr -> tr -> Peu r ()
+traceApp tracer tr = traceWith tracer (TraceApp tr)
 
 -------------------------------------------------------------------------------
 -- Trace options
@@ -143,44 +172,47 @@ tracerOptionsParser = fmap (foldr (flip (.)) id) $ many $ asum $
 -------------------------------------------------------------------------------
 
 makeTracerPeu
-    :: forall w m. (MonadIO m, Warning w)
-    => TracerOptions w
-    -> IO (Tracer m (Trace w))
+    :: forall tr m. (MonadIO m, IsPeuraTrace tr)
+    => TracerOptions (TraceW tr)
+    -> IO (Tracer m (Trace tr))
 makeTracerPeu TracerOptions {..} = do
     supportsAnsi <- ANSI.hSupportsANSI stderr
     startClock   <- getTime Monotonic
 
-    return $ Tracer $ \_cs tr -> liftIO $ do
+    return $ Tracer $ \_cs tr0 -> liftIO $ do
         now <- getTime Monotonic
         let ts = diffTimeSpec now startClock
         let off = printf "[%10.5f] " (timespecToDurr ts)
         let setSgr | supportsAnsi = ANSI.setSGRCode
                    | otherwise    = const ""
 
-        case tr of
+        case tr0 of
             TraceStdout sgr msg -> outputConcurrent (setSgr sgr ++ msg ++ "\n")
             TraceStderr     msg -> errorConcurrent (msg ++ "\n")
 
             TraceWarning w msg -> when (w `Set.member` tracerOptionsEnabledWarnings) $ do
-                let sgr :: [ANSI.SGR]
-                    sgr =
-                        [ ANSI.SetConsoleIntensity ANSI.BoldIntensity
-                        , ANSI.SetColor ANSI.Foreground ANSI.Dull ANSI.Magenta
-                        ]
-                errorConcurrent $ concat
-                    [ off
-                    , setSgr sgr
-                    , "warning"
-                    , setSgr []
-                    , "["
-                    , setSgr sgr
-                    , "-W"
-                    , warningToFlag w
-                    , setSgr []
-                    , "]: "
-                    , msg
-                    , "\n"
-                    ]
+               let sgr :: [ANSI.SGR]
+                   sgr =
+                       [ ANSI.SetConsoleIntensity ANSI.BoldIntensity
+                       , ANSI.SetColor ANSI.Foreground ANSI.Dull ANSI.Magenta
+                       ]
+               errorConcurrent $ concat
+                   [ off
+                   , setSgr sgr
+                   , "warning"
+                   , setSgr []
+                   , "["
+                   , setSgr sgr
+                   , "-W"
+                   , warningToFlag w
+                   , setSgr []
+                   , "]: "
+                   , msg
+                   , "\n"
+                   ]
+
+            TraceApp tr -> case showTrace tr of
+                (colour, components, msg) -> traceImpl setSgr colour off components msg
 
             -- Generic trace messages
             TraceError msg -> traceImpl setSgr ANSI.Red   off ["error"] msg
@@ -234,7 +266,7 @@ makeTracerPeu TracerOptions {..} = do
 
             TraceGhc (TraceGhcFindGhcPkgResult ghcPkg) -> do
                 traceImpl setSgr ANSI.Blue off ["ghc", "find-ghc-pkg", "result"] ghcPkg
-  
+
 
 -------------------------------------------------------------------------------
 -- Helpers
@@ -277,16 +309,16 @@ traceImpl setSgr clr off pfx msg = do
 -- Output
 -------------------------------------------------------------------------------
 
-type TracerPeu r w = Tracer (Peu r) (Trace w)
+type TracerPeu r tr = Tracer (Peu r) (Trace tr)
 
-putDebug :: HasCallStack => Tracer m (Trace w) -> String -> m ()
+putDebug :: HasCallStack => Tracer m (Trace tr) -> String -> m ()
 putDebug tracer msg = traceWith tracer (TraceDebug msg)
 
-putInfo :: HasCallStack => TracerPeu r w -> String -> Peu r ()
+putInfo :: HasCallStack => TracerPeu r tr -> String -> Peu r ()
 putInfo tracer msg = traceWith tracer (TraceInfo msg)
 
-putWarning :: Warning w => TracerPeu r w -> w -> String -> Peu r ()
+putWarning :: IsPeuraTrace tr => TracerPeu r tr -> TraceW tr -> String -> Peu r ()
 putWarning tracer w msg = traceWith tracer (TraceWarning w msg)
 
-putError :: HasCallStack => TracerPeu r w -> String -> Peu r ()
+putError :: HasCallStack => TracerPeu r tr -> String -> Peu r ()
 putError tracer msg = traceWith tracer (TraceError msg)

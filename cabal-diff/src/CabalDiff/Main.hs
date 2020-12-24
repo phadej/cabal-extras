@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveTraversable   #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 -- |
 -- Copyright: Oleg Grenrus
 -- License: GPL-2.0-or-later
@@ -32,7 +33,7 @@ import Paths_cabal_diff (version)
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
+    tracer <- makeTracerPeu @Void (optTracer opts defaultTracerOptions)
     runPeu tracer () $ doDiff tracer opts
   where
     optsP' = O.info (versionP <*> optsP <**> O.helper) $ mconcat

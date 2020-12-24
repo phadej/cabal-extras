@@ -39,6 +39,8 @@ module Peura.Exports (
     prettyShow,
     mkPackageName,
     mkVersion,
+    -- * GHC.Generics
+    V1,
     -- * Optics
     (%),
     (^.), (^?),
@@ -51,6 +53,9 @@ module Peura.Exports (
     _Just,
     view,
     preview,
+    review,
+    matching,
+    prism',
     ) where
 
 import Gentle.Introduction hiding (error, traceShow, traceShowId, undefined)
@@ -70,12 +75,13 @@ import Distribution.Types.PackageName  (PackageName, mkPackageName)
 import Distribution.Types.UnitId       (UnitId)
 import Distribution.Types.Version      (Version, mkVersion)
 import Distribution.Types.VersionRange (VersionRange)
+import GHC.Generics                    (V1)
 import System.Exit                     (ExitCode (..))
 
 import qualified Data.ByteString.Lazy as LBS
 
 import Data.Set.Optics (setOf)
 import Optics.Core     (At (..), Ixed (..), coerced, folded, (%), (%~), (.~), (?~), (^.), (^?), _1, _2, _Just)
-import Optics.Extra    (preview, view)
+import Optics.Extra    (matching, preview, prism', review, view)
 
 type LazyByteString = LBS.ByteString

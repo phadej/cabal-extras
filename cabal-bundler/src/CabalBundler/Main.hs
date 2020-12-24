@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 module CabalBundler.Main (main) where
 
 import Peura
@@ -29,7 +30,7 @@ import CabalBundler.OpenBSD
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
+    tracer <- makeTracerPeu @Void (optTracer opts defaultTracerOptions)
     runPeu tracer () $ do
         meta <- cachedHackageMetadata tracer
 
@@ -53,7 +54,7 @@ main = do
                     ExeOptionAll   -> die tracer "--exe-all isn't supported without explicit plan.json"
 
                 -- TODO: check that package is in metadata, if plan is not given!
-                      
+
                 mplan <- ephemeralPlanJson tracer $ emptyPlanInput
                     { piExecutables = M.singleton pn (C.thisVersion ver, S.singleton exeName')
                     , piCompiler = Just (optCompiler opts)

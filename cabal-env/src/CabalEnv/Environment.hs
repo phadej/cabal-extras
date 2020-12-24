@@ -116,7 +116,7 @@ parseEnvironment fields0 = do
 -------------------------------------------------------------------------------
 
 withEnvironment
-    :: TracerPeu r W
+    :: TracerPeu r (V1 W)
     -> Path Absolute
     -> (Environment Plan.PlanJson -> Peu r ())
     -> Peu r ()
@@ -126,7 +126,7 @@ withEnvironment tracer fp k = withEnvironmentMaybe tracer fp $ \menv ->
         Just env -> k $ env { envPlan = snd (envPlan env) }
 
 withEnvironmentMaybe
-    :: TracerPeu r W
+    :: TracerPeu r (V1 W)
     -> Path Absolute
     -> (Maybe (Environment (BS.ByteString, Plan.PlanJson)) -> Peu r a)
     -> Peu r a

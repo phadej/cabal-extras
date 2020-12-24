@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 -- |
 -- Copyright: Oleg Grenrus
 -- License: GPL-2.0-or-later
@@ -30,7 +31,7 @@ import Paths_cabal_store_check (version)
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
+    tracer <- makeTracerPeu @Void (optTracer opts defaultTracerOptions)
     runPeu tracer () $ checkConsistency tracer opts
   where
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat

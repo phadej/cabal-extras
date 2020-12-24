@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 -- |
 -- Copyright: Oleg Grenrus
 -- License: GPL-2.0-or-later
@@ -33,7 +34,7 @@ import CabalStoreGC.Deps
 main :: IO ()
 main = do
     opts <- O.execParser optsP'
-    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
+    tracer <- makeTracerPeu @Void (optTracer opts defaultTracerOptions)
     runPeu tracer () $ case optAction opts of
         Default        -> doDefault tracer opts
         Count          -> doCount tracer opts
