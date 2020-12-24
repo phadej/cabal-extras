@@ -47,9 +47,10 @@ library cabal-deps-internal
 
   -- dependencies in library
   build-depends:
+    , ansi-terminal
     , cabal-install-parsers
     , cabal-plan
-    , optparse-applicative   ^>=0.16.0.0
+    , optparse-applicative
 
 executable cabal-deps
   default-language: Haskell2010

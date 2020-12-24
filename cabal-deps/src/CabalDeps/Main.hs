@@ -1,6 +1,7 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE OverloadedStrings      #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE TypeFamilies           #-}
 -- |
 -- Copyright: Oleg Grenrus
 -- License: GPL-2.0-or-later
@@ -20,6 +21,7 @@ import qualified Data.Set                 as Set
 import qualified Distribution.Compat.Lens as L
 import qualified Distribution.Pretty      as C
 import qualified Options.Applicative      as O
+import qualified System.Console.ANSI      as ANSI
 
 import qualified Distribution.Package                         as C
 import qualified Distribution.Parsec                          as C
@@ -89,7 +91,7 @@ actionP = builddirP <|> cabalP where
 --
 -------------------------------------------------------------------------------
 
-doDeps :: TracerPeu r W -> Opts -> Peu r ()
+doDeps :: TracerPeu r Tr -> Opts -> Peu r ()
 doDeps tracer opts = do
     meta <- cachedHackageMetadata tracer
 
@@ -104,7 +106,7 @@ doDeps tracer opts = do
 -- Check GPD
 -------------------------------------------------------------------------------
 
-doGpdDeps :: TracerPeu r W -> Map PackageName I.PackageInfo -> Set PackageName -> NonEmpty FsPath -> Peu r ()
+doGpdDeps :: TracerPeu r Tr -> Map PackageName I.PackageInfo -> Set PackageName -> NonEmpty FsPath -> Peu r ()
 doGpdDeps tracer meta excl fps = do
     gpds <- for fps $ \fp -> do
         fp' <- makeAbsolute fp
@@ -117,7 +119,7 @@ doGpdDeps tracer meta excl fps = do
 
 -- TODO: return True or False if fine or not.
 
-checkGpd :: TracerPeu r W -> Map PackageName I.PackageInfo -> Set PackageName -> C.GenericPackageDescription -> Peu r ()
+checkGpd :: TracerPeu r Tr -> Map PackageName I.PackageInfo -> Set PackageName -> C.GenericPackageDescription -> Peu r ()
 checkGpd tracer meta excl gpd = do
     let PackageIdentifier packageName _ = C.package (C.packageDescription gpd)
 
@@ -174,7 +176,7 @@ instance Monoid DepMap where
 unionDepMap :: DepMap -> DepMap -> DepMap
 unionDepMap (DepMap a) (DepMap b) = DepMap (Map.unionWith C.unionVersionRanges a b)
 
-checkDepMap :: TracerPeu r W -> Map PackageName I.PackageInfo -> String -> DepMap -> Peu r ()
+checkDepMap :: TracerPeu r Tr -> Map PackageName I.PackageInfo -> String -> DepMap -> Peu r ()
 checkDepMap tracer meta cname (DepMap depMap) =
     ifor_ depMap $ \pn vr -> case Map.lookup pn meta of
         Nothing -> putWarning tracer WNotOnHackage $ cname ++ " depends on " ++ C.prettyShow pn ++ ", which is not on Hackage"
@@ -242,9 +244,9 @@ lessThanLowerBound v (C.LowerBound v' C.ExclusiveBound) = v <= v'
 -- Check plan
 -------------------------------------------------------------------------------
 
-doPlanDeps :: TracerPeu r W -> Map PackageName I.PackageInfo -> Set PackageName -> P.SearchPlanJson -> Peu r ()
+doPlanDeps :: TracerPeu r Tr -> Map PackageName I.PackageInfo -> Set PackageName -> P.SearchPlanJson -> Peu r ()
 doPlanDeps tracer meta excl search = do
-    putInfo tracer "Reading plan.json for current project"
+    traceApp tracer TraceReadPlanJson
     plan <- liftIO $ P.findAndDecodePlanJson search
 
     let pkgIds :: Set C.PackageIdentifier
@@ -262,7 +264,7 @@ doPlanDeps tracer meta excl search = do
 
 -- TODO: return True or False if fine or not.
 checkPlan
-    :: TracerPeu r W
+    :: TracerPeu r Tr
     -> Map PackageName I.PackageInfo
     -> C.PackageIdentifier
     -> Peu r ()
@@ -282,6 +284,19 @@ checkPlan tracer meta pid@(C.PackageIdentifier pn ver) =
                     ++ "; used " ++ C.prettyShow ver
                 | otherwise   -> putWarning tracer WNotOnHackage $
                     C.prettyShow pid ++ " is not on Hackage"
+
+-------------------------------------------------------------------------------
+-- Trace
+-------------------------------------------------------------------------------
+
+data Tr
+    = TraceReadPlanJson
+  deriving Show
+
+instance IsPeuraTrace Tr where
+    type TraceW Tr = W
+
+    showTrace TraceReadPlanJson = (ANSI.Green, ["cabal","plan"], "Reading plan.json for current project")
 
 -------------------------------------------------------------------------------
 -- Warnings

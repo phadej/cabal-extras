@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 module CabalIfaceQuery.Main (main) where
 
 import Peura
@@ -32,7 +33,7 @@ main :: IO ()
 main = do
     -- options
     opts <- O.execParser optsP'
-    tracer <- makeTracerPeu (optTracer opts defaultTracerOptions)
+    tracer <- makeTracerPeu @(V1 W) (optTracer opts defaultTracerOptions)
 
     runPeu tracer () $ do
 
