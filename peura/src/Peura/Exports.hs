@@ -39,7 +39,16 @@ module Peura.Exports (
     prettyShow,
     mkPackageName,
     mkVersion,
-    -- * Optics operators
+    -- * Optics
+    (%),
+    (^.), (^?),
+    (.~), (?~), (%~),
+    _1, _2,
+    Ixed (..), At (..),
+    coerced,
+    folded,
+    setOf,
+    _Just,
     view,
     preview,
     ) where
@@ -61,9 +70,12 @@ import Distribution.Types.PackageName  (PackageName, mkPackageName)
 import Distribution.Types.UnitId       (UnitId)
 import Distribution.Types.Version      (Version, mkVersion)
 import Distribution.Types.VersionRange (VersionRange)
-import Optics.Extra                    (preview, view)
 import System.Exit                     (ExitCode (..))
 
 import qualified Data.ByteString.Lazy as LBS
+
+import Data.Set.Optics (setOf)
+import Optics.Core     (At (..), Ixed (..), coerced, folded, (%), (%~), (.~), (?~), (^.), (^?), _1, _2, _Just)
+import Optics.Extra    (preview, view)
 
 type LazyByteString = LBS.ByteString

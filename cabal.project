@@ -1,4 +1,4 @@
-with-compiler: ghc-8.8.3
+with-compiler: ghc-8.8.4
 tests: True
 
 packages: cabal-bundler
@@ -31,4 +31,5 @@ constraints: directory     installed
 constraints: process       installed
 constraints: transformers  installed
 
-packages: http://oleg.fi/gentle-introduction-2020.11.tar.gz
+packages: http://oleg.fi/gentle-introduction-2020.12.tar.gz
+-- packages: gentle-introduction-2020.12.tar.gz
