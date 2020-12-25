@@ -7,6 +7,9 @@ module Peura.GHC (
     -- * Package databases
     PackageDb,
     readPackageDb,
+    -- * Flags
+    GhcFlags (..),
+    getGhcFlags,
     -- * Trace
     TraceGhc (..),
     MakeGhcTracer (..),
@@ -155,6 +158,29 @@ readPackageDb tracer db = do
   where
     parseIpi fields = case C.partitionFields fields of
         (fields', _) -> C.parseFieldGrammar C.cabalSpecLatest fields' C.ipiFieldGrammar
+
+-------------------------------------------------------------------------------
+-- GhcFlags
+-------------------------------------------------------------------------------
+
+data GhcFlags = GhcFlags
+    { ghcFlagPackageDb       :: String
+    , ghcFlagPackageId       :: String
+    , ghcFlagNoUserPackageDb :: String
+    }
+
+getGhcFlags :: GhcInfo -> GhcFlags
+getGhcFlags ghcInfo
+    | ghcVersion ghcInfo < mkVersion [7,6] = GhcFlags
+        { ghcFlagPackageDb       = "-package-conf"
+        , ghcFlagPackageId       = "-package-id"
+        , ghcFlagNoUserPackageDb = "-no-user-package-conf"
+        }
+    | otherwise = GhcFlags
+        { ghcFlagPackageDb       = "-package-db"
+        , ghcFlagPackageId       = "-package-id"
+        , ghcFlagNoUserPackageDb = "-no-user-package-db"
+        }
 
 -------------------------------------------------------------------------------
 -- Trace
