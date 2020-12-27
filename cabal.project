@@ -26,6 +26,7 @@ package cabal-env
 
 package peura
   ghc-options: -Wall
+  flags: -concurrent-output
 
 constraints: directory     installed
 constraints: process       installed
