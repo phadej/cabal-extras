@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                  #-}
 {-# LANGUAGE EmptyCase            #-}
 {-# LANGUAGE FlexibleContexts     #-}
 {-# LANGUAGE RecordWildCards      #-}
@@ -18,16 +19,16 @@ module Peura.Trace (
     putInfo,
     putWarning,
     putError,
+    -- * Implementation functions
 ) where
 
-import Data.Foldable             (asum)
-import Data.IORef                (IORef, atomicModifyIORef', newIORef)
-import Data.List                 (intercalate, stripPrefix)
-import System.Clock              (Clock (Monotonic), TimeSpec (..), diffTimeSpec, getTime)
-import System.Console.Concurrent (errorConcurrent, outputConcurrent)
-import System.IO                 (stderr)
-import System.IO.Unsafe          (unsafePerformIO)
-import Text.Printf               (printf)
+import Data.Foldable    (asum)
+import Data.IORef       (IORef, atomicModifyIORef', newIORef)
+import Data.List        (intercalate, stripPrefix)
+import System.Clock     (Clock (Monotonic), TimeSpec (..), diffTimeSpec, getTime)
+import System.IO        (stderr)
+import System.IO.Unsafe (unsafePerformIO)
+import Text.Printf      (printf)
 
 import qualified Data.Map.Strict     as Map
 import qualified Data.Set            as Set
@@ -43,6 +44,13 @@ import Peura.Paths
 import Peura.Process
 import Peura.Tracer
 import Peura.Warning
+
+#ifdef MIN_VERSION_concurrent_output
+import System.Console.Concurrent (errorConcurrent, outputConcurrent)
+#else
+import Control.Concurrent.MVar (MVar, newMVar, withMVar)
+import System.IO               (hPutStr, stdout)
+#endif
 
 -------------------------------------------------------------------------------
 -- Trace
@@ -210,8 +218,8 @@ makeTracerPeu TracerOptions {..} = do
                    | otherwise    = const ""
 
         case tr0 of
-            TraceStdout sgr msg -> outputConcurrent (setSgr sgr ++ msg ++ "\n")
-            TraceStderr     msg -> errorConcurrent (msg ++ "\n")
+            TraceStdout sgr msg -> putStrOut (setSgr sgr ++ msg ++ "\n")
+            TraceStderr     msg -> putStrErr (msg ++ "\n")
 
             TraceWarning w msg -> when (w `Set.member` tracerOptionsEnabledWarnings) $ do
                let sgr :: [ANSI.SGR]
@@ -219,7 +227,7 @@ makeTracerPeu TracerOptions {..} = do
                        [ ANSI.SetConsoleIntensity ANSI.BoldIntensity
                        , ANSI.SetColor ANSI.Foreground ANSI.Dull ANSI.Magenta
                        ]
-               errorConcurrent $ concat
+               putStrErr $ concat
                    [ off
                    , setSgr sgr
                    , "warning"
@@ -255,10 +263,10 @@ makeTracerPeu TracerOptions {..} = do
 
             TraceProcess pid (TraceProcessFailedCheck ec out err) -> when tracerOptionsProcess $ do
                 traceImpl setSgr ANSI.Red off ["process", show pid, "failed"] $ "Exitcode " ++ show ec
-                errorConcurrent ("========= stdout =========" :: String)
-                errorConcurrent (fromUTF8BS (toStrict out))
-                errorConcurrent ("========= stderr =========" :: String)
-                errorConcurrent (fromUTF8BS (toStrict err))
+                putStrErr ("========= stdout =========" :: String)
+                putStrErr (fromUTF8BS (toStrict out))
+                putStrErr ("========= stderr =========" :: String)
+                putStrErr (fromUTF8BS (toStrict err))
 
             TracePeu TracePeuCompleted -> when tracerOptionsProcess $
                 traceImpl setSgr ANSI.Green off ["peu", "completed"] "OK"
@@ -268,7 +276,7 @@ makeTracerPeu TracerOptions {..} = do
 
             TracePeu (TracePeuException exc) -> do
                 traceImpl setSgr ANSI.Red off ["peu", "exception"] (typeNameOf exc)
-                errorConcurrent $ displayException exc ++ "\n"
+                putStrErr $ displayException exc ++ "\n"
 
             -- TODO: summarise plan?
             TraceCabal (TraceCabalEphemeralPlan _pi) -> do
@@ -318,7 +326,7 @@ traceImpl setSgr clr off pfx msg = do
             [ ANSI.SetConsoleIntensity ANSI.BoldIntensity
             , ANSI.SetColor ANSI.Foreground ANSI.Dull clr
             ]
-    errorConcurrent $ concat
+    putStrErr $ concat
         [ off
         , setSgr sgr
         , intercalate "." pfx
@@ -345,3 +353,22 @@ putWarning tracer w msg = traceWith tracer (TraceWarning w msg)
 
 putError :: HasCallStack => TracerPeu r tr -> String -> Peu r ()
 putError tracer msg = traceWith tracer (TraceError msg)
+
+-------------------------------------------------------------------------------
+-- Implementation functions
+-------------------------------------------------------------------------------
+
+putStrOut :: String -> IO ()
+putStrErr :: String -> IO ()
+
+#ifdef MIN_VERSION_concurrent_output
+putStrOut = outputConcurrent
+putStrErr = errorConcurrent
+#else
+putStrOut s = withMVar outputLock $ \() -> hPutStr stdout s
+putStrErr s = withMVar outputLock $ \() -> hPutStr stderr s
+
+outputLock :: MVar ()
+outputLock = unsafePerformIO $ newMVar ()
+{-# NOINLINE outputLock #-}
+#endif

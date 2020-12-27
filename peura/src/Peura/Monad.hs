@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                   #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Peura.Monad (
@@ -16,14 +17,24 @@ module Peura.Monad (
 
 import Control.Monad.Reader.Class (MonadReader (..))
 import Data.Typeable              (cast)
-import System.Console.Concurrent  (withConcurrentOutput)
-import System.Console.Regions     (displayConsoleRegions)
 
 import qualified Control.Exception as X
 import qualified System.Exit       as X
 
 import Peura.Exports
 import Peura.Tracer
+
+#ifdef MIN_VERSION_concurrent_output
+import System.Console.Concurrent (withConcurrentOutput)
+import System.Console.Regions    (displayConsoleRegions)
+#else
+
+withConcurrentOutput :: IO a -> IO a
+withConcurrentOutput = id
+
+displayConsoleRegions :: IO a -> IO a
+displayConsoleRegions = id
+#endif
 
 -------------------------------------------------------------------------------
 -- Monad
