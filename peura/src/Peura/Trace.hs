@@ -22,16 +22,18 @@ module Peura.Trace (
 
 import Data.Foldable             (asum)
 import Data.IORef                (IORef, atomicModifyIORef', newIORef)
-import Data.List                 (intercalate)
+import Data.List                 (intercalate, stripPrefix)
 import System.Clock              (Clock (Monotonic), TimeSpec (..), diffTimeSpec, getTime)
 import System.Console.Concurrent (errorConcurrent, outputConcurrent)
 import System.IO                 (stderr)
 import System.IO.Unsafe          (unsafePerformIO)
 import Text.Printf               (printf)
 
+import qualified Data.Map.Strict     as Map
 import qualified Data.Set            as Set
 import qualified Options.Applicative as O
 import qualified System.Console.ANSI as ANSI
+import qualified Text.EditDistance   as ED
 
 import Peura.Cabal
 import Peura.Exports
@@ -143,9 +145,9 @@ defaultTracerOptions = TracerOptions
     , tracerOptionsProcess         = True
     }
 
-tracerOptionsParser :: Warning w => O.Parser (TracerOptions w -> TracerOptions w)
+tracerOptionsParser :: forall w. Warning w => O.Parser (TracerOptions w -> TracerOptions w)
 tracerOptionsParser = fmap (foldr (flip (.)) id) $ many $ asum $
-    warnings ++ traces
+    warnings : traces
   where
     traces =
         [ O.flag'
@@ -156,14 +158,35 @@ tracerOptionsParser = fmap (foldr (flip (.)) id) $ many $ asum $
             (O.long "no-trace-process" <> O.hidden)
         ]
 
-    warnings = concat
-        [ [ O.flag'
-            (\opts -> opts { tracerOptionsEnabledWarnings = Set.insert w (tracerOptionsEnabledWarnings opts) })
-            (O.long ("W" ++ warningToFlag w))
-          , O.flag'
-            (\opts -> opts { tracerOptionsEnabledWarnings = Set.delete w (tracerOptionsEnabledWarnings opts) })
-            (O.long ("Wno-" ++ warningToFlag w) <> O.hidden)
-          ]
+    warnings = O.option (O.eitherReader warningE) (O.short 'W' <> O.metavar "warning")
+
+    warningE :: String -> Either String (TracerOptions w -> TracerOptions w)
+    warningE s
+        | Just w <- Map.lookup s allws
+        = Right (\opts -> opts { tracerOptionsEnabledWarnings = Set.insert w (tracerOptionsEnabledWarnings opts) })
+
+        | Just s' <- stripPrefix "no-" s
+        , Just w <- Map.lookup s' allws
+        = Right (\opts -> opts { tracerOptionsEnabledWarnings = Set.delete w (tracerOptionsEnabledWarnings opts) })
+
+        | otherwise
+        = Left $ "Unknown warning flag: " ++ s ++ suggestion
+      where
+        matchingW :: Map Int (NonEmpty String)
+        matchingW = Map.fromListWith (<>)
+            [ (ED.levenshteinDistance ED.defaultEditCosts x s, x :| [])
+            | w <- universeF
+            , let x' = warningToFlag (w :: w)
+            , x <- [x', "no-" ++ x']
+            ]
+
+        suggestion = case Map.minView matchingW of
+            Nothing      -> ""
+            Just (ws, _) -> ". Did you mean one of: " ++ unwords (toList ws)
+
+    allws :: Map String w
+    allws = Map.fromList
+        [ (warningToFlag w , w)
         | w <- universeF
         ]
 
