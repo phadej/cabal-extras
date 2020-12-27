@@ -78,6 +78,7 @@ library
     , cabal-plan             ^>=0.7.2.0
     , clock                  ^>=0.8
     , concurrent-output      ^>=1.10.11
+    , edit-distance          ^>=0.2.2.1
     , exceptions             ^>=0.10.3
     , Glob                   ^>=0.10.0
     , optics-core            ^>=0.3
