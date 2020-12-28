@@ -61,10 +61,11 @@ main = do
                     TraceSummary {} -> traceWithCallStack tracer0 cs t
                     _               -> pure ()
                 Normal  -> case tr of
-                    TracePhase1 {}  -> traceWithCallStack tracer0 cs t
-                    TracePhase2 {}  -> traceWithCallStack tracer0 cs t
-                    TraceSummary {} -> traceWithCallStack tracer0 cs t
-                    _               -> pure ()
+                    TraceComponent {} -> traceWithCallStack tracer0 cs t
+                    TracePhase1 {}    -> traceWithCallStack tracer0 cs t
+                    TracePhase2 {}    -> traceWithCallStack tracer0 cs t
+                    TraceSummary {}   -> traceWithCallStack tracer0 cs t
+                    _                 -> pure ()
                 Verbose -> traceWithCallStack tracer0 cs t
             _ -> traceWithCallStack tracer0 cs t
 
@@ -84,9 +85,6 @@ main = do
 
         res <- case optCabalPlan opts of
             CabalPlan -> do
-                unless (null (optTargets opts)) $
-                    die tracer "Targets not supported for cabal.plan variant yet"
-
                 builddir <- makeAbsolute (optBuilddir opts)
                 plan <- liftIO $ Plan.findAndDecodePlanJson $ Plan.InBuildDir $ toFilePath builddir
 
@@ -94,7 +92,20 @@ main = do
                 checkGhcVersion tracer ghcInfo plan
 
                 -- Elaborate plan by reading local package definitions
-                pkgs <- readLocalCabalFiles tracer plan
+                pkgs0 <- readLocalCabalFiles tracer plan
+                pkgs <-
+                    if null (optTargets opts)
+                    then return pkgs0
+                    else fmap concat $ for (optTargets opts) $ \target -> do
+                        let match =
+                                [ pkg
+                                | pkg <- pkgs0
+                                , prettyShow (C.packageName (pkgGpd pkg)) == target
+                                ]
+
+                        case match of
+                            []  -> die tracer $ "No package " ++ target ++ " in the plan"
+                            _   -> return match
 
                 -- process components
                 res <- for pkgs $ \pkg -> do

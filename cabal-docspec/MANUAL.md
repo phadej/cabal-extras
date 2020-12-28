@@ -6,7 +6,7 @@ cabal-docspec - another doctest for Haskell
 SYNOPSIS
 ========
 
-**cabal-docspec** *[OPTION]*...  
+**cabal-docspec** *[OPTION]*... *[PACKAGE]...*  
 **cabal-docspec** **\--no-cabal-plan** *[OPTION]*... *[CABALFILE]*...
 
 DESCRIPTION
