@@ -53,28 +53,20 @@ main = do
     opts <- O.execParser optsP'
     tracer0 <- makeTracerPeu (optTracer opts defaultTracerOptions)
 
+    let dynOpts :: DynOpts
+        dynOpts = optGhci opts defaultDynOpts
+
     -- modify tracer verbosity
     let tracer :: TracerPeu () Tr
-        tracer = Tracer $ \cs t -> case t of
-            TraceApp tr -> case optVerbosity opts of
-                Quiet   -> case tr of
-                    TraceSummary {} -> traceWithCallStack tracer0 cs t
-                    _               -> pure ()
-                Normal  -> case tr of
-                    TraceComponent {} -> traceWithCallStack tracer0 cs t
-                    TracePhase1 {}    -> traceWithCallStack tracer0 cs t
-                    TracePhase2 {}    -> traceWithCallStack tracer0 cs t
-                    TraceSummary {}   -> traceWithCallStack tracer0 cs t
-                    _                 -> pure ()
-                Verbose -> traceWithCallStack tracer0 cs t
-            _ -> traceWithCallStack tracer0 cs t
+        tracer = adjustTracer (optVerbosity dynOpts) tracer0
 
+    -- main action
     runPeu tracer () $ do
         -- display manual
-        when (optPhase opts == Manual) $ liftIO man
+        when (optPhase dynOpts == Manual) $ liftIO man
 
         -- check if we know these extensions
-        for_ (optExts (optGhci opts)) $ \ext -> case Ext.classifyExtension ext of
+        for_ (optExts (optGhci opts defaultDynOpts)) $ \ext -> case Ext.classifyExtension ext of
             Ext.UnknownExtension _ -> putWarning tracer WUnknownExtension $
                 ext ++ " is unknown extension. GHCi may fail to start."
             _ -> pure ()
@@ -111,7 +103,7 @@ main = do
                 res <- for pkgs $ \pkg -> do
                     for (pkgUnits pkg) $ \unit ->
                         ifor (Plan.uComps unit) $ \cn ci -> do
-                            testComponent tracer (optPhase opts) (optStripComs opts) (optGhci opts) (optExtraPkgs opts)
+                            testComponent tracer0 tracer (optGhci opts)
                                 ghcInfo builddir cabalCfg plan pkg unit cn ci
 
                 -- summarize Summary's
@@ -123,7 +115,7 @@ main = do
 
                 -- process components
                 res <- for pkgs $ \pkg -> do
-                    testComponentNo tracer (optPhase opts) (optStripComs opts) (optGhci opts)  (optExtraPkgs opts)
+                    testComponentNo tracer0 tracer (optGhci opts)
                         ghcInfo cabalCfg dbG pkg
 
                 return $ foldMap id res
@@ -141,6 +133,28 @@ main = do
 
     versionP = O.infoOption VERSION_cabal_docspec
         $ O.long "version" <> O.help "Show version"
+
+-------------------------------------------------------------------------------
+-- Tracer adjustment
+-------------------------------------------------------------------------------
+
+adjustTracer :: Applicative m => Verbosity -> Tracer m (Trace Tr) -> Tracer m (Trace Tr)
+adjustTracer (Verbosity verbosity) tracer0 = Tracer $ \cs t -> case t of
+    TraceApp tr
+        | verbosity >= trLevel tr
+        ->traceWithCallStack tracer0 cs t
+
+        | otherwise
+        -> pure ()
+
+    _ -> traceWithCallStack tracer0 cs t
+  where
+    trLevel TraceSummary {}   = minBound
+    trLevel TraceComponent {} = 0
+    trLevel TracePhase1 {}    = 0
+    trLevel TracePhase2 {}    = 0
+    trLevel TraceGHCi {}      = 1
+    trLevel TraceGHCiInput {} = 1
 
 -------------------------------------------------------------------------------
 -- Checks
@@ -166,10 +180,8 @@ checkGhcVersion tracer ghcInfo plan
 
 testComponent
     :: TracerPeu r Tr
-    -> Phase
-    -> StripComments
-    -> GhciOpts
-    -> [PackageName]
+    -> TracerPeu r Tr
+    -> (DynOpts -> DynOpts)
     -> GhcInfo
     -> Path Absolute -- ^ builddir
     -> Cabal.Config Identity
@@ -179,17 +191,24 @@ testComponent
     -> Plan.CompName
     -> Plan.CompInfo
     -> Peu r Summary
-testComponent tracer phase stripComments ghciOpts extraPkgs ghcInfo buildDir cabalCfg plan pkg unit cn@Plan.CompNameLib ci = do
-    traceApp tracer $ TraceComponent (C.packageId (pkgGpd pkg)) cn
+testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan pkg unit cn@Plan.CompNameLib ci = do
+    traceApp tracerTop $ TraceComponent (C.packageId (pkgGpd pkg)) cn
 
     -- "configure"
-    lib0 <- maybe (die tracer "no library component in GPD") return
+    lib0 <- maybe (die tracerTop "no library component in GPD") return
         $ C.condLibrary $ pkgGpd pkg
     let (_, lib) = simplifyCondTree ghcInfo (Map.mapKeys toCabal $ Plan.uFlags unit) lib0
     let bi = C.libBuildInfo lib
 
+    -- append options in .cabal file
+    dynOptsBi <- dynOptsFromBuildInfo tracerTop bi
+    let dynOpts = dynOptsCli (dynOptsBi defaultDynOpts)
+
+    -- Once dynOpts is read we can read adjust verbosity of our tracer
+    let tracer = adjustTracer (optVerbosity dynOpts) tracer0
+
     -- find extra units
-    extraUnitIds <- findExtraPackages tracer plan extraPkgs
+    extraUnitIds <- findExtraPackages tracer plan (optExtraPkgs dynOpts)
 
     -- find library module paths
     modulePaths <- findModules
@@ -217,16 +236,17 @@ testComponent tracer phase stripComments ghciOpts extraPkgs ghcInfo buildDir cab
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
-        parsed = fmap4 (doctestStripComments stripComments) $ parseModules modules where
+        parsed = fmap4 (doctestStripComments (optStripComs dynOpts))
+            $ parseModules modules where
 
-    if phase > Phase1
+    if optPhase dynOpts > Phase1
     then do
-        phase2 tracer phase ghciOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgPath pkg) parsed
+        phase2 tracer dynOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgPath pkg) parsed
     else
         return $ foldMap (foldMap (\xs -> Summary (length xs) 0 0 0 0 (length xs)) . moduleContent) parsed
 
 -- Skip other components
-testComponent _tracer _phase _stripComments _ghciOpts _extraPkgs _ghcInfo _builddir _cabalCfg _plan _pkg _unit _cn _ci =
+testComponent _tracer0 _tracerTop _dynOpts _ghcInfo _builddir _cabalCfg _plan _pkg _unit _cn _ci =
     return mempty
 
 -------------------------------------------------------------------------------
@@ -235,17 +255,15 @@ testComponent _tracer _phase _stripComments _ghciOpts _extraPkgs _ghcInfo _build
 
 testComponentNo
     :: forall r. TracerPeu r Tr
-    -> Phase
-    -> StripComments
-    -> GhciOpts
-    -> [PackageName]
+    -> TracerPeu r Tr
+    -> (DynOpts -> DynOpts)
     -> GhcInfo
     -> Cabal.Config Identity
     -> Map UnitId IPI.InstalledPackageInfo
     -> Package
     -> Peu r Summary
-testComponentNo tracer phase stripComments ghciOpts extraPkgs ghcInfo cabalCfg dbG pkg = do
-    traceApp tracer $ TraceComponent (C.packageId (pkgGpd pkg)) Plan.CompNameLib
+testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
+    traceApp tracerTop $ TraceComponent (C.packageId (pkgGpd pkg)) Plan.CompNameLib
 
     -- use default values for flags
     let flags :: Map C.FlagName Bool
@@ -255,10 +273,17 @@ testComponentNo tracer phase stripComments ghciOpts extraPkgs ghcInfo cabalCfg d
             ]
 
     -- "configure"
-    lib0 <- maybe (die tracer "no library component in GPD") return
+    lib0 <- maybe (die tracerTop "no library component in GPD") return
         $ C.condLibrary $ pkgGpd pkg
     let (_, lib) = simplifyCondTree ghcInfo flags lib0
     let bi = C.libBuildInfo lib
+
+    -- append options in .cabal file
+    dynOptsBi <- dynOptsFromBuildInfo tracerTop bi
+    let dynOpts = dynOptsCli (dynOptsBi defaultDynOpts)
+
+    -- Once dynOpts is read we can read adjust verbosity of our tracer
+    let tracer = adjustTracer (optVerbosity dynOpts) tracer0
 
     let findUnit :: PackageName -> Peu r (UnitId, PackageIdentifier)
         findUnit pn = do
@@ -278,7 +303,7 @@ testComponentNo tracer phase stripComments ghciOpts extraPkgs ghcInfo cabalCfg d
     -- we don't have install plan, so we look for packages in IPI
     depends <- for (C.targetBuildDepends bi) $ \dep -> findUnit (C.depPkgName dep)
     thisUnitId <- findUnit (C.packageName (pkgGpd pkg))
-    extraUnitIds <- traverse findUnit extraPkgs
+    extraUnitIds <- traverse findUnit (optExtraPkgs dynOpts)
 
     let pkgIds :: [PackageIdentifier]
         pkgIds = map snd depends
@@ -300,12 +325,13 @@ testComponentNo tracer phase stripComments ghciOpts extraPkgs ghcInfo cabalCfg d
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
-        parsed = fmap4 (doctestStripComments stripComments) $ parseModules modules where
+        parsed = fmap4 (doctestStripComments (optStripComs dynOpts))
+            $ parseModules modules where
 
-    if phase > Phase1
+    if optPhase dynOpts > Phase1
     then do
         -- tmpDir <- getTemporaryDirectory -- TODO: make this configurable
-        phase2 tracer phase ghciOpts unitIds ghcInfo Nothing cabalCfg (pkgPath pkg) parsed
+        phase2 tracer dynOpts unitIds ghcInfo Nothing cabalCfg (pkgPath pkg) parsed
     else
         return $ foldMap (foldMap (\xs -> Summary (length xs) 0 0 0 0 (length xs)) . moduleContent) parsed
 

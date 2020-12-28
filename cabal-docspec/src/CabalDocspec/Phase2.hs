@@ -20,8 +20,7 @@ import CabalDocspec.Trace
 
 phase2
     :: TracerPeu r Tr
-    -> Phase
-    -> GhciOpts
+    -> DynOpts
     -> [UnitId]
     -> GhcInfo
     -> Maybe (Path Absolute) -- ^ Build directory, @builddir@
@@ -29,13 +28,13 @@ phase2
     -> Path Absolute
     -> [Module [Located DocTest]]
     -> Peu r Summary
-phase2 tracer _phase ghciOpts unitIds ghcInfo mbuildDir cabalCfg cwd parsed = do
-    let preserveIt = case optPreserveIt ghciOpts of
+phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd parsed = do
+    let preserveIt = case optPreserveIt dynOpts of
             PreserveIt     -> True
             DontPreserveIt -> False
 
     let timeout :: Int
-        timeout = max fastTimeout $ truncate $ optTimeout ghciOpts * 1e6
+        timeout = max fastTimeout $ truncate $ optTimeout dynOpts * 1e6
 
     -- second phase: fire up the ghci, and execute stuff
     storeDir <- makeAbsoluteFilePath $ runIdentity $ Cabal.cfgStoreDir cabalCfg
@@ -50,7 +49,7 @@ phase2 tracer _phase ghciOpts unitIds ghcInfo mbuildDir cabalCfg cwd parsed = do
             [ "-i" -- so we don't explode on hs-source-dirs: . packages
             ] ++
             [ "-X" ++ ext
-            | ext <- optExts ghciOpts
+            | ext <- optExts dynOpts
             ] ++
             [ "-hide-all-packages"
             , ghcFlagNoUserPackageDb
@@ -84,7 +83,7 @@ phase2 tracer _phase ghciOpts unitIds ghcInfo mbuildDir cabalCfg cwd parsed = do
                     reset
 
                     -- command line --setup
-                    for_ (optSetup ghciOpts) $ \expr -> do
+                    for_ (optSetup dynOpts) $ \expr -> do
                         result <- eval tracer ghci preserveIt timeout expr
                         case mkResult [] (lines result) of
                                 Equal -> return ()

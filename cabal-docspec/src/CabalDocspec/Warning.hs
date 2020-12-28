@@ -7,6 +7,7 @@ data W
     | WMissingModuleFile
     | WTimeout
     | WUnknownExtension
+    | WInvalidField
   deriving (Eq, Ord, Enum, Bounded)
 
 instance Universe W where universe = [minBound .. maxBound]
@@ -17,3 +18,4 @@ instance Warning W where
     warningToFlag WMissingModuleFile   = "missing-module-file"
     warningToFlag WTimeout             = "timeout"
     warningToFlag WUnknownExtension    = "unknown-extension"
+    warningToFlag WInvalidField        = "invalid-field"
