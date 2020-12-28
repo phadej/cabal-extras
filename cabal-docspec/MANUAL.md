@@ -61,7 +61,7 @@ However, in this list we mostly only list and show the --option version of them.
     Especially outputs are assumed to be Haskell-like.
     Default **\--no-strip-comments**.
 
-**\--setup* *expr*
+**\--setup** *expr*
 
 :   An additional expression to execute as setup for all examples.
     Can be specified multiple times.
@@ -119,6 +119,17 @@ However, in this list we mostly only list and show the --option version of them.
 
 :   Display this manual.
 
+CABAL FIELDS
+============
+
+It' is possible to provide cabal-docspec configuration
+through fields in a .cabal file.
+
+**\x-docspec-options:** *[OPTION]*...
+
+:    These options will be applied *before* command line options,
+     and allow configuration of cabal-docspec per component under test.
+
 EXAMPLES
 ========
 
@@ -148,6 +159,39 @@ therefore we have to turn it off.
         --extra-package=mtl --extra-package=deepseq \
         -XNoImplicitPrelude \
         libraries/base/base.cabal
+
+Third example is from *lens* library.
+The *lens* library uses *simple-reflect* library for illustration of some examples.
+However, *simple-reflect* is not a dependency of lens library.
+One way to have add such dependency is to create dummy test-suite with it.
+
+    test-suite doctests
+        type:             exitcode-stdio-1.0
+        main-is:          doctests.hs
+        hs-source-dirs:   tests
+        default-language: Haskell2010
+        build-depends:    base, simple-reflect >= 0.3.1
+
+Where **doctests.hs** doesn't need to do anything in particular, for example
+it could be:
+
+    module Main where
+
+    main :: IO ()
+    main = do
+        putStrLn "This test-suite exists only to add dependencies"
+        putStrLn "To run doctests: "
+        putStrLn "    cabal build all --enable-tests"
+        putStrLn "    cabal-docspec"
+
+The bare **cabal-docspec** command works, because needed extra packages
+are configured using **x-docspec-options** field in a package definition
+library stanza:
+
+    library
+       ...
+
+       x-docspec-options: --extra-package=simple-reflect
 
 WARNINGS
 ========

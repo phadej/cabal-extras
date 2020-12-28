@@ -1,6 +1,6 @@
 cabal-version:      2.2
 name:               cabal-docspec
-version:            0.1
+version:            0.0.0.20201228
 synopsis:           Run examples in your docs
 category:           Development
 description:

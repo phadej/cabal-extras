@@ -1,4 +1,4 @@
-.TH CABAL-DOCSPEC 1 "December 26, 2020" "cabal-docspec development version" "Cabal Extras"
+.TH CABAL-DOCSPEC 1 "December 26, 2020" "cabal-docspec 0.0.0.20201228" "Cabal Extras"
 .SH NAME
 .PP
 cabal-docspec - another doctest for Haskell
@@ -70,7 +70,7 @@ Strip Haskell comments from examples and the outputs.
 Especially outputs are assumed to be Haskell-like.
 Default \f[B]--no-strip-comments\f[R].
 .TP
-**--setup* \f[I]expr\f[R]
+\f[B]--setup\f[R] \f[I]expr\f[R]
 An additional expression to execute as setup for all examples.
 Can be specified multiple times.
 .TP
@@ -115,6 +115,14 @@ Display short help message.
 .TP
 \f[B]--man\f[R]
 Display this manual.
+.SH CABAL FIELDS
+.PP
+It\[cq] is possible to provide cabal-docspec configuration through
+fields in a .cabal file.
+.TP
+\f[B]-docspec-options:\f[R] \f[I][OPTION]\f[R]\&...
+These options will be applied \f[I]before\f[R] command line options, and
+allow configuration of cabal-docspec per component under test.
 .SH EXAMPLES
 .PP
 A simplest example, which should work for most packages is to run
@@ -149,6 +157,53 @@ cabal-docspec -w $PWD/_build/stage1/bin/ghc \[rs]
     --extra-package=mtl --extra-package=deepseq \[rs]
     -XNoImplicitPrelude \[rs]
     libraries/base/base.cabal
+\f[R]
+.fi
+.PP
+Third example is from \f[I]lens\f[R] library.
+The \f[I]lens\f[R] library uses \f[I]simple-reflect\f[R] library for
+illustration of some examples.
+However, \f[I]simple-reflect\f[R] is not a dependency of lens library.
+One way to have add such dependency is to create dummy test-suite with
+it.
+.IP
+.nf
+\f[C]
+test-suite doctests
+    type:             exitcode-stdio-1.0
+    main-is:          doctests.hs
+    hs-source-dirs:   tests
+    default-language: Haskell2010
+    build-depends:    base, simple-reflect >= 0.3.1
+\f[R]
+.fi
+.PP
+Where \f[B]doctests.hs\f[R] doesn\[cq]t need to do anything in
+particular, for example it could be:
+.IP
+.nf
+\f[C]
+module Main where
+
+main :: IO ()
+main = do
+    putStrLn \[dq]This test-suite exists only to add dependencies\[dq]
+    putStrLn \[dq]To run doctests: \[dq]
+    putStrLn \[dq]    cabal build all --enable-tests\[dq]
+    putStrLn \[dq]    cabal-docspec\[dq]
+\f[R]
+.fi
+.PP
+The bare \f[B]cabal-docspec\f[R] command works, because needed extra
+packages are configured using \f[B]x-docspec-options\f[R] field in a
+package definition library stanza:
+.IP
+.nf
+\f[C]
+library
+   ...
+
+   x-docspec-options: --extra-package=simple-reflect
 \f[R]
 .fi
 .SH WARNINGS
