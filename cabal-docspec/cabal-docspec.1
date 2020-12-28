@@ -14,7 +14,7 @@ cabal-docspec - another doctest for Haskell
 .PP
 \f[I]cabal-docspec\f[R] is a doctest runner closely integrated with
 \f[I]cabal-install\f[R].
-In common scenarious cabal-docspec is able to self-configure using
+In common scenarios cabal-docspec is able to self-configure using
 cabal-install generated metadata (\f[I]plan.json\f[R]).
 Another important difference is that cabal-docspec doesn\[cq]t depend on
 \f[I]ghc\f[R] library, but rather invoke the \f[I]ghci\f[R] executable.
@@ -120,7 +120,7 @@ Display this manual.
 It\[cq] is possible to provide cabal-docspec configuration through
 fields in a .cabal file.
 .TP
-\f[B]-docspec-options:\f[R] \f[I][OPTION]\f[R]\&...
+\f[B]x-docspec-options:\f[R] \f[I][OPTION]\f[R]\&...
 These options will be applied \f[I]before\f[R] command line options, and
 allow configuration of cabal-docspec per component under test.
 .SH EXAMPLES
@@ -206,6 +206,338 @@ library
    x-docspec-options: --extra-package=simple-reflect
 \f[R]
 .fi
+.SH WRITING DOCTESTS
+.PP
+\f[B]NOTE:\f[R] This section is edited version of a part of the
+\f[B]doctest\f[R] README.markdown.
+cabal-docspec reuses the way examples are specified.
+.PP
+Below is a small Haskell module.
+The module contains a Haddock comment with some examples of interaction.
+The examples demonstrate how the module is supposed to be used.
+.IP
+.nf
+\f[C]
+module Fib where
+
+-- | Compute Fibonacci numbers
+--
+-- Examples:
+--
+-- >>> fib 10
+-- 55
+--
+-- >>> fib 5
+-- 5
+fib :: Int -> Int
+fib 0 = 0
+fib 1 = 1
+fib n = fib (n - 1) + fib (n - 2)
+\f[R]
+.fi
+.PP
+A comment line starting with \f[C]>>>\f[R] denotes an
+\f[I]expression\f[R].
+All comment lines following an expression denote the \f[I]result\f[R] of
+that expression.
+Result is defined by what a REPL (e.g.\ ghci) prints to \f[C]stdout\f[R]
+and \f[C]stderr\f[R] when evaluating that expression.
+.SS Example groups
+.PP
+Examples from a single Haddock comment are grouped together and share
+the same scope.
+E.g.
+the following works:
+.IP
+.nf
+\f[C]
+-- |
+-- >>> let x = 23
+-- >>> x + 42
+-- 65
+\f[R]
+.fi
+.PP
+If an example fails, subsequent examples from the same group are
+skipped.
+E.g.
+for
+.IP
+.nf
+\f[C]
+-- |
+-- >>> let x = 23
+-- >>> let n = x + y
+-- >>> print n
+\f[R]
+.fi
+.PP
+\f[C]print n\f[R] is not tried, because \f[C]let n = x + y\f[R] fails
+(\f[C]y\f[R] is not in scope!).
+.SS A note on performance
+.PP
+Because cabal-docspec uses compiled library, calling \f[B]:reload:\f[R]
+after each group doesn\[cq]t cause performance.
+For that reason, cabal-docspec doesn\[cq]t have \f[B]--fast\f[R]
+variant, it is not needed.
+.SS Setup code
+.PP
+You can put setup code in a \f[I]named chunk\f[R] with the name
+\f[B]$setup\f[R].
+The setup code is run before each example group.
+If the setup code produces any errors/failures, all tests from that
+module are skipped.
+.PP
+Here is an example:
+.IP
+.nf
+\f[C]
+module Foo where
+
+import Bar.Baz
+
+-- $setup
+-- >>> let x = 23 :: Int
+
+-- |
+-- >>> foo + x
+-- 65
+foo :: Int
+foo = 42
+\f[R]
+.fi
+.SS Multi-line input
+.PP
+GHCi supports commands which span multiple lines, and the same syntax
+works for doctest:
+.IP
+.nf
+\f[C]
+-- |
+-- >>> :{
+--  let
+--    x = 1
+--    y = 2
+--  in x + y + multiline
+-- :}
+-- 6
+multiline = 3
+\f[R]
+.fi
+.PP
+Note that \f[B]>>>\f[R] can be left off for the lines following the
+first: this is so that haddock does not strip leading whitespace.
+The expected output has whitespace stripped relative to the
+\f[B]:}\f[R].
+.PP
+Some peculiarities on the ghci side mean that whitespace at the very
+start is lost.
+This breaks the example \f[I]broken\[ga]\f[R] since the x and y
+aren\[cq]t aligned from ghci\[cq]s perspective.
+A workaround is to avoid leading space, or add a newline such that the
+indentation does not matter:
+.IP
+.nf
+\f[C]
+{- | >>> :{
+let x = 1
+    y = 2
+  in x + y + works
+:}
+6
+-}
+works = 3
+
+{- | >>> :{
+ let x = 1
+     y = 2
+  in x + y + broken
+:}
+3
+-}
+broken = 3
+\f[R]
+.fi
+.SS Multi-line output
+.PP
+If there are no blank lines in the output, multiple lines are handled
+automatically.
+.IP
+.nf
+\f[C]
+-- | >>> putStr \[dq]Hello\[rs]nWorld!\[dq]
+-- Hello
+-- World!
+\f[R]
+.fi
+.PP
+If however the output contains blank lines, they must be noted
+explicitly with \f[B]\f[R].
+For example,
+.IP
+.nf
+\f[C]
+import Data.List ( intercalate )
+
+-- | Double-space a paragraph.
+--
+--   Examples:
+--
+--   >>> let s1 = \[dq]\[rs]\[dq]Every one of whom?\[rs]\[dq]\[dq]
+--   >>> let s2 = \[dq]\[rs]\[dq]Every one of whom do you think?\[rs]\[dq]\[dq]
+--   >>> let s3 = \[dq]\[rs]\[dq]I haven\[aq]t any idea.\[rs]\[dq]\[dq]
+--   >>> let paragraph = unlines [s1,s2,s3]
+--   >>> putStrLn $ doubleSpace paragraph
+--   \[dq]Every one of whom?\[dq]
+--   <BLANKLINE>
+--   \[dq]Every one of whom do you think?\[dq]
+--   <BLANKLINE>
+--   \[dq]I haven\[aq]t any idea.\[dq]
+--
+doubleSpace :: String -> String
+doubleSpace = (intercalate \[dq]\[rs]n\[rs]n\[dq]) . lines
+\f[R]
+.fi
+.SS Matching arbitrary output
+.PP
+Any lines containing only three dots (\f[B]\&...\f[R]) will match one or
+more lines with arbitrary content.
+For instance,
+.IP
+.nf
+\f[C]
+-- |
+-- >>> putStrLn \[dq]foo\[rs]nbar\[rs]nbaz\[dq]
+-- foo
+-- ...
+-- baz
+\f[R]
+.fi
+.PP
+If a line contains three dots and additional content, the three dots
+will match anything \f[I]within that line\f[R]:
+.IP
+.nf
+\f[C]
+-- |
+-- >>> putStrLn \[dq]foo bar baz\[dq]
+-- foo ... baz
+\f[R]
+.fi
+.SS QuickCheck properties
+.PP
+\f[B]NOTE:\f[R] cabal-docspec doesn\[cq]t check properties at the
+moment.
+Details may change.
+.PP
+Haddock (since version 2.13.0) has markup support for properties Doctest
+can verify properties with QuickCheck.
+A simple property looks like this:
+.IP
+.nf
+\f[C]
+-- |
+-- prop> \[rs]xs -> sort xs == (sort . sort) (xs :: [Int])
+\f[R]
+.fi
+.PP
+The lambda abstraction is optional and can be omitted:
+.IP
+.nf
+\f[C]
+-- |
+-- prop> sort xs == (sort . sort) (xs :: [Int])
+\f[R]
+.fi
+.PP
+A complete example that uses setup code is below:
+.IP
+.nf
+\f[C]
+module Fib where
+
+-- $setup
+-- >>> import Control.Applicative
+-- >>> import Test.QuickCheck
+-- >>> newtype Small = Small Int deriving Show
+-- >>> instance Arbitrary Small where arbitrary = Small . (\[ga]mod\[ga] 10) <$> arbitrary
+
+-- | Compute Fibonacci numbers
+--
+-- The following property holds:
+--
+-- prop> \[rs](Small n) -> fib n == fib (n + 2) - fib (n + 1)
+fib :: Int -> Int
+fib 0 = 0
+fib 1 = 1
+fib n = fib (n - 1) + fib (n - 2)
+\f[R]
+.fi
+.PP
+If you see an error like the following, ensure that \f[I]QuickCheck\f[R]
+is a dependency of the test-suite or executable running docspec (to be
+corrected).
+.IP
+.nf
+\f[C]
+<interactive>:39:3:
+    Not in scope: \[oq]polyQuickCheck\[cq]
+    In the splice: $(polyQuickCheck (mkName \[dq]doctest_prop\[dq]))
+
+<interactive>:39:3:
+    GHC stage restriction:
+      \[oq]polyQuickCheck\[cq] is used in a top-level splice or annotation,
+      and must be imported, not defined locally
+    In the expression: polyQuickCheck (mkName \[dq]doctest_prop\[dq])
+    In the splice: $(polyQuickCheck (mkName \[dq]doctest_prop\[dq]))
+\f[R]
+.fi
+.SS Hiding examples from Haddock
+.PP
+You can put examples into named chunks, and not refer to them in the
+export list.
+That way they will not be part of the generated Haddock documentation,
+but cabal-docspec will still find them.
+.IP
+.nf
+\f[C]
+-- $
+-- >>> 1 + 1
+-- 2
+\f[R]
+.fi
+.SS Using GHC extensions
+.PP
+There\[cq]s two sets of GHC extensions involved when running Doctest:
+.IP "1." 3
+The set of GHC extensions that are active when compiling the module
+code.
+.IP "2." 3
+The set of GHC extensions that are active when executing the Doctest
+examples.
+(These are not influenced by the LANGUAGE pragmas in the file.)
+.PP
+Unlike Doctest, cabal-docspec doesn\[cq]t compile libraries itself,
+therefore you don\[cq]t need to do anything special for the first point.
+.PP
+The recommended way to enable extensions for cabal-docspec examples is
+to specify them as \f[B]-X\f[R] flags.
+Because set of enabled extensions persist even after \f[B]:reload\f[R],
+it is better to embrace that fact and enable them globally.
+.PP
+Another way to enable extensions, which is compatible with Doctest, is
+to switch them on like this:
+.IP
+.nf
+\f[C]
+-- |
+-- >>> :set -XTupleSections
+-- >>> fst\[aq] $ (1,) 2
+-- 1
+fst\[aq] :: (a, b) -> a
+fst\[aq] = fst
+\f[R]
+.fi
 .SH WARNINGS
 .PP
 All warnings are enabled by default.
@@ -234,6 +566,8 @@ Literate Haskell is not supported.
 .PP
 C preprocessor (\f[I]cpphs\f[R]) warnings are not part of warning
 framework.
+.PP
+Failures in the setup code does not cause module skip.
 .SH SEE ALSO
 .PP
 doctest(1) https://hackage.haskell.org/package/doctest
