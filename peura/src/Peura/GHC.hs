@@ -54,8 +54,9 @@ getGhcInfo tracer ghc = do
     traceWith tracer' $ TraceGhcGetInfo ghc
 
     ghcDir   <- getAppUserDataDirectory "ghc"
+    tmpDir   <- getTemporaryDirectory
 
-    infoBS <- LBS.toStrict <$> runProcessCheck tracer ghcDir ghc ["--info"]
+    infoBS <- LBS.toStrict <$> runProcessCheck tracer tmpDir ghc ["--info"]
     info <- maybe (die tracer "Cannot parse compilers --info output") return $
         readMaybe (fromUTF8BS infoBS)
 
@@ -115,22 +116,9 @@ findGhcPkg tracer ghcInfo = do
         return guess
     else die tracer $ guess ++ " --version returned " ++ actual ++ "; expecting " ++ expected
 
--- | One of missing functions for lists in Prelude.
---
--- >>> splitOn '-' "x86_64-unknown-linux"
--- "x86_64" :| ["unknown","linux"]
---
--- >>> splitOn 'x' "x86_64-unknown-linux"
--- "" :| ["86_64-unknown-linu",""]
---
-splitOn :: Eq a => a -> [a] -> NonEmpty [a]
-splitOn sep = go where
-    go [] = [] :| []
-    go (x:xs)
-        | x == sep  = [] :| ys : yss
-        | otherwise = (x : ys) :| yss
-      where
-        (ys :| yss) = go xs
+-------------------------------------------------------------------------------
+-- String utilities
+-------------------------------------------------------------------------------
 
 trim :: String -> String
 trim = dropWhile isSpace . dropWhileEnd isSpace

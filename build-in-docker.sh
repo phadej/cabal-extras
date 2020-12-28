@@ -23,7 +23,7 @@ if [ "x$DOCKER" = "xYES" ]; then
   cd /build/src
   cabal build --builddir=/build/builddir all
 
-  TARGETS="cabal-bundler cabal-deps cabal-diff cabal-env cabal-store-check cabal-store-gc"
+  TARGETS="cabal-bundler cabal-deps cabal-docspec cabal-diff cabal-env cabal-store-check cabal-store-gc"
   VERSION=$(date +'%Y%m%d')
 
   for TARGET in $TARGETS; do

@@ -34,7 +34,7 @@ module Peura.Exports (
     mapMaybe,
     catMaybes,
     -- ** Data.List
-    sortBy, sortOn, ordNub,
+    sortBy, sortOn, ordNub, splitOn,
     -- * Cabal
     prettyShow,
     mkPackageName,
@@ -85,3 +85,20 @@ import Optics.Core     (At (..), Ixed (..), coerced, folded, (%), (%~), (.~), (?
 import Optics.Extra    (matching, preview, prism', review, view)
 
 type LazyByteString = LBS.ByteString
+
+-- | One of missing functions for lists in Prelude.
+--
+-- >>> splitOn '-' "x86_64-unknown-linux"
+-- "x86_64" :| ["unknown","linux"]
+--
+-- >>> splitOn 'x' "x86_64-unknown-linux"
+-- "" :| ["86_64-unknown-linu",""]
+--
+splitOn :: Eq a => a -> [a] -> NonEmpty [a]
+splitOn sep = go where
+    go [] = [] :| []
+    go (x:xs)
+        | x == sep  = [] :| ys : yss
+        | otherwise = (x : ys) :| yss
+      where
+        ~(ys :| yss) = go xs
