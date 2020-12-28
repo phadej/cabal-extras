@@ -83,16 +83,25 @@ phase2 tracer _phase ghciOpts unitIds ghcInfo mbuildDir cabalCfg cwd parsed = do
                     -- TODO: --fast
                     reset
 
-                    for_ (moduleSetup m) $ \setups -> for_ setups $ \(L pos setup) -> do
-                        case setup of
-                            Property expr -> putError tracer $ "properties are not supported in setup, skipping: " ++ expr
-                            Example expr expected -> do
-                                result <- eval tracer ghci preserveIt timeout expr
-                                case mkResult expected (lines result) of
-                                    Equal -> return ()
-                                    NotEqual diff -> do
-                                        putError tracer expr
-                                        putError tracer $ prettyPos pos ++ unlines ("" : diff)
+                    -- command line --setup
+                    for_ (optSetup ghciOpts) $ \expr -> do
+                        result <- eval tracer ghci preserveIt timeout expr
+                        case mkResult [] (lines result) of
+                                Equal -> return ()
+                                NotEqual diff -> do
+                                    putError tracer expr
+                                    putError tracer $ unlines ("" : diff)
+
+                    -- in file $setup
+                    for_ (moduleSetup m) $ \setups -> for_ setups $ \(L pos setup) -> case setup of
+                        Property expr -> putError tracer $ "properties are not supported in setup, skipping: " ++ expr
+                        Example expr expected -> do
+                            result <- eval tracer ghci preserveIt timeout expr
+                            case mkResult expected (lines result) of
+                                Equal -> return ()
+                                NotEqual diff -> do
+                                    putError tracer expr
+                                    putError tracer $ prettyPos pos ++ unlines ("" : diff)
 
             let runExampleGroup !acc [] = return acc
                 runExampleGroup !acc (L pos doctest : next) = case doctest of

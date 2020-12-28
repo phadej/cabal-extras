@@ -26,11 +26,13 @@ data GhciOpts = GhciOpts
     { optPreserveIt :: PreserveIt
     , optExts       :: [String]
     , optTimeout    :: Double
+    , optSetup      :: [String]
     }
+  deriving Show
 
-data PreserveIt    = PreserveIt | DontPreserveIt
-data CabalPlan     = CabalPlan | NoCabalPlan
-data StripComments = StripComments | DontStripComments deriving Eq
+data PreserveIt    = PreserveIt | DontPreserveIt deriving (Eq, Show)
+data CabalPlan     = CabalPlan | NoCabalPlan deriving (Eq, Show)
+data StripComments = StripComments | DontStripComments deriving (Eq, Show)
 
 data Phase
     = Manual
@@ -59,6 +61,7 @@ ghciOptsP = pure GhciOpts
     <*> preserveItP
     <*> many extP
     <*> O.option O.auto (O.long "timeout" <> O.metavar "SECS" <> O.value 3 <> O.help "Evaluation timeout in seconds")
+    <*> many (O.strOption (O.long "setup" <> O.metavar "EXPR" <> O.help "A setup expression"))
 
 preserveItP :: O.Parser PreserveIt
 preserveItP = foldl' (\_ x -> x) DontPreserveIt <$> many (on <|> off) where

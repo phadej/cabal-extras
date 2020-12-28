@@ -61,6 +61,11 @@ However, in this list we mostly only list and show the --option version of them.
     Especially outputs are assumed to be Haskell-like.
     Default **\--no-strip-comments**.
 
+**\--setup* *expr*
+
+:   An additional expression to execute as setup for all examples.
+    Can be specified multiple times.
+
 **\--extra-package** *pkgname*
 
 :   An extra package to make available in GHCi session. The package must
