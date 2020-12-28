@@ -13,7 +13,7 @@ DESCRIPTION
 ===========
 
 *cabal-docspec* is a doctest runner closely integrated with *cabal-install*.
-In common scenarious cabal-docspec is able to self-configure using cabal-install generated metadata (*plan.json*).
+In common scenarios cabal-docspec is able to self-configure using cabal-install generated metadata (*plan.json*).
 Another important difference is that cabal-docspec
 doesn't depend on *ghc* library, but rather invoke the *ghci* executable.
 
