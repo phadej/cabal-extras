@@ -515,14 +515,13 @@ All warnings are enabled by default.
 KNOWN BUGS AND INFECILITIES
 ===========================
 
-Multiline input is not well supported with GHC prior to 7.8, as these lack way to suppress secondary prompt output.
-https://gitlab.haskell.org/ghc/ghc/-/issues/7509
-
 Properties (**prop>**) are recognized but not evaluated.
 
 Literate Haskell is not supported.
 
 Failures in the setup code does not cause module skip.
+
+GHC-7.0 relies that *Char* type is in scope. This is an implementation artifact.
 
 SEE ALSO
 ========

@@ -1,4 +1,4 @@
-.TH CABAL-DOCSPEC 1 "December 26, 2020" "cabal-docspec 0.0.0.20201229" "Cabal Extras"
+.TH CABAL-DOCSPEC 1 "December 26, 2020" "cabal-docspec 0.0.0.20201230" "Cabal Extras"
 .SH NAME
 .PP
 cabal-docspec - another doctest for Haskell
@@ -567,15 +567,14 @@ Warn when parsing of cabal package file fields fails.
 C preprocessor (\f[I]cpphs\f[R]) warnings.
 .SH KNOWN BUGS AND INFECILITIES
 .PP
-Multiline input is not well supported with GHC prior to 7.8, as these
-lack way to suppress secondary prompt output.
-https://gitlab.haskell.org/ghc/ghc/-/issues/7509
-.PP
 Properties (\f[B]prop>\f[R]) are recognized but not evaluated.
 .PP
 Literate Haskell is not supported.
 .PP
 Failures in the setup code does not cause module skip.
+.PP
+GHC-7.0 relies that \f[I]Char\f[R] type is in scope.
+This is an implementation artifact.
 .SH SEE ALSO
 .PP
 doctest(1) https://hackage.haskell.org/package/doctest

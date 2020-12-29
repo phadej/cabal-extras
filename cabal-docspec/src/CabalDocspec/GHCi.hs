@@ -20,7 +20,12 @@ import CabalDocspec.Trace
 import CabalDocspec.Warning
 
 -- | Handle to GHCi process.
-newtype GHCi = GHCi Proci.IPH
+data GHCi = GHCi !Proci.IPH !MarkerType
+
+data MarkerType
+    = MT_DSS  -- ^ @Data.String.String@
+    | MT_Char -- ^ @[Char]@
+    -- | MT_None -- this an option too, not configurable atm.
 
 -- | Run interactive GHCi
 withInteractiveGhc
@@ -34,7 +39,14 @@ withInteractiveGhc tracer ghcInfo cwd args kont = do
     traceApp tracer $ TraceGHCi (ghcPath ghcInfo) args'
 
     Proci.withInteractiveProcess pc1 $ \iph -> do
-            let ghci = GHCi iph
+            let mt :: MarkerType
+                mt  | ghcVersion ghcInfo >= mkVersion [7,2]
+                    = MT_DSS
+
+                    | otherwise
+                    = MT_Char
+
+            let ghci = GHCi iph mt
             setupGhci tracer ghcInfo ghci
             kont ghci
   where
@@ -43,15 +55,19 @@ withInteractiveGhc tracer ghcInfo cwd args kont = do
         { Proc.cwd = Just (toFilePath cwd)
         }
 
-    args' = ["--interactive", "-ignore-dot-ghci"] ++ args
+    args' = ["--interactive", "-ignore-dot-ghci", "-v0"] ++ args
 
 setupGhci :: TracerPeu r Tr -> GhcInfo -> GHCi -> Peu r ()
-setupGhci tracer _ghcInfo ghci@(GHCi iph) = do
+setupGhci tracer _ghcInfo ghci@(GHCi iph _mt) = do
     -- turn off prompt
     -- it is fine to send these, even if they may not work.
-    Proci.sendTo iph ":set prompt \"\"\n"
-    Proci.sendTo iph ":set prompt2 \"\"\n"     -- GHC-7.8+
-    Proci.sendTo iph ":set prompt-cont \"\"\n" -- GHC-8.2+
+
+    -- Proci.sendTo iph ":set prompt \"\"\n"
+    -- Proci.sendTo iph ":set prompt2 \"\"\n"     -- GHC-7.8+
+    -- Proci.sendTo iph ":set prompt-cont \"\"\n" -- GHC-8.2+
+
+    -- We don't actually need these, as -v0 argument suppresses prompt echo when terminal is not tty!
+    -- https://gitlab.haskell.org/ghc/ghc/-/blob/cbc7c3dda6bdf4acb760ca9eb545faeb98ab0dbe/ghc/GHCi/UI.hs#L688-691
 
     -- wait a little. I'm not sure if we need this delay
     liftIO $ threadDelay 10000
@@ -80,10 +96,15 @@ data Result
     | Timeout
 
 waitGhci :: TracerPeu r Tr -> GHCi -> Maybe String -> Int -> Peu r Result
-waitGhci _tracer (GHCi iph) mitVar microsecs = do
+waitGhci _tracer (GHCi iph mt) mitVar microsecs = do
+    let mt' :: String
+        mt' = case mt of
+            MT_DSS  -> "Data.String.String" -- works for most
+            MT_Char -> "[Char]"             -- works for GHC-7.0
+
     -- send separator
     separator <- show <$> genString
-    Proci.sendTo iph $ fromString $ separator ++ " :: Data.String.String\n"
+    Proci.sendTo iph $ fromString $ separator ++ " :: " ++ mt' ++ "\n"
 
     for_ mitVar $ \itVar -> do
         Proci.sendTo iph $ fromString $ "let it = " ++ itVar ++ "\n"
@@ -120,7 +141,7 @@ waitGhci _tracer (GHCi iph) mitVar microsecs = do
 -- | Send expressions (individual lines)
 -- wait for combined response.
 sendExpressions :: TracerPeu r Tr -> GHCi -> Bool -> Int -> [String] -> Peu r Result
-sendExpressions tracer ghci@(GHCi iph) preserveIt timeout exprs = do
+sendExpressions tracer ghci@(GHCi iph _mt) preserveIt timeout exprs = do
     -- send expressions
     for_ exprs $ \expr -> do
         Proci.sendTo iph (toUTF8BS expr <> "\n")
