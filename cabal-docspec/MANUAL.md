@@ -515,7 +515,8 @@ All warnings are enabled by default.
 KNOWN BUGS AND INFECILITIES
 ===========================
 
-Multiline input is not well supported for GHC prior 7.8, as these lack way to suppress secondary prompt output.
+Multiline input is not well supported with GHC prior to 7.8, as these lack way to suppress secondary prompt output.
+https://gitlab.haskell.org/ghc/ghc/-/issues/7509
 
 Properties (**prop>**) are recognized but not evaluated.
 

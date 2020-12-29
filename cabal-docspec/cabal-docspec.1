@@ -567,8 +567,9 @@ Warn when parsing of cabal package file fields fails.
 C preprocessor (\f[I]cpphs\f[R]) warnings.
 .SH KNOWN BUGS AND INFECILITIES
 .PP
-Multiline input is not well supported for GHC prior 7.8, as these lack
-way to suppress secondary prompt output.
+Multiline input is not well supported with GHC prior to 7.8, as these
+lack way to suppress secondary prompt output.
+https://gitlab.haskell.org/ghc/ghc/-/issues/7509
 .PP
 Properties (\f[B]prop>\f[R]) are recognized but not evaluated.
 .PP
