@@ -31,7 +31,7 @@ This way doctests may use package local files, but the code is not re-intepreted
 OPTIONS
 =======
 
-In  general, all boolean options are enabled with **--option** and yet again disabled with **\--no-option**.
+In  general, all boolean options are enabled with **\--option** and yet again disabled with **\--no-option**.
 That is, you use the exact same option name but prefix it with "no-".
 However, in this list we mostly only list and show the --option version of them.
 
@@ -132,7 +132,7 @@ through fields in a .cabal file.
 
 **x-docspec-extra-packages:** *[PKG]*...
 
-:    A list of extra packages. See **\--extra-package**.
+:    A (space separated) list of extra packages. See **\--extra-package**.
 
 EXAMPLES
 ========
@@ -145,12 +145,12 @@ A simplest example, which should work for most packages is to run
 
 Testing base library inside GHC source tree.
 The GHC source tree doesn't have cabal-install generated **plan.json**,
-therefore we use **--no-cabal-plan** and supply the
+therefore we use **\--no-cabal-plan** and supply the
 *libraries/base/base.cabal* path.
 There are some examples using explanatory comments,
-**--strip-comments** makes them work.
+**\--strip-comments** makes them work.
 Some examples are illustrating non-termination,
-therefore short **--timeout** is justified.
+therefore short **\--timeout** is justified.
 Few examples are using symbols from *mtl* and *deepseq* packages,
 we make them available.
 Finally, some modules are documented with no-Prelude assumption,
@@ -504,6 +504,14 @@ All warnings are enabled by default.
 :   Warn if extension passed via **-X** seems to be unknown.
     The known extension list is from *Cabal* library.
 
+**-Winvalid-field**
+
+:   Warn when parsing of cabal package file fields fails.
+
+**-Wcpphs**
+
+:   C preprocessor (*cpphs*) warnings.
+
 KNOWN BUGS AND INFECILITIES
 ===========================
 
@@ -512,8 +520,6 @@ Multiline input is not well supported for GHC prior 7.8, as these lack way to su
 Properties (**prop>**) are recognized but not evaluated.
 
 Literate Haskell is not supported.
-
-C preprocessor (*cpphs*) warnings are not part of warning framework.
 
 Failures in the setup code does not cause module skip.
 
@@ -538,3 +544,5 @@ AUTHOR
 
 Written by Oleg Grenrus.
 Doctest comment extraction and comparison functions are originally from *doctest* by Simon Hengel.
+(Vendored) Cpphs is written by Malcolm Wallace.
+Other dependencies are written by their respective authors.
