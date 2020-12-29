@@ -82,6 +82,17 @@ dynOptsFromBuildInfo tracer bi = do
                     putWarning tracer WInvalidField $ name ++ ": optparse-applicatice completion invoked"
                     return id
 
+    parse name@"x-docspec-extra-packages" contents =
+        case C.explicitEitherParsec (many (C.parsec <* P.spaces)) contents of
+            Left err -> do
+                putWarning tracer WInvalidField $ name ++ ": " ++ err
+                return id
+
+            Right pkgs -> return $ \dynOpts -> dynOpts
+                { optExtraPkgs = optExtraPkgs dynOpts ++ pkgs
+                }
+
+
     parse _ _ = return id
 
 -------------------------------------------------------------------------------
