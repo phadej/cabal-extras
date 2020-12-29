@@ -24,7 +24,7 @@ import Language.Preprocessor.Cpphs.Position  (Posn,newfile,newline,newlines
                                              ,cppline,cpp2hask,newpos)
 import Language.Preprocessor.Cpphs.ReadFirst (readFirst)
 import Language.Preprocessor.Cpphs.Tokenise  (linesCpp,reslash)
-import Language.Preprocessor.Cpphs.Options   (BoolOptions(..))
+import Language.Preprocessor.Cpphs.Options   (BoolOptions(..), CpphsActions (..))
 import Language.Preprocessor.Cpphs.HashDefine(HashDefine(..),parseHashDefine
                                              ,expandMacro)
 import Language.Preprocessor.Cpphs.MacroPass (preDefine,defineMacro)
@@ -32,19 +32,19 @@ import Data.Char        (isDigit,isSpace,isAlphaNum)
 import Data.List        (intercalate,isPrefixOf)
 import Numeric          (readHex,readOct,readDec)
 import System.IO.Unsafe (unsafeInterleaveIO)
-import System.IO        (hPutStrLn,stderr)
 import Control.Monad    (when)
 
 -- | Run a first pass of cpp, evaluating \#ifdef's and processing \#include's,
 --   whilst taking account of \#define's and \#undef's as we encounter them.
-cppIfdef :: FilePath            -- ^ File for error reports
+cppIfdef :: CpphsActions
+        -> FilePath             -- ^ File for error reports
         -> [(String,String)]    -- ^ Pre-defined symbols and their values
         -> [String]             -- ^ Search path for \#includes
         -> BoolOptions          -- ^ Options controlling output style
         -> String               -- ^ The input file content
         -> IO [(Posn,String)]   -- ^ The file after processing (in lines)
-cppIfdef fp syms search options =
-    cpp posn defs search options (Keep []) . initial . linesCpp
+cppIfdef actions fp syms search options =
+    cpp actions posn defs search options (Keep []) . initial . linesCpp
   where
     posn = newfile fp
     defs = preDefine options syms
@@ -62,16 +62,18 @@ cppIfdef fp syms search options =
 data KeepState = Keep [Posn] | Drop Int Bool [Posn]
 
 -- | Return just the list of lines that the real cpp would decide to keep.
-cpp :: Posn -> SymTab HashDefine -> [String] -> BoolOptions -> KeepState
+cpp :: CpphsActions
+       -> Posn -> SymTab HashDefine -> [String] -> BoolOptions -> KeepState
        -> [String] -> IO [(Posn,String)]
 
-cpp _ _ _ _ (Keep ps) [] | not (null ps) = do
-    hPutStrLn stderr $ "Unmatched #if: positions of open context are:\n"++
+cpp actions _p _syms _path _options (Keep ps) [] | not (null ps) = do
+    cpphsPutWarning actions $
+                      "Unmatched #if: positions of open context are:\n"++
                        unlines (map show ps)
     return []
-cpp _ _ _ _ _ [] = return []
+cpp _actions _p _syms _path _options _keep [] = return []
 
-cpp p syms path options (Keep ps) (l@('#':x):xs) =
+cpp actions p syms path options (Keep ps) (l@('#':x):xs) =
     let ws = words x
         cmd = if null ws then "" else head ws
         line = if null ws then [] else tail ws
@@ -84,53 +86,54 @@ cpp p syms path options (Keep ps) (l@('#':x):xs) =
             let n = 1 + length (filter (=='\n') l) in
             (if macros options && retain then emitOne  (p,reslash l)
                                          else emitMany (replicate n (p,""))) $
-            cpp (newlines n p) syms' path options ud xs'
+            cpp actions (newlines n p) syms' path options ud xs'
     in case cmd of
         "define" -> skipn (insertST def syms) True (Keep ps) xs
         "undef"  -> skipn (deleteST sym syms) True (Keep ps) xs
         "ifndef" -> skipn syms False (keepIf (not (definedST sym syms))) xs
         "ifdef"  -> skipn syms False (keepIf      (definedST sym syms)) xs
-        "if"     -> do b <- gatherDefined p syms (unwords line)
+        "if"     -> do b <- gatherDefined actions p syms (unwords line)
                        skipn syms False (keepIf b) xs
         "else"   -> skipn syms False (Drop 1 False ps) xs
         "elif"   -> skipn syms False (Drop 1 True ps) xs
         "endif"  | null ps ->
-                    do hPutStrLn stderr $ "Unmatched #endif at "++show p
+                    do cpphsPutWarning actions $ "Unmatched #endif at "++show p
                        return []
         "endif"  -> skipn syms False (Keep (tail ps)) xs
         "pragma" -> skipn syms True  (Keep ps) xs
         ('!':_)  -> skipn syms False (Keep ps) xs       -- \#!runhs scripts
-        "include"-> do (inc,content) <- readFirst (file syms (unwords line))
+        "include"-> do (inc,content) <- readFirst actions
+                                                  (file syms (unwords line))
                                                   p path
                                                   (warnings options)
-                       cpp p syms path options (Keep ps)
+                       cpp actions p syms path options (Keep ps)
                              (("#line 1 "++show inc): linesCpp content
                                                     ++ cppline (newline p): xs)
         "warning"-> if warnings options then
-                      do hPutStrLn stderr (l++"\nin "++show p)
+                      do cpphsPutWarning actions (l++"\nin "++show p)
                          skipn syms False (Keep ps) xs
                     else skipn syms False (Keep ps) xs
-        "error"  -> error (l++"\nin "++show p)
+        "error"  -> cpphsDie actions (l++"\nin "++show p)
         "line"   | all isDigit sym
                  -> (if locations options && hashline options then emitOne (p,l)
                      else if locations options then emitOne (p,cpp2hask l)
                      else id) $
-                    cpp (newpos (read sym) (un rest) p)
+                    cpp actions (newpos (read sym) (un rest) p)
                         syms path options (Keep ps) xs
         n | all isDigit n && not (null n)
                  -> (if locations options && hashline options then emitOne (p,l)
                      else if locations options then emitOne (p,cpp2hask l)
                      else id) $
-                    cpp (newpos (read n) (un (tail ws)) p)
+                    cpp actions (newpos (read n) (un (tail ws)) p)
                         syms path options (Keep ps) xs
           | otherwise
                  -> do when (warnings options) $
-                           hPutStrLn stderr ("Warning: unknown directive #"++n
+                           cpphsPutWarning actions ("Warning: unknown directive #"++n
                                              ++"\nin "++show p)
                        emitOne (p,l) $
-                               cpp (newline p) syms path options (Keep ps) xs
+                               cpp actions (newline p) syms path options (Keep ps) xs
 
-cpp p syms path options (Drop n b ps) (('#':x):xs) =
+cpp actions p syms path options (Drop n b ps) (('#':x):xs) =
     let ws = words x
         cmd = if null ws then "" else head ws
         delse    | n==1 && b = Drop 1 b ps
@@ -144,27 +147,27 @@ cpp p syms path options (Drop n b ps) (('#':x):xs) =
         skipn ud xs' =
                  let n' = 1 + length (filter (=='\n') x) in
                  emitMany (replicate n' (p,"")) $
-                    cpp (newlines n' p) syms path options ud xs'
+                    cpp actions (newlines n' p) syms path options ud xs'
     in
     if      cmd == "ifndef" ||
             cmd == "if"     ||
             cmd == "ifdef" then    skipn (Drop (n+1) b (p:ps)) xs
-    else if cmd == "elif"  then do v <- gatherDefined p syms (unwords (tail ws))
+    else if cmd == "elif"  then do v <- gatherDefined actions p syms (unwords (tail ws))
                                    skipn (delif v) xs
     else if cmd == "else"  then    skipn  delse xs
     else if cmd == "endif" then
-            if null ps then do hPutStrLn stderr $ "Unmatched #endif at "++show p
+            if null ps then do cpphsPutWarning actions $ "Unmatched #endif at "++show p
                                return []
                        else skipn  dend  xs
     else skipn (Drop n b ps) xs
         -- define, undef, include, error, warning, pragma, line
 
-cpp p syms path options (Keep ps) (x:xs) =
+cpp actions p syms path options (Keep ps) (x:xs) =
     let p' = newline p in seq p' $
-    emitOne (p,x)  $  cpp p' syms path options (Keep ps) xs
-cpp p syms path options d@(Drop _ _ _) (_:xs) =
+    emitOne (p,x)  $  cpp actions p' syms path options (Keep ps) xs
+cpp actions p syms path options d@(Drop _ _ _) (_:xs) =
     let p' = newline p in seq p' $
-    emitOne (p,"") $  cpp p' syms path options d xs
+    emitOne (p,"") $  cpp actions p' syms path options d xs
 
 
 -- | Auxiliary IO functions
@@ -177,22 +180,22 @@ emitMany xs io = do ys <- unsafeInterleaveIO io
 
 
 ----
-gatherDefined :: Posn -> SymTab HashDefine -> String -> IO Bool
-gatherDefined p st inp =
+gatherDefined :: CpphsActions -> Posn -> SymTab HashDefine -> String -> IO Bool
+gatherDefined actions p st inp =
   case runParser (preExpand st) inp of
-    (Left msg, _) -> error ("Cannot expand #if directive in file "++show p
+    (Left msg, _) -> cpphsDie actions ("Cannot expand #if directive in file "++show p
                            ++":\n    "++msg)
     (Right s, xs) -> do
---      hPutStrLn stderr $ "Expanded #if at "++show p++" is:\n  "++s
+--      cpphsPutWarning actions $ "Expanded #if at "++show p++" is:\n  "++s
         when (any (not . isSpace) xs) $
-             hPutStrLn stderr ("Warning: trailing characters after #if"
+             cpphsPutWarning actions ("Warning: trailing characters after #if"
                               ++" macro expansion in file "++show p++": "++xs)
 
         case runParser parseBoolExp s of
-          (Left msg, _) -> error ("Cannot parse #if directive in file "++show p
+          (Left msg, _) -> cpphsDie actions ("Cannot parse #if directive in file "++show p
                                  ++":\n    "++msg)
           (Right b, xs) -> do when (any (not . isSpace) xs && notComment xs) $
-                                   hPutStrLn stderr
+                                   cpphsPutWarning actions
                                      ("Warning: trailing characters after #if"
                                       ++" directive in file "++show p++": "++xs)
                               return b

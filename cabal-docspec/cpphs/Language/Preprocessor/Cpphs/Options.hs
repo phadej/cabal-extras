@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Options
@@ -18,10 +19,24 @@ module Language.Preprocessor.Cpphs.Options
   , defaultCpphsOptions
   , defaultBoolOptions
   , trailing
+  , CpphsActions (..)
+  , defaultCpphsActions
   ) where
 
 import Data.Maybe
 import Data.List (isPrefixOf)
+import System.IO (hPutStrLn,stderr)
+
+data CpphsActions = CpphsActions
+    { cpphsPutWarning :: String -> IO ()
+    , cpphsDie        :: forall a. String -> IO a
+    }
+
+defaultCpphsActions :: CpphsActions
+defaultCpphsActions = CpphsActions
+    { cpphsPutWarning = hPutStrLn stderr
+    , cpphsDie        = error
+    }
 
 -- | Cpphs options structure.
 data CpphsOptions = CpphsOptions 

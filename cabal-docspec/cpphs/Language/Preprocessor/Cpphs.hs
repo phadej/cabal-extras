@@ -17,6 +17,7 @@ module Language.Preprocessor.Cpphs
   , macroPass, macroPassReturningSymTab
   , CpphsOptions(..), BoolOptions(..)
   , parseOptions, defaultCpphsOptions, defaultBoolOptions
+  , CpphsActions(..), defaultCpphsActions
   , module Language.Preprocessor.Cpphs.Position
   ) where
 
@@ -29,6 +30,8 @@ import Language.Preprocessor.Cpphs.RunCpphs(runCpphs
                                            ,runCpphsReturningSymTab)
 import Language.Preprocessor.Cpphs.Options
        (CpphsOptions(..), BoolOptions(..), parseOptions
-       ,defaultCpphsOptions,defaultBoolOptions)
+       ,defaultCpphsOptions,defaultBoolOptions
+       ,CpphsActions(..), defaultCpphsActions
+       )
 import Language.Preprocessor.Cpphs.Position
 import Language.Preprocessor.Cpphs.Tokenise

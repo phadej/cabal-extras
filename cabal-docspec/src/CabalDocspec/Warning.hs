@@ -8,6 +8,7 @@ data W
     | WTimeout
     | WUnknownExtension
     | WInvalidField
+    | WCpphs
   deriving (Eq, Ord, Enum, Bounded)
 
 instance Universe W where universe = [minBound .. maxBound]
@@ -19,3 +20,4 @@ instance Warning W where
     warningToFlag WTimeout             = "timeout"
     warningToFlag WUnknownExtension    = "unknown-extension"
     warningToFlag WInvalidField        = "invalid-field"
+    warningToFlag WCpphs               = "cpphs"

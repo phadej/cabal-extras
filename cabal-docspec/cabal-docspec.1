@@ -37,8 +37,8 @@ This way doctests may use package local files, but the code is not
 re-intepreted.
 .SH OPTIONS
 .PP
-In general, all boolean options are enabled with \f[B]\[en]option\f[R]
-and yet again disabled with \f[B]--no-option\f[R].
+In general, all boolean options are enabled with \f[B]--option\f[R] and
+yet again disabled with \f[B]--no-option\f[R].
 That is, you use the exact same option name but prefix it with
 \[lq]no-\[rq].
 However, in this list we mostly only list and show the \[en]option
@@ -125,7 +125,7 @@ These options will be applied \f[I]before\f[R] command line options, and
 allow configuration of cabal-docspec per component under test.
 .TP
 \f[B]x-docspec-extra-packages:\f[R] \f[I][PKG]\f[R]\&...
-A list of extra packages.
+A (space separated) list of extra packages.
 See \f[B]--extra-package\f[R].
 .SH EXAMPLES
 .PP
@@ -141,12 +141,12 @@ cabal-docspec
 .PP
 Testing base library inside GHC source tree.
 The GHC source tree doesn\[cq]t have cabal-install generated
-\f[B]plan.json\f[R], therefore we use \f[B]\[en]no-cabal-plan\f[R] and
+\f[B]plan.json\f[R], therefore we use \f[B]--no-cabal-plan\f[R] and
 supply the \f[I]libraries/base/base.cabal\f[R] path.
 There are some examples using explanatory comments,
-\f[B]\[en]strip-comments\f[R] makes them work.
+\f[B]--strip-comments\f[R] makes them work.
 Some examples are illustrating non-termination, therefore short
-\f[B]\[en]timeout\f[R] is justified.
+\f[B]--timeout\f[R] is justified.
 Few examples are using symbols from \f[I]mtl\f[R] and \f[I]deepseq\f[R]
 packages, we make them available.
 Finally, some modules are documented with no-Prelude assumption,
@@ -199,15 +199,15 @@ main = do
 .fi
 .PP
 The bare \f[B]cabal-docspec\f[R] command works, because needed extra
-packages are configured using \f[B]x-docspec-options\f[R] field in a
-package definition library stanza:
+packages are configured using \f[B]x-docspec-extra-packages\f[R] field
+in a package definition library stanza:
 .IP
 .nf
 \f[C]
 library
    ...
 
-   x-docspec-options: --extra-package=simple-reflect
+   x-docspec-extra-packages: simple-reflect
 \f[R]
 .fi
 .SH WRITING DOCTESTS
@@ -559,6 +559,12 @@ Evaluation of an expression timed out.
 \f[B]-Wunknown-extension\f[R]
 Warn if extension passed via \f[B]-X\f[R] seems to be unknown.
 The known extension list is from \f[I]Cabal\f[R] library.
+.TP
+\f[B]-Winvalid-field\f[R]
+Warn when parsing of cabal package file fields fails.
+.TP
+\f[B]-Wcpphs\f[R]
+C preprocessor (\f[I]cpphs\f[R]) warnings.
 .SH KNOWN BUGS AND INFECILITIES
 .PP
 Multiline input is not well supported for GHC prior 7.8, as these lack
@@ -567,9 +573,6 @@ way to suppress secondary prompt output.
 Properties (\f[B]prop>\f[R]) are recognized but not evaluated.
 .PP
 Literate Haskell is not supported.
-.PP
-C preprocessor (\f[I]cpphs\f[R]) warnings are not part of warning
-framework.
 .PP
 Failures in the setup code does not cause module skip.
 .SH SEE ALSO
@@ -590,3 +593,5 @@ There is NO WARRANTY, to the extent permitted by law.
 Written by Oleg Grenrus.
 Doctest comment extraction and comparison functions are originally from
 \f[I]doctest\f[R] by Simon Hengel.
+(Vendored) Cpphs is written by Malcolm Wallace.
+Other dependencies are written by their respective authors.

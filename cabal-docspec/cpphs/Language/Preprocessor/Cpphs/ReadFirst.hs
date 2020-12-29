@@ -23,12 +23,14 @@ import Data.List        (intersperse)
 import Control.Exception as E
 import Control.Monad    (when)
 import Language.Preprocessor.Cpphs.Position  (Posn,directory,cleanPath)
+import Language.Preprocessor.Cpphs.Options   (CpphsActions (..))
 
 -- | Attempt to read the given file from any location within the search path.
 --   The first location found is returned, together with the file content.
 --   (The directory of the calling file is always searched first, then
 --    the current directory, finally any specified search path.)
-readFirst :: String             -- ^ filename
+readFirst :: CpphsActions
+        -> String             -- ^ filename
         -> Posn                 -- ^ inclusion point
         -> [String]             -- ^ search path
         -> Bool                 -- ^ report warnings?
@@ -36,7 +38,7 @@ readFirst :: String             -- ^ filename
               , String
               )                 -- ^ discovered filepath, and file contents
 
-readFirst name demand path warn =
+readFirst actions name demand path warn =
     case name of
                        -- Windows drive in absolute path
        c:':':'\\':nm-> try nm   (Just (c:':':[])) [""]
@@ -52,7 +54,8 @@ readFirst name demand path warn =
     cons x xs = if null x then xs else x:xs
     try name _ [] = do
         when warn $
-          hPutStrLn stderr ("Warning: Can't find file \""++name
+          cpphsPutWarning actions
+                          ("Warning: Can't find file \""++name
                            ++"\" in directories\n\t"
                            ++concat (intersperse "\n\t" (cons dd (".":path)))
                            ++"\n  Asked for by: "++show demand)
