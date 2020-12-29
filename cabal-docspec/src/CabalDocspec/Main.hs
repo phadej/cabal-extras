@@ -213,7 +213,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan pkg un
     -- find library module paths
     modulePaths <- findModules
         tracer
-        (pkgPath pkg)
+        (pkgDir pkg)
         (C.hsSourceDirs bi)
         (C.exposedModules lib)
 
@@ -232,7 +232,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan pkg un
 
     -- first phase: read modules and extract the comments
     modules <- for modulePaths $ \(modname, modpath) ->
-        phase1 tracer ghcInfo pkgIds bi modname modpath
+        phase1 tracer ghcInfo (pkgDir pkg) pkgIds bi modname modpath
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
@@ -241,7 +241,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan pkg un
 
     if optPhase dynOpts > Phase1
     then do
-        phase2 tracer dynOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgPath pkg) parsed
+        phase2 tracer dynOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgDir pkg) parsed
     else
         return $ foldMap (foldMap (\xs -> Summary (length xs) 0 0 0 0 (length xs)) . moduleContent) parsed
 
@@ -315,13 +315,13 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
     -- find library module paths
     modulePaths <- findModules
         tracer
-        (pkgPath pkg)
+        (pkgDir pkg)
         (C.hsSourceDirs bi)
         (C.exposedModules lib)
 
     -- first phase: read modules and extract the comments
     modules <- for modulePaths $ \(modname, modpath) ->
-        phase1 tracer ghcInfo pkgIds bi modname modpath
+        phase1 tracer ghcInfo (pkgDir pkg) pkgIds bi modname modpath
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
@@ -331,7 +331,7 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
     if optPhase dynOpts > Phase1
     then do
         -- tmpDir <- getTemporaryDirectory -- TODO: make this configurable
-        phase2 tracer dynOpts unitIds ghcInfo Nothing cabalCfg (pkgPath pkg) parsed
+        phase2 tracer dynOpts unitIds ghcInfo Nothing cabalCfg (pkgDir pkg) parsed
     else
         return $ foldMap (foldMap (\xs -> Summary (length xs) 0 0 0 0 (length xs)) . moduleContent) parsed
 

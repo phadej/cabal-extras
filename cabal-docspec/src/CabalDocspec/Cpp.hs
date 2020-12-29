@@ -14,11 +14,12 @@ import CabalDocspec.Warning
 cpphs
     :: TracerPeu r Tr
     -> [PackageIdentifier]  -- ^ package identifiers, for @cabal_macros.h@
+    -> [Path Absolute]      -- ^ includes
     -> [(String, String)]   -- ^ additional defines
     -> Path Absolute        -- ^ filepath
     -> String               -- ^ file contents
     -> Peu r String
-cpphs tracer pkgIds defines path input = withRunInIO $ \runInIO -> do
+cpphs tracer pkgIds includes defines path input = withRunInIO $ \runInIO -> do
     let cpphsActions = Cpphs.CpphsActions
             { Cpphs.cpphsPutWarning = \msg -> runInIO (putWarning tracer WCpphs msg)
             , Cpphs.cpphsDie        = \msg -> runInIO (die tracer msg)
@@ -38,11 +39,11 @@ cpphs tracer pkgIds defines path input = withRunInIO $ \runInIO -> do
     cpphsOpts = Cpphs.defaultCpphsOptions
         { Cpphs.boolopts = cpphsBoolOpts
         , Cpphs.defines  = defines
-        -- includes --
+        , Cpphs.includes = map toFilePath includes
         }
 
 cpphsBoolOpts :: Cpphs.BoolOptions
 cpphsBoolOpts = Cpphs.defaultBoolOptions
     { Cpphs.hashline = False
-    , Cpphs.warnings = True -- TODO: change
+    , Cpphs.warnings = True
     }

@@ -13,7 +13,7 @@ import qualified Distribution.Types.GenericPackageDescription as C
 
 data Package = Package
     { pkgGpd   :: C.GenericPackageDescription
-    , pkgPath  :: Path Absolute
+    , pkgDir   :: Path Absolute
     , pkgUnits :: [Plan.Unit]
     }
   deriving Show
@@ -32,7 +32,7 @@ readLocalCabalFiles tracer plan =
 
         return Package
             { pkgGpd   = gpd
-            , pkgPath  = path'
+            , pkgDir   = path'
             , pkgUnits = toList units
             }
   where
@@ -56,7 +56,7 @@ readDirectCabalFiles tracer paths = for paths $ \path -> do
     
     return Package
         { pkgGpd   = gpd
-        , pkgPath  = takeDirectory cabalPath
+        , pkgDir  = takeDirectory cabalPath
         , pkgUnits = []
         }
 

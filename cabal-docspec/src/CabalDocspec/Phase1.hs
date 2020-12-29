@@ -22,12 +22,13 @@ import CabalDocspec.Trace
 phase1
     :: TracerPeu r Tr
     -> GhcInfo
+    -> Path Absolute       -- ^ package directory
     -> [PackageIdentifier] -- ^ dependencies
     -> C.BuildInfo
     -> C.ModuleName
     -> Path Absolute
     -> Peu r (Module (Located String))
-phase1 tracer ghcInfo pkgIds bi modname modpath = do
+phase1 tracer ghcInfo pkgDir pkgIds bi modname modpath = do
     traceApp tracer $ TracePhase1 modname modpath
 
     contents <- fromUTF8BS <$> readByteString modpath
@@ -38,12 +39,20 @@ phase1 tracer ghcInfo pkgIds bi modname modpath = do
         Just tokens ->
             return $ extractComments tokens
         Nothing -> do
-            contents' <- cpphs tracer pkgIds cppDefines modpath contents
+            contents' <- cpphs tracer pkgIds cppIncludes cppDefines modpath contents
             evaluate $ force $ extractComments $ lexerPass0 contents'
 
     -- extract docstrings from all comments
     return $ extractDocstrings modname comments
   where
+    cppIncludes :: [Path Absolute]
+    cppIncludes =
+        -- if there are absolute dirs, they are converted to relative,
+        -- so may break
+        [ pkgDir </> fromUnrootedFilePath dir
+        | dir <- C.includeDirs bi
+        ]
+
     cppDefines :: [(String, String)]
     cppDefines =
         [ ("__GLASGOW_HASKELL__", cppGhcVersion (ghcVersion ghcInfo))
