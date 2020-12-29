@@ -1,4 +1,4 @@
-.TH CABAL-DOCSPEC 1 "December 26, 2020" "cabal-docspec 0.0.0.20201228" "Cabal Extras"
+.TH CABAL-DOCSPEC 1 "December 26, 2020" "cabal-docspec 0.0.0.20201229" "Cabal Extras"
 .SH NAME
 .PP
 cabal-docspec - another doctest for Haskell
@@ -123,6 +123,10 @@ fields in a .cabal file.
 \f[B]x-docspec-options:\f[R] \f[I][OPTION]\f[R]\&...
 These options will be applied \f[I]before\f[R] command line options, and
 allow configuration of cabal-docspec per component under test.
+.TP
+\f[B]x-docspec-extra-packages:\f[R] \f[I][PKG]\f[R]\&...
+A list of extra packages.
+See \f[B]--extra-package\f[R].
 .SH EXAMPLES
 .PP
 A simplest example, which should work for most packages is to run
@@ -277,7 +281,7 @@ for
 .SS A note on performance
 .PP
 Because cabal-docspec uses compiled library, calling \f[B]:reload:\f[R]
-after each group doesn\[cq]t cause performance.
+after each group doesn\[cq]t cause performance problems.
 For that reason, cabal-docspec doesn\[cq]t have \f[B]--fast\f[R]
 variant, it is not needed.
 .SS Setup code

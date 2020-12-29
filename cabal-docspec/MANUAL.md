@@ -130,6 +130,10 @@ through fields in a .cabal file.
 :    These options will be applied *before* command line options,
      and allow configuration of cabal-docspec per component under test.
 
+**x-docspec-extra-packages:** *[PKG]*...
+
+:    A list of extra packages. See **\--extra-package**.
+
 EXAMPLES
 ========
 
@@ -253,7 +257,7 @@ If an example fails, subsequent examples from the same group are skipped.  E.g. 
 A note on performance
 ---------------------
 
-Because cabal-docspec uses compiled library, calling **:reload:** after each group doesn't cause performance.
+Because cabal-docspec uses compiled library, calling **:reload:** after each group doesn't cause performance problems.
 For that reason, cabal-docspec doesn't have **\--fast** variant, it is not needed.
 
 Setup code
