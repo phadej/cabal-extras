@@ -60,6 +60,13 @@ data Comment
     | NestedComment Pos String
   deriving Show
 
+instance NFData Comment where
+    rnf (LineCommentBlock pos s) = rnfPos pos `seq` rnf s
+    rnf (NestedComment pos s)    = rnfPos pos `seq` rnf s
+
+rnfPos :: Pos -> ()
+rnfPos (L.Pos x y z) = rnf x `seq` rnf y `seq` rnf z
+
 extractComments :: [PosToken] -> [Comment]
 extractComments = go 0 where
     go :: Int -> [PosToken] -> [Comment]

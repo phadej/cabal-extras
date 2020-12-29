@@ -39,7 +39,7 @@ phase1 tracer ghcInfo pkgIds bi modname modpath = do
             return $ extractComments tokens
         Nothing -> do
             contents' <- cpphs tracer pkgIds cppDefines modpath contents
-            return $ extractComments $ lexerPass0 contents'
+            evaluate $ force $ extractComments $ lexerPass0 contents'
 
     -- extract docstrings from all comments
     return $ extractDocstrings modname comments
