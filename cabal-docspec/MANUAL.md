@@ -188,14 +188,12 @@ it could be:
         putStrLn "    cabal build all --enable-tests"
         putStrLn "    cabal-docspec"
 
-The bare **cabal-docspec** command works, because needed extra packages
-are configured using **x-docspec-options** field in a package definition
-library stanza:
+The bare **cabal-docspec** command works, because needed extra packages are configured using **x-docspec-extra-packages** field in a package definition library stanza:
 
     library
        ...
 
-       x-docspec-options: --extra-package=simple-reflect
+       x-docspec-extra-packages: simple-reflect
 
 WRITING DOCTESTS
 ================
