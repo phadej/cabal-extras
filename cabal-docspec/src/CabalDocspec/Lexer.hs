@@ -84,6 +84,10 @@ extractComments = go 0 where
     goLines :: Int -> Pos -> (String -> String) -> [PosToken] -> [Comment]
     goLines diff !pos !acc ((L.Commentstart, (_, s)) : (L.Comment, (_, str)) : next) =
         goLines diff pos (acc . (s ++) . (str ++)) next
+    -- there could be whitespace between line comments, but not empty lines.
+    goLines diff !pos !acc ((L.Whitespace, (_,s)) : next)
+        | all (/= '\n') s
+        = goLines diff pos acc next
     goLines diff !pos !acc next = LineCommentBlock pos (acc "") : go diff next
 
     -- adjust position based on {-# LINE #-} pragmas
