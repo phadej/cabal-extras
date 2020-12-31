@@ -10,6 +10,7 @@ import Peura
 
 import Control.Concurrent     (threadDelay)
 import Control.Concurrent.STM (readTVar, registerDelay, retry)
+import System.IO              (Newline(..), nativeNewline)
 
 import qualified Data.ByteString            as BS
 import qualified System.Process             as Proc
@@ -62,9 +63,9 @@ setupGhci tracer _ghcInfo ghci@(GHCi iph _mt) = do
     -- turn off prompt
     -- it is fine to send these, even if they may not work.
 
-    -- Proci.sendTo iph ":set prompt \"\"\n"
-    -- Proci.sendTo iph ":set prompt2 \"\"\n"     -- GHC-7.8+
-    -- Proci.sendTo iph ":set prompt-cont \"\"\n" -- GHC-8.2+
+    -- Proci.sendTo iph $ ":set prompt \"\""      ++ fromString newlineStr
+    -- Proci.sendTo iph $ ":set prompt2 \"\""     ++ fromString newlineStr -- GHC-7.8+
+    -- Proci.sendTo iph $ ":set prompt-cont \"\"" ++ fromString newlineStr -- GHC-8.2+
 
     -- We don't actually need these, as -v0 argument suppresses prompt echo when terminal is not tty!
     -- https://gitlab.haskell.org/ghc/ghc/-/blob/cbc7c3dda6bdf4acb760ca9eb545faeb98ab0dbe/ghc/GHCi/UI.hs#L688-691
@@ -104,10 +105,10 @@ waitGhci _tracer (GHCi iph mt) mitVar microsecs = do
 
     -- send separator
     separator <- show <$> genString
-    Proci.sendTo iph $ fromString $ separator ++ " :: " ++ mt' ++ "\n"
+    Proci.sendTo iph $ fromString $ separator ++ " :: " ++ mt' ++ newlineStr
 
     for_ mitVar $ \itVar -> do
-        Proci.sendTo iph $ fromString $ "let it = " ++ itVar ++ "\n"
+        Proci.sendTo iph $ fromString $ "let it = " ++ itVar ++ newlineStr
 
     -- Make timeout
     timeoutVar <- liftIO $ registerDelay microsecs
@@ -122,7 +123,7 @@ waitGhci _tracer (GHCi iph mt) mitVar microsecs = do
         else do
             input <- Proci.readOut iph
             let input' = foldMap id input
-            let (before, after) = BS.breakSubstring (fromString $ separator ++ "\n") input'
+            let (before, after) = BS.breakSubstring (fromString $ separator ++ newlineStr) input'
             if BS.null after
             then do
                 retry
@@ -144,12 +145,12 @@ sendExpressions :: TracerPeu r Tr -> GHCi -> Bool -> Int -> [String] -> Peu r Re
 sendExpressions tracer ghci@(GHCi iph _mt) preserveIt timeout exprs = do
     -- send expressions
     for_ exprs $ \expr -> do
-        Proci.sendTo iph (toUTF8BS expr <> "\n")
+        Proci.sendTo iph (toUTF8BS expr <> fromString newlineStr)
 
     -- save @it@
     mitVar <- if not preserveIt then return Nothing else Just <$> do
         itVar <- ("it_" ++) <$> genString
-        Proci.sendTo iph $ fromString $ "let " ++ itVar ++ " = it\n"
+        Proci.sendTo iph $ fromString $ "let " ++ itVar ++ " = it" ++ newlineStr
         return itVar
 
     -- wait for responses
@@ -160,7 +161,7 @@ sendExpressions tracer ghci@(GHCi iph _mt) preserveIt timeout exprs = do
             putWarning tracer WTimeout "timeout..."
             -- send ctrl-c and wait again
             Proci.sendCtrlC iph
-            Proci.sendTo iph "\n"
+            Proci.sendTo iph $ fromString newlineStr
             res' <- waitGhci tracer ghci Nothing 10000000 -- 10 sec
             case res' of
                 Timeout -> die tracer "Timeout while recovering from timeout"
@@ -220,3 +221,10 @@ toChar 0x1c = '4'
 toChar 0x1d = '5'
 toChar 0x1e = '6'
 toChar _    = '7'
+
+newlineStr :: String
+newlineStr = newlineStrWith nativeNewline
+
+newlineStrWith :: Newline -> String
+newlineStrWith LF   = "\n"
+newlineStrWith CRLF = "\r\n"
