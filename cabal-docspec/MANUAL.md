@@ -78,6 +78,11 @@ However, in this list we mostly only list and show the --option version of them.
     Long timeouts may allow GHCi to acquire a lot of resources.
     On the other hand, too short timeout may cause false negatives.
 
+**\--timeout-message** *message*
+
+:   Message to return when the evaluation is timed out.
+    Default is **\* Hangs forever \***.
+
 **\-X** *extension*
 
 :   Language extension to start GHCi session with.
