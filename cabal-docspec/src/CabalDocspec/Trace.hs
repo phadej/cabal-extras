@@ -32,10 +32,23 @@ instance IsPeuraTrace Tr where
     showTrace (TraceGHCi p args)          = (ANSI.Blue, ["ghci"], unwords (p : args))
     showTrace (TraceGHCiInput input)      = (ANSI.Blue, ["ghci", "input"], input)
     showTrace (TraceSummary Summary {..}) = (ANSI.Green, ["doctest.summary"], str) where
-        str = printf "Examples: %d; Tried: %d; Skipped: %d; Success: %d; Errors: %d; Failures %d"
-            sExamples
-            sTried
-            sSkipped 
-            sSuccess
-            sErrors
-            sFailures
+        str = unlines $
+            [ ""
+            , showSs "Total:     " total
+            , showSs "Examples:  " sExamples
+            ]
+            ++ [ showSs "Properties:" sProperties  | sSetup /= mempty ]
+            ++ [ showSs "Setup:     " sSetup       | sSetup /= mempty ]
+
+        total :: SubSummary
+        total = sSetup <> sExamples <> sProperties
+
+        showSs :: String -> SubSummary -> String
+        showSs n SubSummary {..} = printf "%s %d; Tried: %d; Skipped: %d; Success: %d; Errors: %d; Failures %d"
+            n
+            _ssTotal
+            _ssTried
+            _ssSkipped
+            _ssSuccess
+            _ssErrors
+            _ssFailures
