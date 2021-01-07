@@ -44,7 +44,7 @@ instance IsPeuraTrace Tr where
         total = sSetup <> sExamples <> sProperties
 
         showSs :: String -> SubSummary -> String
-        showSs n SubSummary {..} = printf "%s %d; Tried: %d; Skipped: %d; Success: %d; Errors: %d; Failures %d"
+        showSs n SubSummary {..} = printf "%s %4d; Tried: %4d; Skipped: %4d; Success: %4d; Errors: %4d; Failures %4d"
             n
             _ssTotal
             _ssTried
