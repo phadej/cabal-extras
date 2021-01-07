@@ -528,6 +528,8 @@ Properties (**prop>**) are recognized but not evaluated.
 
 Literate Haskell is not supported.
 
+Dependencies' **install-includes** folders are not added to C preprocess search path.
+
 GHC-7.0 relies that *Char* type is in scope. This is an implementation artifact.
 
 Q&A
