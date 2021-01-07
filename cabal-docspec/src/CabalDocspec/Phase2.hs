@@ -108,22 +108,24 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd parsed = do
                 runExampleGroup !acc (L pos doctest : next) = case doctest of
                     Property expr -> do
                         putError tracer $ "properties not implemented, skipping " ++ expr
-                        runExampleGroup (acc <> Summary 1 0 1 0 1 0) next
+                        runExampleGroup (acc <> mempty { sProperties = ssSkip }) next
 
                     Example expr expected -> do
                         result <- eval tracer ghci preserveIt timeout timeoutMsg expr
                         case mkResult expected (lines result) of
                             Equal -> do
-                                runExampleGroup (acc <> Summary 1 1 1 0 0 0) next
+                                runExampleGroup (acc <> mempty { sExamples = ssSuccess }) next
                             NotEqual diff -> do
                                 putError tracer expr
                                 putError tracer $ prettyPos pos ++ unlines ("" : diff)
-                                let lnext = length next
-                                return (acc <> Summary (1 + lnext) 1 0 1 0 lnext)
+                                return (acc <> mempty { sExamples = ssError } <> skip next)
 
             fmap mconcat $ for (moduleContent m) $ \contents -> do
                 runSetup
                 runExampleGroup mempty contents
+
+skip :: [GenLocated L.Pos DocTest] -> Summary
+skip = foldMap (foldMap skipDocTest)
 
 fastTimeout :: Int
 fastTimeout = 1000000

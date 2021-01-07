@@ -122,7 +122,8 @@ main = do
 
         -- if there are errors, exit
         traceApp tracer $ TraceSummary res
-        unless (sErrors res == 0) $ do
+        let res' = sumSummary res
+        unless (_ssErrors res' == 0 && _ssFailures res' == 0) $ do
             putError tracer "there were errors or property failures"
             exitFailure
   where
@@ -173,6 +174,14 @@ checkGhcVersion tracer ghcInfo plan
   where
     ghcId = PackageIdentifier "ghc" (ghcVersion ghcInfo)
     planId = toCabal (Plan.pjCompilerId plan)
+
+-------------------------------------------------------------------------------
+-- Skipping
+-------------------------------------------------------------------------------
+
+skipModule :: Module [Located DocTest] -> Summary
+skipModule m =
+    foldMap (foldMap (foldMap skipDocTest)) (moduleContent m)
 
 -------------------------------------------------------------------------------
 -- With plan.json
@@ -243,7 +252,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan pkg un
     then do
         phase2 tracer dynOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgDir pkg) parsed
     else
-        return $ foldMap (foldMap (\xs -> Summary (length xs) 0 0 0 0 (length xs)) . moduleContent) parsed
+        return $ foldMap skipModule parsed
 
 -- Skip other components
 testComponent _tracer0 _tracerTop _dynOpts _ghcInfo _builddir _cabalCfg _plan _pkg _unit _cn _ci =
@@ -333,7 +342,7 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
         -- tmpDir <- getTemporaryDirectory -- TODO: make this configurable
         phase2 tracer dynOpts unitIds ghcInfo Nothing cabalCfg (pkgDir pkg) parsed
     else
-        return $ foldMap (foldMap (\xs -> Summary (length xs) 0 0 0 0 (length xs)) . moduleContent) parsed
+        return $ foldMap skipModule parsed
 
 -------------------------------------------------------------------------------
 -- Extra packages
