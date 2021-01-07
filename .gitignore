@@ -1,5 +1,6 @@
 dist/
 dist-newstyle/
+cabal.project.local
 .ghc.environment.*
 test-actual
 test-expected
@@ -10,3 +11,4 @@ deps.png
 derivation.nix
 default.nix
 result
+

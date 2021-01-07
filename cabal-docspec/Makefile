@@ -10,5 +10,8 @@ man : cabal-docspec.1
 .PHONY: release
 release : cabal-docspec.1
 	cabal build cabal-docspec
+	strip $$(cabal-plan list-bin cabal-docspec)
+	@ls -l $$(cabal-plan list-bin cabal-docspec)
 	cat $$(cabal-plan list-bin cabal-docspec) | xz > cabal-docspec-$(VERSION).xz
+	@ls -l cabal-docspec-$(VERSION).xz
 	sha256sum cabal-docspec-$(VERSION).xz
