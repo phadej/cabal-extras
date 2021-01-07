@@ -27,6 +27,7 @@ data DynOpts = DynOpts
     , optStripComs  :: StripComments
     , optExts       :: [String]
     , optTimeout    :: Double
+    , optTimeoutMsg :: String          -- ^ timeout response
     , optSetup      :: [String]
     , optExtraPkgs  :: [PackageName]
     , optVerbosity  :: Verbosity
@@ -40,6 +41,7 @@ defaultDynOpts = DynOpts
     , optStripComs  = DontStripComments
     , optExts       = []
     , optTimeout    = 3
+    , optTimeoutMsg = "* Hangs forever *"
     , optSetup      = []
     , optExtraPkgs  = []
     , optVerbosity  = Verbosity 0
@@ -118,13 +120,14 @@ dynOptsP = pure combine
     <*> stripComsP
     <*> listP extP
     <*> timeoutP
+    <*> timeoutMsgP
     <*> listP (O.strOption (O.long "setup" <> O.metavar "EXPR" <> O.help "A setup expression"))
     <*> listP extraPkgP
     <*> verbosityP
   where
     listP p = flip (++) <$> many p
-    combine f1 f2 f3 f4 f5 f6 f7 f8 (DynOpts x1 x2 x3 x4 x5 x6 x7 x8) =
-        DynOpts (f1 x1) (f2 x2) (f3 x3) (f4 x4) (f5 x5) (f6 x6) (f7 x7) (f8 x8)
+    combine f1 f2 f3 f4 f5 f6 f7 f8 f9 (DynOpts x1 x2 x3 x4 x5 x6 x7 x8 x9) =
+        DynOpts (f1 x1) (f2 x2) (f3 x3) (f4 x4) (f5 x5) (f6 x6) (f7 x7) (f8 x8) (f9 x9)
 
 lastOpt :: [a] -> a -> a
 lastOpt xs initial = foldl' (\_ x -> x) initial xs
@@ -137,6 +140,10 @@ preserveItP = lastOpt <$> many (on <|> off) where
 timeoutP :: O.Parser (Double -> Double)
 timeoutP = lastOpt <$> many p where
     p = O.option O.auto (O.long "timeout" <> O.metavar "SECS" <> O.help "Evaluation timeout in seconds")
+
+timeoutMsgP :: O.Parser (String ->String)
+timeoutMsgP = lastOpt <$> many p where
+    p = O.strOption (O.long "timeout-message" <> O.metavar "MSG" <> O.help "Message to return when evaluation is timed out")
 
 cabalPlanP :: O.Parser CabalPlan
 cabalPlanP = foldl' (\_ x -> x) CabalPlan <$> many (on <|> off) where

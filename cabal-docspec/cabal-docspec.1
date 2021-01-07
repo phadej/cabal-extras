@@ -84,6 +84,10 @@ Default: 3 seconds.
 Long timeouts may allow GHCi to acquire a lot of resources.
 On the other hand, too short timeout may cause false negatives.
 .TP
+\f[B]--timeout-message\f[R] \f[I]message\f[R]
+Message to return when the evaluation is timed out.
+Default is \f[B]* Hangs forever *\f[R].
+.TP
 \f[B]-X\f[R] \f[I]extension\f[R]
 Language extension to start GHCi session with.
 Can be specified multiple times.
