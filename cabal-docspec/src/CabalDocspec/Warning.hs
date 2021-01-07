@@ -9,6 +9,7 @@ data W
     | WUnknownExtension
     | WInvalidField
     | WCpphs
+    | WErrorInSetup
   deriving (Eq, Ord, Enum, Bounded)
 
 instance Universe W where universe = [minBound .. maxBound]
@@ -21,3 +22,4 @@ instance Warning W where
     warningToFlag WUnknownExtension    = "unknown-extension"
     warningToFlag WInvalidField        = "invalid-field"
     warningToFlag WCpphs               = "cpphs"
+    warningToFlag WErrorInSetup        = "error-in-setup"

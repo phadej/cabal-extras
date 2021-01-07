@@ -37,8 +37,8 @@ instance IsPeuraTrace Tr where
             , showSs "Total:     " total
             , showSs "Examples:  " sExamples
             ]
-            ++ [ showSs "Properties:" sProperties  | sSetup /= mempty ]
-            ++ [ showSs "Setup:     " sSetup       | sSetup /= mempty ]
+            ++ [ showSs "Properties:" sProperties  | sProperties /= mempty ]
+            ++ [ showSs "Setup:     " sSetup       | sSetup      /= mempty ]
 
         total :: SubSummary
         total = sSetup <> sExamples <> sProperties

@@ -1,4 +1,4 @@
-.TH CABAL-DOCSPEC 1 "December 26, 2020" "cabal-docspec 0.0.0.20201230.1" "Cabal Extras"
+.TH CABAL-DOCSPEC 1 "January 7, 2021" "cabal-docspec 0.0.0.20210107" "Cabal Extras"
 .SH NAME
 .PP
 cabal-docspec - another doctest for Haskell
@@ -569,13 +569,14 @@ Warn when parsing of cabal package file fields fails.
 .TP
 \f[B]-Wcpphs\f[R]
 C preprocessor (\f[I]cpphs\f[R]) warnings.
+.TP
+\f[B]-Werror-in-setup\f[R]
+There was an error in evaluting \f[B]$setup\f[R].
 .SH KNOWN BUGS AND INFECILITIES
 .PP
 Properties (\f[B]prop>\f[R]) are recognized but not evaluated.
 .PP
 Literate Haskell is not supported.
-.PP
-Failures in the setup code does not cause module skip.
 .PP
 GHC-7.0 relies that \f[I]Char\f[R] type is in scope.
 This is an implementation artifact.

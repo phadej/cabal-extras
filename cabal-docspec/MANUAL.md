@@ -517,14 +517,16 @@ All warnings are enabled by default.
 
 :   C preprocessor (*cpphs*) warnings.
 
+**-Werror-in-setup**
+
+:   There was an error in evaluting **$setup**.
+
 KNOWN BUGS AND INFECILITIES
 ===========================
 
 Properties (**prop>**) are recognized but not evaluated.
 
 Literate Haskell is not supported.
-
-Failures in the setup code does not cause module skip.
 
 GHC-7.0 relies that *Char* type is in scope. This is an implementation artifact.
 
