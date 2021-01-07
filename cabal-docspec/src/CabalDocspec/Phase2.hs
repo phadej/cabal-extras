@@ -1,10 +1,13 @@
-{-# LANGUAGE BangPatterns    #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE BangPatterns        #-}
+{-# LANGUAGE RecordWildCards     #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module CabalDocspec.Phase2 (
     phase2,
 ) where
 
 import Peura
+
+import Control.Monad (foldM)
 
 import qualified Cabal.Config           as Cabal
 import qualified Language.Haskell.Lexer as L
@@ -17,9 +20,10 @@ import CabalDocspec.Located
 import CabalDocspec.Opts
 import CabalDocspec.Summary
 import CabalDocspec.Trace
+import CabalDocspec.Warning
 
 phase2
-    :: TracerPeu r Tr
+    :: forall r. TracerPeu r Tr
     -> DynOpts
     -> [UnitId]
     -> GhcInfo
@@ -73,59 +77,114 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd parsed = do
         fmap mconcat $ for parsed $ \m -> do
             traceApp tracer $ TracePhase2 (moduleName m)
 
-            let reset = do
+            let reset :: Peu r ()
+                reset = do
+                    -- load module in question, also resets imports
+                    _ <- eval tracer ghci False fastTimeout timeoutMsg $ ":m " ++ prettyShow (moduleName m)
+
+                    -- reload, resets local bindings
                     void $ eval tracer ghci False fastTimeout timeoutMsg ":r"
+
+                    -- seed it varible.
                     when preserveIt $ void $ eval tracer ghci False fastTimeout timeoutMsg "()"
 
-            -- load module in question
-            reset
-            _ <- eval tracer ghci False fastTimeout timeoutMsg $ ":m " ++ prettyShow (moduleName m)
+            let skipSetup :: SubSummary -> Located DocTest -> Peu r (Either SubSummary SubSummary)
+                skipSetup acc ld = return (Right (acc <> foldMap skipSetupDocTest ld))
 
-            let runSetup = do
+            let skipCliSetup :: SubSummary -> String -> Peu r (Either SubSummary SubSummary)
+                skipCliSetup acc _ = return (Right (acc <> ssSkip))
+
+            let runCliSetup :: SubSummary -> String -> Peu r (Either SubSummary SubSummary)
+                runCliSetup acc expr = do
+                    result <- eval tracer ghci preserveIt timeout timeoutMsg expr
+                    case mkResult [] (lines result) of
+                            Equal -> return (Left (acc <> ssSuccess))
+                            NotEqual diff -> do
+                                putError tracer expr
+                                putError tracer $ unlines ("" : diff)
+                                return (Right (acc <> ssError))
+
+            let runSetup :: SubSummary -> Located DocTest -> Peu r (Either SubSummary SubSummary)
+                runSetup acc (L pos doctest) = case doctest of
+                    Property expr -> do
+                        putError tracer $ "properties are not supported in setup, skipping: " ++ expr
+                        return (Right (acc <> ssFailure))
+
+                    Example expr expected -> do
+                        result <- eval tracer ghci preserveIt timeout timeoutMsg expr
+                        case mkResult expected (lines result) of
+                            Equal -> return (Left (acc <> ssSuccess))
+                            NotEqual diff -> do
+                                putError tracer expr
+                                putError tracer $ prettyPos pos ++ unlines ("" : diff)
+                                return (Right (acc <> ssError))
+
+            let runSetupGroup :: Peu r SubSummary
+                runSetupGroup = do
                     reset
 
                     -- command line --setup
-                    for_ (optSetup dynOpts) $ \expr -> do
-                        result <- eval tracer ghci preserveIt timeout timeoutMsg expr
-                        case mkResult [] (lines result) of
-                                Equal -> return ()
-                                NotEqual diff -> do
-                                    putError tracer expr
-                                    putError tracer $ unlines ("" : diff)
+                    intermediate <- foldl2 runCliSetup skipCliSetup (Left mempty) (optSetup dynOpts)
 
                     -- in file $setup
-                    for_ (moduleSetup m) $ \setups -> for_ setups $ \(L pos setup) -> case setup of
-                        Property expr -> putError tracer $ "properties are not supported in setup, skipping: " ++ expr
-                        Example expr expected -> do
-                            result <- eval tracer ghci preserveIt timeout timeoutMsg expr
-                            case mkResult expected (lines result) of
-                                Equal -> return ()
-                                NotEqual diff -> do
-                                    putError tracer expr
-                                    putError tracer $ prettyPos pos ++ unlines ("" : diff)
+                    either id id <$> case moduleSetup m of
+                        Nothing     -> return intermediate
+                        Just setups -> foldl2 runSetup skipSetup intermediate setups
 
-            let runExampleGroup !acc [] = return acc
-                runExampleGroup !acc (L pos doctest : next) = case doctest of
+            let skipping :: Summary -> Located DocTest -> Peu r (Either Summary Summary)
+                skipping acc ld = return (Right (acc <> foldMap skipDocTest ld))
+
+            let runExample :: Summary -> Located DocTest -> Peu r (Either Summary Summary)
+                runExample acc (L pos doctest) = case doctest of
                     Property expr -> do
                         putError tracer $ "properties not implemented, skipping " ++ expr
-                        runExampleGroup (acc <> mempty { sProperties = ssSkip }) next
+                        return (Left (acc <> mempty { sProperties = ssSkip }))
 
                     Example expr expected -> do
                         result <- eval tracer ghci preserveIt timeout timeoutMsg expr
                         case mkResult expected (lines result) of
                             Equal -> do
-                                runExampleGroup (acc <> mempty { sExamples = ssSuccess }) next
+                                return (Left (acc <> mempty { sExamples = ssSuccess }))
                             NotEqual diff -> do
                                 putError tracer expr
                                 putError tracer $ prettyPos pos ++ unlines ("" : diff)
-                                return (acc <> mempty { sExamples = ssError } <> skip next)
+                                return (Right (acc <> mempty { sExamples = ssError }))
 
-            fmap mconcat $ for (moduleContent m) $ \contents -> do
-                runSetup
-                runExampleGroup mempty contents
+            let runExampleGroup :: Summary -> [Located DocTest] -> Peu r Summary
+                runExampleGroup acc
+                    = fmap (either id id)
+                    . foldl2 runExample skipping (Left acc)
 
-skip :: [GenLocated L.Pos DocTest] -> Summary
-skip = foldMap (foldMap skipDocTest)
+            -- run setup
+            setupRes <- runSetupGroup
+
+            -- if there are no issues in setup
+            if isOk setupRes
+            then do
+                -- ... run content
+                let combine xs = mconcat (mempty { sSetup = setupRes } : xs)
+                fmap combine $ for (moduleContent m) $ \contents -> do
+                    -- we don't recount setups, even they are rerun
+                    _ <- runSetupGroup
+                    runExampleGroup mempty contents
+
+            else do
+                -- ... skip run
+                putWarning tracer WErrorInSetup $
+                    "Issue in $setup, skipping " ++ prettyShow (moduleName m) ++ " module"
+                let res = foldMap (foldMap (foldMap skipDocTest)) (moduleContent m)
+                return $ mempty { sSetup = setupRes } <> res
+
+foldl2
+    :: (Monad m, Foldable f)
+    => (b -> a -> m (Either b c))
+    -> (c -> a -> m (Either b c))
+    -> Either b c
+    -> f a
+    -> m (Either b c)
+foldl2 f g = foldM go where
+    go (Left b)  a = f b a
+    go (Right c) a = g c a
 
 fastTimeout :: Int
 fastTimeout = 1000000

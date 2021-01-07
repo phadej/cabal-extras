@@ -123,7 +123,7 @@ main = do
         -- if there are errors, exit
         traceApp tracer $ TraceSummary res
         let res' = sumSummary res
-        unless (_ssErrors res' == 0 && _ssFailures res' == 0) $ do
+        unless (isOk res') $ do
             putError tracer "there were errors or property failures"
             exitFailure
   where
@@ -181,6 +181,7 @@ checkGhcVersion tracer ghcInfo plan
 
 skipModule :: Module [Located DocTest] -> Summary
 skipModule m =
+    mempty { sSetup = foldMap (foldMap (foldMap skipSetupDocTest)) (moduleSetup m) } <>
     foldMap (foldMap (foldMap skipDocTest)) (moduleContent m)
 
 -------------------------------------------------------------------------------

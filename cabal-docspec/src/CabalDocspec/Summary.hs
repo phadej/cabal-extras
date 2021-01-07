@@ -41,6 +41,9 @@ instance Monoid SubSummary where
     mempty = SubSummary 0 0 0 0 0 0
     mappend = (<>)
 
+isOk :: SubSummary -> Bool
+isOk s = _ssErrors s == 0 && _ssFailures s == 0
+
 ssSuccess :: SubSummary
 ssSuccess = SubSummary 1 1 1 0 0 0
 
@@ -56,3 +59,8 @@ ssSkip = SubSummary 1 0 0 0 0 1
 skipDocTest :: DocTest -> Summary
 skipDocTest Example {}  = mempty { sExamples   = ssSkip }
 skipDocTest Property {} = mempty { sProperties = ssSkip }
+
+-- In setup properties are always a failure.
+skipSetupDocTest :: DocTest -> SubSummary
+skipSetupDocTest Example {}  = ssSkip
+skipSetupDocTest Property {} = ssFailure
