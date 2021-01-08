@@ -1,4 +1,4 @@
-.TH CABAL-DOCSPEC 1 "January 7, 2021" "cabal-docspec 0.0.0.20210107" "Cabal Extras"
+.TH CABAL-DOCSPEC 1 "January 8, 2021" "cabal-docspec 0.0.0.20210108" "Cabal Extras"
 .SH NAME
 .PP
 cabal-docspec - another doctest for Haskell
@@ -592,6 +592,9 @@ bits, only to find examples.
 In this sense it is more principled (than Doctest).
 Therefore you might need to repeat imports in a \f[B]$setup\f[R] block.
 OTOH, the implementation\[cq]s imports never interfere with doctests.
+.PP
+Named documentaton chunks are the only possibly hidden part of source
+text, which cabal-docspec uses.
 .SS Q: How to hide some Prelude imports, e.g.\ null?
 .PP
 One way is to redefine the symbol in a \f[B]$setup\f[R] block using a

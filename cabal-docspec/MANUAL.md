@@ -544,6 +544,9 @@ In this sense it is more principled (than Doctest).
 Therefore you might need to repeat imports in a **$setup** block.
 OTOH, the implementation's imports never interfere with doctests.
 
+Named documentaton chunks are the only possibly hidden part of source text,
+which cabal-docspec uses.
+
 Q: How to hide some Prelude imports, e.g. null?
 ----------------------------------------------
 

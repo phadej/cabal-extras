@@ -15,7 +15,7 @@ module CabalDocspec.Lexer (
 import Peura
 
 import Data.Char              (toLower)
-import Data.List              (stripPrefix, init)
+import Data.List              (init, break)
 import Language.Haskell.Lexer (Pos, PosToken)
 import Text.Read              (read)
 
@@ -120,31 +120,35 @@ dropComments
 extractDocstrings :: C.ModuleName -> [Comment] -> Module (Located String)
 extractDocstrings modname comments = Module
     { moduleName    = modname
-    , moduleSetup   = setup
-    , moduleContent =
+    , moduleSetup   = listToMaybe
         [ c
-        | c@(L _ s) <- comments'
-        , case s of
-            '|':_ -> True
-            '^':_ -> True
-            _     -> False
+        | NamedComment "setup" c <- comments'
         ]
+    , moduleContent = mapMaybe nonSetup comments'
     }
   where
-    setup = listToMaybe
-        [ c
-        | c@(L _ s) <- comments'
-        , case stripPrefix "$setup" s of
-            Just []    -> True
-            Just (x:_) -> isSpace x
-            Nothing    -> False
-        ]
+    nonSetup (HdkComment c) = Just c
+    nonSetup (NamedComment "setup" _) = Nothing
+    nonSetup (NamedComment _ c) = Just c
 
-    comments' =
-        [ L (commentPos c) s
-        | c <- comments
-        , let s = commentString c
-        ]
+    comments' = mapMaybe classifyComment comments
+
+data HdkComment
+    = NamedComment String (Located String)
+    | HdkComment (Located String)
+  deriving (Show)
+
+classifyComment :: Comment -> Maybe HdkComment
+classifyComment c = case s of
+    '|' : _ -> Just (HdkComment (L pos s))
+    '^' : _ -> Just (HdkComment (L pos s))
+    '*' : _ -> Just (HdkComment (L pos s)) -- this is an over approximation, for exports
+    -- https://gitlab.haskell.org/ghc/ghc/-/blob/bd877edd9499a351db947cd51ed583872b2facdf/compiler/GHC/Parser/Lexer.x#L1404-1407
+    '$' : z -> let (name, rest) = break isSpace z in Just (NamedComment name (L pos rest))
+    _       -> Nothing
+  where
+    s = commentString c
+    pos = commentPos c
 
 commentString :: Comment -> String
 commentString (NestedComment _ ('{' : '-' : rest)) = dropWhile isSpace $ dropTrailingClose rest
