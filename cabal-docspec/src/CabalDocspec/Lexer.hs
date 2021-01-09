@@ -43,6 +43,7 @@ needsCppPass input = go tokens
     go []                             = Just tokens
     go ((L.Commentstart,  _):xs)      = go xs
     go ((L.Comment,  _):xs)           = go xs
+    go ((L.Whitespace, _):xs)         = go xs
     go ((L.NestedComment, (_, s)):xs)
         | "CPP" `elem` parseLanguagePragma s
         = Nothing

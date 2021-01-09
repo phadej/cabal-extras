@@ -36,14 +36,15 @@ phase1 tracer ghcInfo pkgDir pkgIds bi modname modpath = do
     -- lex the input.
     -- If it includes {-# LANGUAGE CPP #-}, then cpphs and re-lex.
     comments <- case needsCppPass contents of
-        Just tokens ->
+        Just tokens -> do
             return $ extractComments tokens
         Nothing -> do
             contents' <- cpphs tracer pkgIds cppIncludes cppDefines modpath contents
             evaluate $ force $ extractComments $ lexerPass0 contents'
 
     -- extract docstrings from all comments
-    return $ extractDocstrings modname comments
+    let docs = extractDocstrings modname comments
+    return docs
   where
     cppIncludes :: [Path Absolute]
     cppIncludes =
