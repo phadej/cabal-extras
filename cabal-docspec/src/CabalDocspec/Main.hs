@@ -78,8 +78,8 @@ main = do
 
         res <- case optCabalPlan opts of
             CabalPlan -> do
-                builddir <- makeAbsolute (optBuilddir opts)
-                plan <- liftIO $ Plan.findAndDecodePlanJson $ Plan.InBuildDir $ toFilePath builddir
+                buildDir <- makeAbsolute (optBuildDir opts)
+                plan <- liftIO $ Plan.findAndDecodePlanJson $ Plan.InBuildDir $ toFilePath buildDir
 
                 -- checks
                 checkGhcVersion tracer ghcInfo plan
@@ -115,7 +115,7 @@ main = do
                     for (pkgUnits pkg) $ \unit ->
                         ifor (Plan.uComps unit) $ \cn ci -> do
                             testComponent tracer0 tracer (optGhci opts)
-                                ghcInfo builddir cabalCfg plan env pkg unit cn ci
+                                ghcInfo buildDir cabalCfg plan env pkg unit cn ci
 
                 -- summarize Summary's
                 return $ foldMap (foldMap (foldMap id)) res
@@ -204,7 +204,7 @@ testComponent
     -> TracerPeu r Tr
     -> (DynOpts -> DynOpts)
     -> GhcInfo
-    -> Path Absolute -- ^ builddir
+    -> Path Absolute -- ^ buildDir
     -> Cabal.Config Identity
     -> Plan.PlanJson
     -> [(String, String)]
@@ -230,8 +230,8 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
     let tracer = adjustTracer (optVerbosity dynOpts) tracer0
 
     -- find extra units
-    extraUnitIds <- findExtraPackages tracer plan (optExtraPkgs dynOpts)
-
+    extraUnitIds <- findExtraPackages tracer plan (propPkgs dynOpts ++ optExtraPkgs dynOpts)
+        
     -- find library module paths
     modulePaths <- findModules
         tracer
@@ -252,9 +252,12 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
             map toCabal (toList (Plan.ciLibDeps ci)) ++
             extraUnitIds
 
+    -- cpp include dirs
+    cppDirs <- traverse makeAbsolute (optCppIncludeDirs dynOpts)
+
     -- first phase: read modules and extract the comments
     modules <- for modulePaths $ \(modname, modpath) ->
-        phase1 tracer ghcInfo (pkgDir pkg) pkgIds bi modname modpath
+        phase1 tracer ghcInfo (pkgDir pkg) cppDirs pkgIds bi modname modpath
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
@@ -268,7 +271,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
         return $ foldMap skipModule parsed
 
 -- Skip other components
-testComponent _tracer0 _tracerTop _dynOpts _ghcInfo _builddir _cabalCfg _plan _env _pkg _unit _cn _ci =
+testComponent _tracer0 _tracerTop _dynOpts _ghcInfo _buildDir _cabalCfg _plan _env _pkg _unit _cn _ci =
     return mempty
 
 -------------------------------------------------------------------------------
@@ -325,7 +328,7 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
     -- we don't have install plan, so we look for packages in IPI
     depends <- for (C.targetBuildDepends bi) $ \dep -> findUnit (C.depPkgName dep)
     thisUnitId <- findUnit (C.packageName (pkgGpd pkg))
-    extraUnitIds <- traverse findUnit (optExtraPkgs dynOpts)
+    extraUnitIds <- traverse findUnit (propPkgs dynOpts ++ optExtraPkgs dynOpts)
 
     let pkgIds :: [PackageIdentifier]
         pkgIds = map snd depends
@@ -341,9 +344,12 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
         (C.hsSourceDirs bi)
         (C.exposedModules lib)
 
+    -- cpp include dirs
+    cppDirs <- traverse makeAbsolute (optCppIncludeDirs dynOpts)
+
     -- first phase: read modules and extract the comments
     modules <- for modulePaths $ \(modname, modpath) ->
-        phase1 tracer ghcInfo (pkgDir pkg) pkgIds bi modname modpath
+        phase1 tracer ghcInfo (pkgDir pkg) cppDirs pkgIds bi modname modpath
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
@@ -385,6 +391,11 @@ findExtraPackages tracer plan = traverse $ \pn -> do
 -------------------------------------------------------------------------------
 -- Utilities
 -------------------------------------------------------------------------------
+
+propPkgs :: DynOpts -> [PackageName]
+propPkgs dynOpts = case optProperties dynOpts of
+    SkipProperties   -> []
+    SimpleProperties -> [ mkPackageName "QuickCheck" ]
 
 manglePackageName :: C.PackageName -> String
 manglePackageName = map fixchar . prettyShow where

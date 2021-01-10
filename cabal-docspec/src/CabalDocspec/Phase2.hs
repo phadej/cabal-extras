@@ -7,15 +7,18 @@ module CabalDocspec.Phase2 (
 import Peura
 
 import Control.Monad      (foldM)
+import Data.List          (isInfixOf)
 import System.Environment (getEnvironment)
 
 import qualified Cabal.Config           as Cabal
 import qualified Data.Map               as Map
+import qualified Data.Set               as Set
 import qualified Language.Haskell.Lexer as L
 
 import CabalDocspec.Doctest.Example
 import CabalDocspec.Doctest.Extract
 import CabalDocspec.Doctest.Parse
+import CabalDocspec.ExprVars
 import CabalDocspec.GHCi
 import CabalDocspec.Located
 import CabalDocspec.Opts
@@ -53,6 +56,11 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
 
     let GhcFlags {..} = getGhcFlags ghcInfo
 
+    let rtsArgs :: [String]
+        rtsArgs
+            | null (optGhciRtsopts dynOpts) = []
+            | otherwise = ["+RTS"] ++ optGhciRtsopts dynOpts ++ ["-RTS"]
+
     let ghciArgs :: [String]
         ghciArgs =
             [ "-i" -- so we don't explode on hs-source-dirs: . packages
@@ -73,7 +81,7 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
             ] ++
             [ ghcFlagPackageId ++ "=" ++ u
             | u <- map prettyShow unitIds
-            ]
+            ] ++ rtsArgs
 
     currEnv <- liftIO getEnvironment
     let env = Map.toList $ Map.fromList $ extraEnv ++ currEnv
@@ -141,9 +149,33 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
 
             let runExample :: Summary -> Located DocTest -> Peu r (Either Summary Summary)
                 runExample acc (L pos doctest) = case doctest of
-                    Property expr -> do
-                        putError tracer $ "properties not implemented, skipping " ++ expr
-                        return (Left (acc <> mempty { sProperties = ssSkip }))
+                    Property expr -> case optProperties dynOpts of
+                        SkipProperties -> do
+                            putWarning tracer WSkippedProperty $ prettyPos pos ++ " skipping " ++ expr
+                            return (Left (acc <> mempty { sProperties = ssSkip }))
+
+                        SimpleProperties -> do
+                            let vars = exprVars expr `Set.intersection` optPropVariables dynOpts
+
+                            let lambdaPrefix :: String
+                                lambdaPrefix
+                                    | null vars = ""
+                                    | otherwise = unwords $ "\\" : Set.toList vars ++ ["-> "]
+
+                            -- imports
+                            _ <- eval tracer ghci False fastTimeout timeoutMsg
+                                "import Test.QuickCheck (quickCheck)"
+
+                            -- evaluate property
+                            result <- eval tracer ghci False timeout timeoutMsg $
+                                "quickCheck (" ++ lambdaPrefix ++ expr ++ ")"
+
+                            if "OK, passed" `isInfixOf` result
+                            then return (Left (acc <> mempty { sProperties = ssSuccess }))
+                            else do
+                                putError tracer expr
+                                putError tracer $ prettyPos pos ++ "\n" ++ result
+                                return (Right (acc <> mempty { sProperties = ssError }))
 
                     Example expr expected -> do
                         result <- eval tracer ghci preserveIt timeout timeoutMsg expr

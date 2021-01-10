@@ -1,4 +1,4 @@
-VERSION=0.0.0.20210110
+VERSION=0.0.0.20210111
 
 cabal-docspec.1 : MANUAL.md
 	echo '.TH CABAL-DOCSPEC 1 "January 10, 2021" "cabal-docspec $(VERSION)" "Cabal Extras"' > cabal-docspec.1

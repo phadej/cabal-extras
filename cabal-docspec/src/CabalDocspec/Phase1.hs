@@ -23,12 +23,13 @@ phase1
     :: TracerPeu r Tr
     -> GhcInfo
     -> Path Absolute       -- ^ package directory
+    -> [Path Absolute]     -- ^ additional include directories
     -> [PackageIdentifier] -- ^ dependencies
     -> C.BuildInfo
     -> C.ModuleName
     -> Path Absolute
     -> Peu r (Module (Located String))
-phase1 tracer ghcInfo pkgDir pkgIds bi modname modpath = do
+phase1 tracer ghcInfo pkgDir cppDirs pkgIds bi modname modpath = do
     traceApp tracer $ TracePhase1 modname modpath
 
     contents <- fromUTF8BS <$> readByteString modpath
@@ -52,7 +53,7 @@ phase1 tracer ghcInfo pkgDir pkgIds bi modname modpath = do
         -- so may break
         [ pkgDir </> fromUnrootedFilePath dir
         | dir <- C.includeDirs bi
-        ]
+        ] ++ cppDirs
 
     cppDefines :: [(String, String)]
     cppDefines =

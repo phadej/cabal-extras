@@ -83,10 +83,31 @@ However, in this list we mostly only list and show the --option version of them.
 :   Message to return when the evaluation is timed out.
     Default is **\* Hangs forever \***.
 
+**\--ghci-rtsopts** *options*
+
+:   RTS options for GHCi process
+
+**\--skip-properties**
+
+:   Skip properties.
+
+**\--simple-properties**
+
+:   Evaluate **prop> expr x y** using **quickCheck (expr x y)**.
+    Requires *QuickCheck* package in the plan.
+
+**\--property-variables** *varlist*
+
+:   Variables to quantify over in properties.
+
 **\-X** *extension*
 
 :   Language extension to start GHCi session with.
     Can be specified multiple times.
+
+**\-I** *directory*
+
+:   Add *directory* to the directory search list for **#include** files.
 
 **\--phase1**
 
@@ -139,6 +160,10 @@ through fields in a .cabal file.
 
 :    A (space separated) list of extra packages. See **\--extra-package**.
 
+**x-docspec-property-variables:** *[VAR]*...
+
+:    A (space separated) list of property variables. See **\--property-variables**.
+
 EXAMPLES
 ========
 
@@ -156,16 +181,22 @@ There are some examples using explanatory comments,
 **\--strip-comments** makes them work.
 Some examples are illustrating non-termination,
 therefore short **\--timeout** is justified.
-Few examples are using symbols from *mtl* and *deepseq* packages,
+Yet, it has to be long enough so the terminating examples have time to run.
+We also set RTS options, reducing the maximum stack to
+make stack overflow exceptions occur earlier.
+Since the examples below use symbols from the *mtl*, *deepseq* and *bytestring* packages,
 we make them available.
 Finally, some modules are documented with no-Prelude assumption,
 therefore we have to turn it off.
 
-    cabal-docspec -w $PWD/_build/stage1/bin/ghc \
+    cabal-docspec \
+        -w $PWD/_build/stage1/bin/ghc \
+        -I $PWD/includes \
         --no-cabal-plan \
         --strip-comments \
         --timeout 2 \
-        --extra-package=mtl --extra-package=deepseq \
+        --ghci-rtsopts "-K500K" \
+        --extra-package=mtl --extra-package=deepseq --extra-package=bytestring \
         -XNoImplicitPrelude \
         libraries/base/base.cabal
 
@@ -392,10 +423,15 @@ If a line contains three dots and additional content, the three dots will match 
 QuickCheck properties
 ---------------------
 
-**NOTE:** cabal-docspec doesn't check properties at the moment. Details may change.
-
 Haddock (since version 2.13.0) has markup support for properties
-Doctest can verify properties with QuickCheck.
+cabal-docspec can verify properties with QuickCheck.
+Note: this works somewhat differently than it does in Doctest.
+
+By default properties are skipped. This is a **\--skip-properties** behaviour.
+cabal-docspec has a simple mechanism to evaluate properties
+enabled by **\--simple-properties**.
+For it to work, the *QuickCheck* package has to be in the install plan.
+
 A simple property looks like this:
 
 ```haskell
@@ -403,11 +439,43 @@ A simple property looks like this:
 -- prop> \xs -> sort xs == (sort . sort) (xs :: [Int])
 ```
 
-The lambda abstraction is optional and can be omitted:
+The lambda abstraction is required by default.
+cabal-docspec will quantify over variables
+passed in with **\--property-variables** command line flag.
+
+With **--property-variables xs** the following will work:
 
 ```haskell
 -- |
 -- prop> sort xs == (sort . sort) (xs :: [Int])
+```
+
+Doctest uses a hack to find which variables are free in the the expression.
+cabal-docspec's approach is more deterministic, as it doesn't try to infer anything.
+
+Also, in contrast to *Doctest*, cabal-docspec doesn't use the **polyQuickCheck** trick.
+Therefore some false properties may pass
+
+```haskell
+quickCheck $ \xs -> reverse xs === xs
++++ OK, passed 100 tests.
+```
+
+That property passes because the list element type defaults to **()**.
+To avoid defaulting you may override the default class resolution in a **$setup** block
+
+```haskell
+-- $setup
+-- >>> default (Integer, Double)
+```
+
+Then the property above will fail:
+
+```haskell
+quickCheck $ \xs -> reverse xs === xs
+*** Failed! Falsified (after 4 tests and 4 shrinks):    
+[1,0]
+[0,1] /= [1,0]
 ```
 
 A complete example that uses setup code is below:
@@ -430,21 +498,6 @@ fib :: Int -> Int
 fib 0 = 0
 fib 1 = 1
 fib n = fib (n - 1) + fib (n - 2)
-```
-
-If you see an error like the following, ensure that *QuickCheck* is a dependency of the test-suite or executable running docspec (to be corrected).
-
-```haskell
-<interactive>:39:3:
-    Not in scope: ‘polyQuickCheck’
-    In the splice: $(polyQuickCheck (mkName "doctest_prop"))
-
-<interactive>:39:3:
-    GHC stage restriction:
-      ‘polyQuickCheck’ is used in a top-level splice or annotation,
-      and must be imported, not defined locally
-    In the expression: polyQuickCheck (mkName "doctest_prop")
-    In the splice: $(polyQuickCheck (mkName "doctest_prop"))
 ```
 
 Hiding examples from Haddock
@@ -521,6 +574,10 @@ All warnings are enabled by default.
 
 :   There was an error in evaluting **$setup**.
 
+**-Wskipped-property**
+
+:   Warn about properties when **\--skip-properties** (the default) is enabled.
+
 KNOWN BUGS AND INFECILITIES
 ===========================
 
@@ -581,7 +638,7 @@ For example even
 is enough.
 However, without libraries actually being built, cabal-docspec won't work.
 
-Q: Does Doctest's --fast have an equivalent in cabal-docspec?
+Q: Does Doctest's \--fast have an equivalent in cabal-docspec?
 -------------------------------------------------------------
 
 No, cabal-doctest doesn't need one.
