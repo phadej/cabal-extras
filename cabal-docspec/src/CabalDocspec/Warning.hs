@@ -10,6 +10,7 @@ data W
     | WInvalidField
     | WCpphs
     | WErrorInSetup
+    | WSkippedProperty
   deriving (Eq, Ord, Enum, Bounded)
 
 instance Universe W where universe = [minBound .. maxBound]
@@ -23,3 +24,4 @@ instance Warning W where
     warningToFlag WInvalidField        = "invalid-field"
     warningToFlag WCpphs               = "cpphs"
     warningToFlag WErrorInSetup        = "error-in-setup"
+    warningToFlag WSkippedProperty     = "skipped-property"

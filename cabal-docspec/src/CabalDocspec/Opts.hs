@@ -2,55 +2,66 @@ module CabalDocspec.Opts where
 
 import Peura
 
-import qualified Distribution.Parsec          as C
-import qualified Distribution.Types.BuildInfo as C
+import qualified Data.Set                        as Set
 import qualified Distribution.Compat.CharParsing as P
-import qualified Options.Applicative          as O
+import qualified Distribution.Parsec             as C
+import qualified Distribution.Types.BuildInfo    as C
+import qualified Options.Applicative             as O
 
 import CabalDocspec.Trace
 import CabalDocspec.Warning
 
 data Opts = Opts
-    { optCabalPlan  :: CabalPlan
-    , optGhci       :: DynOpts -> DynOpts
-    , optCompiler   :: FilePath
-    , optBuilddir   :: FsPath
-    , optTracer     :: TracerOptions W -> TracerOptions W
-    , optTargets    :: [String]
+    { optCabalPlan :: CabalPlan
+    , optGhci      :: DynOpts -> DynOpts
+    , optCompiler  :: FilePath
+    , optBuildDir  :: FsPath
+    , optTracer    :: TracerOptions W -> TracerOptions W
+    , optTargets   :: [String]
     }
 
 
 -- | Options which can change per component.
 data DynOpts = DynOpts
-    { optPhase      :: Phase
-    , optPreserveIt :: PreserveIt
-    , optStripComs  :: StripComments
-    , optExts       :: [String]
-    , optTimeout    :: Double
-    , optTimeoutMsg :: String          -- ^ timeout response
-    , optSetup      :: [String]
-    , optExtraPkgs  :: [PackageName]
-    , optVerbosity  :: Verbosity
+    { optPhase          :: Phase
+    , optPreserveIt     :: PreserveIt
+    , optStripComs      :: StripComments
+    , optExts           :: [String]
+    , optTimeout        :: Double
+    , optTimeoutMsg     :: String          -- ^ timeout response
+    , optSetup          :: [String]
+    , optExtraPkgs      :: [PackageName]
+    , optCppIncludeDirs :: [FsPath]
+    , optProperties     :: Properties
+    , optPropVariables  :: Set String
+    , optVerbosity      :: Verbosity
     }
-  deriving Show
 
 defaultDynOpts :: DynOpts
 defaultDynOpts = DynOpts
-    { optPhase      = Phase2
-    , optPreserveIt = DontPreserveIt
-    , optStripComs  = DontStripComments
-    , optExts       = []
-    , optTimeout    = 3
-    , optTimeoutMsg = "* Hangs forever *"
-    , optSetup      = []
-    , optExtraPkgs  = []
-    , optVerbosity  = Verbosity 0
+    { optPhase          = Phase2
+    , optPreserveIt     = DontPreserveIt
+    , optStripComs      = DontStripComments
+    , optExts           = []
+    , optTimeout        = 3
+    , optTimeoutMsg     = "* Hangs forever *"
+    , optSetup          = []
+    , optExtraPkgs      = []
+    , optCppIncludeDirs = []
+    , optProperties     = SkipProperties
+    , optPropVariables  = mempty
+    , optVerbosity      = Verbosity 0
     }
 
 newtype Verbosity  = Verbosity Int deriving (Eq, Ord, Show)
 data PreserveIt    = PreserveIt | DontPreserveIt deriving (Eq, Show)
 data CabalPlan     = CabalPlan | NoCabalPlan deriving (Eq, Show)
 data StripComments = StripComments | DontStripComments deriving (Eq, Show)
+
+data Properties
+    = SkipProperties
+    | SimpleProperties
+  deriving (Eq, Ord, Show)
 
 data Phase
     = Manual
@@ -84,6 +95,16 @@ dynOptsFromBuildInfo tracer bi = do
                     putWarning tracer WInvalidField $ name ++ ": optparse-applicatice completion invoked"
                     return id
 
+    parse name@"x-docspec-property-variables" contents =
+        case C.explicitEitherParsec (many (C.parsecToken <* P.spaces)) contents of
+            Left err -> do
+                putWarning tracer WInvalidField $ name ++ ": " ++ err
+                return id
+            
+            Right strs -> return $ \dynOpts -> dynOpts
+                { optPropVariables = Set.fromList strs <> optPropVariables dynOpts
+                }
+
     parse name@"x-docspec-extra-packages" contents =
         case C.explicitEitherParsec (many (C.parsec <* P.spaces)) contents of
             Left err -> do
@@ -110,8 +131,9 @@ optsP = pure Opts
     <*> O.option fspath (O.long "builddir" <> O.value (fromFilePath "dist-newstyle") <> O.metavar "BUILDDIR")
     <*> tracerOptionsParser
     <*> many (O.strArgument $ O.metavar "TARGET")
-  where
-    fspath = O.eitherReader $ return . fromFilePath
+
+fspath :: O.ReadM FsPath
+fspath = O.eitherReader $ return . fromFilePath
 
 dynOptsP :: O.Parser (DynOpts -> DynOpts)
 dynOptsP = pure combine
@@ -123,11 +145,19 @@ dynOptsP = pure combine
     <*> timeoutMsgP
     <*> listP (O.strOption (O.long "setup" <> O.metavar "EXPR" <> O.help "A setup expression"))
     <*> listP extraPkgP
+    <*> listP cppDirP
+    <*> propertiesP
+    <*> monoidP propVariablesP
     <*> verbosityP
   where
+    listP :: O.Parser a -> O.Parser ([a] -> [a])
     listP p = flip (++) <$> many p
-    combine f1 f2 f3 f4 f5 f6 f7 f8 f9 (DynOpts x1 x2 x3 x4 x5 x6 x7 x8 x9) =
-        DynOpts (f1 x1) (f2 x2) (f3 x3) (f4 x4) (f5 x5) (f6 x6) (f7 x7) (f8 x8) (f9 x9)
+
+    monoidP :: Monoid a => O.Parser a -> O.Parser (a -> a)
+    monoidP p = (\xs ys -> mconcat (ys : xs)) <$> many p
+
+    combine f1 f2 f3 f4 f5 f6 f7 f8 f9 fA fB fC (DynOpts x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC) =
+        DynOpts (f1 x1) (f2 x2) (f3 x3) (f4 x4) (f5 x5) (f6 x6) (f7 x7) (f8 x8) (f9 x9) (fA xA) (fB xB) (fC xC)
 
 lastOpt :: [a] -> a -> a
 lastOpt xs initial = foldl' (\_ x -> x) initial xs
@@ -155,12 +185,21 @@ stripComsP = lastOpt <$> many (on <|> off) where
     on  = O.flag'     StripComments $ O.long    "strip-comments" <> O.help "Strip comments in examples"
     off = O.flag' DontStripComments $ O.long "no-strip-comments" <> O.help "Don't strip comments in examples"
 
+propertiesP :: O.Parser (Properties -> Properties)
+propertiesP = lastOpt <$> many (skip <|> simple) where
+    skip   = O.flag' SkipProperties   $ O.long "skip-properties"   <> O.help "Skip properties (default)"
+    simple = O.flag' SimpleProperties $ O.long "simple-properties" <> O.help "SImple properties: evaluate using quickCheck (prop expr)"
+
 extP :: O.Parser String
 extP = O.strOption (O.short 'X' <> O.metavar "EXT" <> O.help "Extensions")
 
 extraPkgP :: O.Parser PackageName
 extraPkgP = O.option (O.eitherReader C.eitherParsec) $
     O.long "extra-package" <> O.metavar "PKG" <> O.help "Extra packages to require (should exist in a plan)"
+
+propVariablesP :: O.Parser (Set String)
+propVariablesP = O.option (fmap (Set.fromList . words) O.str) $
+    O.long "property-variables" <> O.metavar "VARS" <> O.help "Variables to automatically quantify over in properties"
 
 phaseP :: O.Parser (Phase -> Phase)
 phaseP = lastOpt <$> many (phase1P <|> phase2P <|> manualP) where
@@ -178,3 +217,6 @@ verbosityP = accum <$> many (plusP <|> minusP)
 
     minusP :: O.Parser Int
     minusP = O.flag' (negate 1) (O.short 'q' <> O.long "quiet" <> O.help "Decrease verbosity level")
+
+cppDirP :: O.Parser FsPath
+cppDirP = O.option fspath (O.short 'I' <> O.help "Add ⟨dir⟩ to the directory search list for #include files")
