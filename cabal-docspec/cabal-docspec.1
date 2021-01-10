@@ -1,4 +1,4 @@
-.TH CABAL-DOCSPEC 1 "January 10, 2021" "cabal-docspec 0.0.0.20210110" "Cabal Extras"
+.TH CABAL-DOCSPEC 1 "January 10, 2021" "cabal-docspec 0.0.0.20210111" "Cabal Extras"
 .SH NAME
 .PP
 cabal-docspec - another doctest for Haskell
@@ -88,6 +88,9 @@ On the other hand, too short timeout may cause false negatives.
 Message to return when the evaluation is timed out.
 Default is \f[B]* Hangs forever *\f[R].
 .TP
+\f[B]--ghci-rtsopts\f[R] \f[I]options\f[R]
+RTS options for GHCi process
+.TP
 \f[B]--skip-properties\f[R]
 Skip properties.
 .TP
@@ -145,6 +148,10 @@ allow configuration of cabal-docspec per component under test.
 \f[B]x-docspec-extra-packages:\f[R] \f[I][PKG]\f[R]\&...
 A (space separated) list of extra packages.
 See \f[B]--extra-package\f[R].
+.TP
+\f[B]x-docspec-property-variables:\f[R] \f[I][VAR]\f[R]\&...
+A (space separated) list of property variables.
+See \f[B]--property-variables\f[R].
 .SH EXAMPLES
 .PP
 A simplest example, which should work for most packages is to run
@@ -166,6 +173,8 @@ There are some examples using explanatory comments,
 Some examples are illustrating non-termination, therefore short
 \f[B]--timeout\f[R] is justified.
 Yet, it have to be long enough so terminating examples have time to run.
+We also set RTS options, reducing the maximum stack to make stack
+overflow exceptions occur earlier.
 Few examples are using symbols from \f[I]mtl\f[R], \f[I]deepseq\f[R] and
 \f[I]bytestring\f[R] packages, we make them available.
 Finally, some modules are documented with no-Prelude assumption,
@@ -178,7 +187,8 @@ cabal-docspec \[rs]
     -I $PWD/includes \[rs]
     --no-cabal-plan \[rs]
     --strip-comments \[rs]
-    --timeout 2.5 \[rs]
+    --timeout 2 \[rs]
+    --ghci-rtsopts \[dq]-K500K\[dq] \[rs]
     --extra-package=mtl --extra-package=deepseq --extra-package=bytestring \[rs]
     -XNoImplicitPrelude \[rs]
     libraries/base/base.cabal

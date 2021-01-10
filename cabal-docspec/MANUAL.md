@@ -83,6 +83,10 @@ However, in this list we mostly only list and show the --option version of them.
 :   Message to return when the evaluation is timed out.
     Default is **\* Hangs forever \***.
 
+**\--ghci-rtsopts** *options*
+
+:   RTS options for GHCi process
+
 **\--skip-properties**
 
 :   Skip properties.
@@ -178,6 +182,8 @@ There are some examples using explanatory comments,
 Some examples are illustrating non-termination,
 therefore short **\--timeout** is justified.
 Yet, it have to be long enough so terminating examples have time to run.
+We also set RTS options, reducing the maximum stack to
+make stack overflow exceptions occur earlier.
 Few examples are using symbols from *mtl*, *deepseq* and *bytestring* packages,
 we make them available.
 Finally, some modules are documented with no-Prelude assumption,
@@ -188,7 +194,8 @@ therefore we have to turn it off.
         -I $PWD/includes \
         --no-cabal-plan \
         --strip-comments \
-        --timeout 2.5 \
+        --timeout 2 \
+        --ghci-rtsopts "-K500K" \
         --extra-package=mtl --extra-package=deepseq --extra-package=bytestring \
         -XNoImplicitPrelude \
         libraries/base/base.cabal

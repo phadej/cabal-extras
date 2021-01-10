@@ -56,6 +56,11 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
 
     let GhcFlags {..} = getGhcFlags ghcInfo
 
+    let rtsArgs :: [String]
+        rtsArgs
+            | null (optGhciRtsopts dynOpts) = []
+            | otherwise = ["+RTS"] ++ optGhciRtsopts dynOpts ++ ["-RTS"]
+
     let ghciArgs :: [String]
         ghciArgs =
             [ "-i" -- so we don't explode on hs-source-dirs: . packages
@@ -76,7 +81,7 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
             ] ++
             [ ghcFlagPackageId ++ "=" ++ u
             | u <- map prettyShow unitIds
-            ]
+            ] ++ rtsArgs
 
     currEnv <- liftIO getEnvironment
     let env = Map.toList $ Map.fromList $ extraEnv ++ currEnv

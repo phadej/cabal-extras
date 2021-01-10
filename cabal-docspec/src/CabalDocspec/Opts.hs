@@ -29,6 +29,7 @@ data DynOpts = DynOpts
     , optExts           :: [String]
     , optTimeout        :: Double
     , optTimeoutMsg     :: String          -- ^ timeout response
+    , optGhciRtsopts    :: [String]
     , optSetup          :: [String]
     , optExtraPkgs      :: [PackageName]
     , optCppIncludeDirs :: [FsPath]
@@ -45,6 +46,7 @@ defaultDynOpts = DynOpts
     , optExts           = []
     , optTimeout        = 3
     , optTimeoutMsg     = "* Hangs forever *"
+    , optGhciRtsopts    = []
     , optSetup          = []
     , optExtraPkgs      = []
     , optCppIncludeDirs = []
@@ -143,6 +145,7 @@ dynOptsP = pure combine
     <*> listP extP
     <*> timeoutP
     <*> timeoutMsgP
+    <*> monoidP rtsOptsP
     <*> listP (O.strOption (O.long "setup" <> O.metavar "EXPR" <> O.help "A setup expression"))
     <*> listP extraPkgP
     <*> listP cppDirP
@@ -156,8 +159,8 @@ dynOptsP = pure combine
     monoidP :: Monoid a => O.Parser a -> O.Parser (a -> a)
     monoidP p = (\xs ys -> mconcat (ys : xs)) <$> many p
 
-    combine f1 f2 f3 f4 f5 f6 f7 f8 f9 fA fB fC (DynOpts x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC) =
-        DynOpts (f1 x1) (f2 x2) (f3 x3) (f4 x4) (f5 x5) (f6 x6) (f7 x7) (f8 x8) (f9 x9) (fA xA) (fB xB) (fC xC)
+    combine f1 f2 f3 f4 f5 f6 f7 f8 f9 fA fB fC fD (DynOpts x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD) =
+        DynOpts (f1 x1) (f2 x2) (f3 x3) (f4 x4) (f5 x5) (f6 x6) (f7 x7) (f8 x8) (f9 x9) (fA xA) (fB xB) (fC xC) (fD xD)
 
 lastOpt :: [a] -> a -> a
 lastOpt xs initial = foldl' (\_ x -> x) initial xs
@@ -196,6 +199,10 @@ extP = O.strOption (O.short 'X' <> O.metavar "EXT" <> O.help "Extensions")
 extraPkgP :: O.Parser PackageName
 extraPkgP = O.option (O.eitherReader C.eitherParsec) $
     O.long "extra-package" <> O.metavar "PKG" <> O.help "Extra packages to require (should exist in a plan)"
+
+rtsOptsP :: O.Parser [String]
+rtsOptsP = O.option (fmap words O.str) $
+    O.long "ghci-rtsopts" <> O.metavar "OPTS" <> O.help "RTS options for GHCi process"
 
 propVariablesP :: O.Parser (Set String)
 propVariablesP = O.option (fmap (Set.fromList . words) O.str) $
