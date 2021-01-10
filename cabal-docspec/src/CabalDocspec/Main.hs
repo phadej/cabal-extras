@@ -22,12 +22,13 @@ import qualified Distribution.Types.BuildInfo                 as C
 import qualified Distribution.Types.CondTree                  as C
 import qualified Distribution.Types.ConfVar                   as C
 import qualified Distribution.Types.Flag                      as C
-import qualified Language.Haskell.Extension as Ext
 import qualified Distribution.Types.GenericPackageDescription as C
 import qualified Distribution.Types.InstalledPackageInfo      as IPI
 import qualified Distribution.Types.Library                   as C
 import qualified Distribution.Types.LibraryName               as C
+import qualified Distribution.Types.PackageDescription        as C
 import qualified Distribution.Version                         as C
+import qualified Language.Haskell.Extension                   as Ext
 import qualified Options.Applicative                          as O
 import qualified System.FilePath                              as FP
 
@@ -99,12 +100,22 @@ main = do
                             []  -> die tracer $ "No package " ++ target ++ " in the plan"
                             _   -> return match
 
+                -- collect environment of datadirs
+                let env :: [(String, String)]
+                    env =
+                        [ (manglePackageName pn ++ "_datadir", toFilePath $ pkgDir pkg </> fromUnrootedFilePath (C.dataDir pd))
+                        | pkg <- pkgs0
+                        , let pd = C.packageDescription (pkgGpd pkg)
+                        , let pn = C.packageName pd
+                        , not (null (C.dataFiles pd))
+                        ]
+
                 -- process components
                 res <- for pkgs $ \pkg -> do
                     for (pkgUnits pkg) $ \unit ->
                         ifor (Plan.uComps unit) $ \cn ci -> do
                             testComponent tracer0 tracer (optGhci opts)
-                                ghcInfo builddir cabalCfg plan pkg unit cn ci
+                                ghcInfo builddir cabalCfg plan env pkg unit cn ci
 
                 -- summarize Summary's
                 return $ foldMap (foldMap (foldMap id)) res
@@ -196,12 +207,13 @@ testComponent
     -> Path Absolute -- ^ builddir
     -> Cabal.Config Identity
     -> Plan.PlanJson
+    -> [(String, String)]
     -> Package
     -> Plan.Unit
     -> Plan.CompName
     -> Plan.CompInfo
     -> Peu r Summary
-testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan pkg unit cn@Plan.CompNameLib ci = do
+testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pkg unit cn@Plan.CompNameLib ci = do
     traceApp tracerTop $ TraceComponent (C.packageId (pkgGpd pkg)) cn
 
     -- "configure"
@@ -251,12 +263,12 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan pkg un
 
     if optPhase dynOpts > Phase1
     then do
-        phase2 tracer dynOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgDir pkg) parsed
+        phase2 tracer dynOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgDir pkg) env parsed
     else
         return $ foldMap skipModule parsed
 
 -- Skip other components
-testComponent _tracer0 _tracerTop _dynOpts _ghcInfo _builddir _cabalCfg _plan _pkg _unit _cn _ci =
+testComponent _tracer0 _tracerTop _dynOpts _ghcInfo _builddir _cabalCfg _plan _env _pkg _unit _cn _ci =
     return mempty
 
 -------------------------------------------------------------------------------
@@ -340,8 +352,9 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
 
     if optPhase dynOpts > Phase1
     then do
-        -- tmpDir <- getTemporaryDirectory -- TODO: make this configurable
-        phase2 tracer dynOpts unitIds ghcInfo Nothing cabalCfg (pkgDir pkg) parsed
+        -- Note: we don't pass additional environment
+        -- For non-cabal-plan setup we simply don't support data-files.
+        phase2 tracer dynOpts unitIds ghcInfo Nothing cabalCfg (pkgDir pkg) [] parsed
     else
         return $ foldMap skipModule parsed
 
@@ -372,6 +385,12 @@ findExtraPackages tracer plan = traverse $ \pn -> do
 -------------------------------------------------------------------------------
 -- Utilities
 -------------------------------------------------------------------------------
+
+manglePackageName :: C.PackageName -> String
+manglePackageName = map fixchar . prettyShow where
+    fixchar :: Char -> Char
+    fixchar '-' = '_'
+    fixchar c   = c
 
 -- | Return name per module.
 findModules

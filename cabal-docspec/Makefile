@@ -1,7 +1,7 @@
-VERSION=0.0.0.20210109
+VERSION=0.0.0.20210110
 
 cabal-docspec.1 : MANUAL.md
-	echo '.TH CABAL-DOCSPEC 1 "January 9, 2021" "cabal-docspec $(VERSION)" "Cabal Extras"' > cabal-docspec.1
+	echo '.TH CABAL-DOCSPEC 1 "January 10, 2021" "cabal-docspec $(VERSION)" "Cabal Extras"' > cabal-docspec.1
 	pandoc -f markdown -t man MANUAL.md >> cabal-docspec.1
 
 man : cabal-docspec.1
