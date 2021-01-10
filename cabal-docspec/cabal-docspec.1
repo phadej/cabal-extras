@@ -99,7 +99,7 @@ Evaluate \f[B]prop> expr x y\f[R] using \f[B]quickCheck (expr x y)\f[R].
 Requires \f[I]QuickCheck\f[R] package in the plan.
 .TP
 \f[B]--property-variables\f[R] \f[I]varlist\f[R]
-Variables to automatically quantify over in properties.
+Variables to quantify over in properties.
 .TP
 \f[B]-X\f[R] \f[I]extension\f[R]
 Language extension to start GHCi session with.
@@ -172,11 +172,13 @@ There are some examples using explanatory comments,
 \f[B]--strip-comments\f[R] makes them work.
 Some examples are illustrating non-termination, therefore short
 \f[B]--timeout\f[R] is justified.
-Yet, it have to be long enough so terminating examples have time to run.
+Yet, it has to be long enough so the terminating examples have time to
+run.
 We also set RTS options, reducing the maximum stack to make stack
 overflow exceptions occur earlier.
-Few examples are using symbols from \f[I]mtl\f[R], \f[I]deepseq\f[R] and
-\f[I]bytestring\f[R] packages, we make them available.
+Since the examples below use symbols from the \f[I]mtl\f[R],
+\f[I]deepseq\f[R] and \f[I]bytestring\f[R] packages, we make them
+available.
 Finally, some modules are documented with no-Prelude assumption,
 therefore we have to turn it off.
 .IP
@@ -463,13 +465,14 @@ will match anything \f[I]within that line\f[R]:
 .PP
 Haddock (since version 2.13.0) has markup support for properties
 cabal-docspec can verify properties with QuickCheck.
-Note: there are some differences with Doctest.
+Note: this works somewhat differently than it does in Doctest.
 .PP
 By default properties are skipped.
 This is a \f[B]--skip-properties\f[R] behaviour.
 cabal-docspec has a simple mechanism to evaluate properties enabled by
 \f[B]--simple-properties\f[R].
-For it work \f[I]QuickCheck\f[R] package have to be in the install plan.
+For it to work, the \f[I]QuickCheck\f[R] package has to be in the
+install plan.
 .PP
 A simple property looks like this:
 .IP
@@ -480,11 +483,11 @@ A simple property looks like this:
 \f[R]
 .fi
 .PP
-The lambda abstraction is not optional by default.
-cabal-docspec will automatically qualify over variables passed in with
+The lambda abstraction is required by default.
+cabal-docspec will quantify over variables passed in with
 \f[B]--property-variables\f[R] command line flag.
 .PP
-With \f[B]\[en]property-variables xs\f[R] the following will work.
+With \f[B]\[en]property-variables xs\f[R] the following will work:
 .IP
 .nf
 \f[C]
@@ -493,13 +496,13 @@ With \f[B]\[en]property-variables xs\f[R] the following will work.
 \f[R]
 .fi
 .PP
-We chose to require explicit list of varaibles in cabal-docspec to avoid
-surprises triggered by implicit behaviour.
 Doctest uses a hack to find which variables are free in the the
-expression, cabal-docspec approach is more deterministic.
+expression.
+cabal-docspec\[cq]s approach is more deterministic, as it doesn\[cq]t
+try to infer anything.
 .PP
-Also contrary to \f[I]Doctest\f[R] cabal-docspec doesn\[cq]t use
-\f[B]polyQuickCheck\f[R] trick.
+Also, in contrast to \f[I]Doctest\f[R], cabal-docspec doesn\[cq]t use
+the \f[B]polyQuickCheck\f[R] trick.
 Therefore some false properties may pass
 .IP
 .nf
@@ -509,7 +512,9 @@ quickCheck $ \[rs]xs -> reverse xs === xs
 \f[R]
 .fi
 .PP
-To avoid defaulting to (), you may override defaults class resoltuion in
+That property passes because the list element type defaults to
+\f[B]()\f[R].
+To avoid defaulting you may override the default class resolution in a
 \f[B]$setup\f[R] block
 .IP
 .nf
@@ -519,7 +524,7 @@ To avoid defaulting to (), you may override defaults class resoltuion in
 \f[R]
 .fi
 .PP
-Then the above property will fail, as expected:
+Then the property above will fail:
 .IP
 .nf
 \f[C]

@@ -98,7 +98,7 @@ However, in this list we mostly only list and show the --option version of them.
 
 **\--property-variables** *varlist*
 
-:   Variables to automatically quantify over in properties.
+:   Variables to quantify over in properties.
 
 **\-X** *extension*
 
@@ -181,10 +181,10 @@ There are some examples using explanatory comments,
 **\--strip-comments** makes them work.
 Some examples are illustrating non-termination,
 therefore short **\--timeout** is justified.
-Yet, it have to be long enough so terminating examples have time to run.
+Yet, it has to be long enough so the terminating examples have time to run.
 We also set RTS options, reducing the maximum stack to
 make stack overflow exceptions occur earlier.
-Few examples are using symbols from *mtl*, *deepseq* and *bytestring* packages,
+Since the examples below use symbols from the *mtl*, *deepseq* and *bytestring* packages,
 we make them available.
 Finally, some modules are documented with no-Prelude assumption,
 therefore we have to turn it off.
@@ -425,12 +425,12 @@ QuickCheck properties
 
 Haddock (since version 2.13.0) has markup support for properties
 cabal-docspec can verify properties with QuickCheck.
-Note: there are some differences with Doctest.
+Note: this works somewhat differently than it does in Doctest.
 
 By default properties are skipped. This is a **\--skip-properties** behaviour.
 cabal-docspec has a simple mechanism to evaluate properties
 enabled by **\--simple-properties**.
-For it to work *QuickCheck* package have to be in the install plan.
+For it to work, the *QuickCheck* package has to be in the install plan.
 
 A simple property looks like this:
 
@@ -439,8 +439,8 @@ A simple property looks like this:
 -- prop> \xs -> sort xs == (sort . sort) (xs :: [Int])
 ```
 
-The lambda abstraction is not optional by default.
-cabal-docspec will automatically qualify over variables
+The lambda abstraction is required by default.
+cabal-docspec will quantify over variables
 passed in with **\--property-variables** command line flag.
 
 With **--property-variables xs** the following will work:
@@ -450,10 +450,10 @@ With **--property-variables xs** the following will work:
 -- prop> sort xs == (sort . sort) (xs :: [Int])
 ```
 
-Doctest uses a hack to find which variables are free in the the expression,
-cabal-docspec approach is more deterministic, it doesn't try to infer anything.
+Doctest uses a hack to find which variables are free in the the expression.
+cabal-docspec's approach is more deterministic, as it doesn't try to infer anything.
 
-Also contrary to *Doctest* cabal-docspec doesn't use **polyQuickCheck** trick.
+Also, in contrast to *Doctest*, cabal-docspec doesn't use the **polyQuickCheck** trick.
 Therefore some false properties may pass
 
 ```haskell
@@ -461,15 +461,15 @@ quickCheck $ \xs -> reverse xs === xs
 +++ OK, passed 100 tests.
 ```
 
-That property passes because list element types defaults to **()**.
-To avoid defaulting you may override defaults class resoltuion in **$setup** block
+That property passes because the list element type defaults to **()**.
+To avoid defaulting you may override the default class resolution in a **$setup** block
 
 ```haskell
 -- $setup
 -- >>> default (Integer, Double)
 ```
 
-Then the above property will fail:
+Then the property above will fail:
 
 ```haskell
 quickCheck $ \xs -> reverse xs === xs
