@@ -91,12 +91,10 @@ Default is \f[B]* Hangs forever *\f[R].
 \f[B]--ghci-rtsopts\f[R] \f[I]options\f[R]
 RTS options for GHCi process
 .TP
-\f[B]--skip-properties\f[R]
-Skip properties.
-.TP
-\f[B]--simple-properties\f[R]
+\f[B]--check-properties\f[R]
 Evaluate \f[B]prop> expr x y\f[R] using \f[B]quickCheck (expr x y)\f[R].
 Requires \f[I]QuickCheck\f[R] package in the plan.
+Default \f[B]--no-check-properties\f[R].
 .TP
 \f[B]--property-variables\f[R] \f[I]varlist\f[R]
 Variables to quantify over in properties.
@@ -467,10 +465,9 @@ Haddock (since version 2.13.0) has markup support for properties
 cabal-docspec can verify properties with QuickCheck.
 Note: this works somewhat differently than it does in Doctest.
 .PP
-By default properties are skipped.
-This is a \f[B]--skip-properties\f[R] behaviour.
+By default properties are not checked.
 cabal-docspec has a simple mechanism to evaluate properties enabled by
-\f[B]--simple-properties\f[R].
+\f[B]--check-properties\f[R].
 For it to work, the \f[I]QuickCheck\f[R] package has to be in the
 install plan.
 .PP

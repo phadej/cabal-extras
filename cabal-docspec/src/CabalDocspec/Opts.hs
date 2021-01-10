@@ -62,7 +62,7 @@ data StripComments = StripComments | DontStripComments deriving (Eq, Show)
 
 data Properties
     = SkipProperties
-    | SimpleProperties
+    | CheckProperties
   deriving (Eq, Ord, Show)
 
 data Phase
@@ -190,8 +190,8 @@ stripComsP = lastOpt <$> many (on <|> off) where
 
 propertiesP :: O.Parser (Properties -> Properties)
 propertiesP = lastOpt <$> many (skip <|> simple) where
-    skip   = O.flag' SkipProperties   $ O.long "skip-properties"   <> O.help "Skip properties (default)"
-    simple = O.flag' SimpleProperties $ O.long "simple-properties" <> O.help "SImple properties: evaluate using quickCheck (prop expr)"
+    skip   = O.flag' SkipProperties  $ O.long "no-check-properties"  <> O.help "Skip properties (default)"
+    simple = O.flag' CheckProperties $ O.long    "check-properties" <> O.help "Check properties: evaluate using quickCheck (prop expr)"
 
 extP :: O.Parser String
 extP = O.strOption (O.short 'X' <> O.metavar "EXT" <> O.help "Extensions")

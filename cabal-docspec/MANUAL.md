@@ -87,14 +87,11 @@ However, in this list we mostly only list and show the --option version of them.
 
 :   RTS options for GHCi process
 
-**\--skip-properties**
-
-:   Skip properties.
-
-**\--simple-properties**
+**\--check-properties**
 
 :   Evaluate **prop> expr x y** using **quickCheck (expr x y)**.
     Requires *QuickCheck* package in the plan.
+    Default **\--no-check-properties**.
 
 **\--property-variables** *varlist*
 
@@ -427,9 +424,9 @@ Haddock (since version 2.13.0) has markup support for properties
 cabal-docspec can verify properties with QuickCheck.
 Note: this works somewhat differently than it does in Doctest.
 
-By default properties are skipped. This is a **\--skip-properties** behaviour.
+By default properties are not checked.
 cabal-docspec has a simple mechanism to evaluate properties
-enabled by **\--simple-properties**.
+enabled by **\--check-properties**.
 For it to work, the *QuickCheck* package has to be in the install plan.
 
 A simple property looks like this:

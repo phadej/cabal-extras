@@ -394,8 +394,8 @@ findExtraPackages tracer plan = traverse $ \pn -> do
 
 propPkgs :: DynOpts -> [PackageName]
 propPkgs dynOpts = case optProperties dynOpts of
-    SkipProperties   -> []
-    SimpleProperties -> [ mkPackageName "QuickCheck" ]
+    SkipProperties  -> []
+    CheckProperties -> [ mkPackageName "QuickCheck" ]
 
 manglePackageName :: C.PackageName -> String
 manglePackageName = map fixchar . prettyShow where

@@ -154,7 +154,7 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
                             putWarning tracer WSkippedProperty $ prettyPos pos ++ " skipping " ++ expr
                             return (Left (acc <> mempty { sProperties = ssSkip }))
 
-                        SimpleProperties -> do
+                        CheckProperties -> do
                             let vars = exprVars expr `Set.intersection` optPropVariables dynOpts
 
                             let lambdaPrefix :: String
