@@ -638,7 +638,7 @@ For example even
 is enough.
 However, without libraries actually being built, cabal-docspec won't work.
 
-Q: Does Doctest's --fast have an equivalent in cabal-docspec?
+Q: Does Doctest's \--fast have an equivalent in cabal-docspec?
 -------------------------------------------------------------
 
 No, cabal-doctest doesn't need one.
