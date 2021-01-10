@@ -1,4 +1,3 @@
-{-# LANGUAGE BangPatterns        #-}
 {-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module CabalDocspec.Phase2 (
@@ -7,9 +6,11 @@ module CabalDocspec.Phase2 (
 
 import Peura
 
-import Control.Monad (foldM)
+import Control.Monad      (foldM)
+import System.Environment (getEnvironment)
 
 import qualified Cabal.Config           as Cabal
+import qualified Data.Map               as Map
 import qualified Language.Haskell.Lexer as L
 
 import CabalDocspec.Doctest.Example
@@ -30,9 +31,10 @@ phase2
     -> Maybe (Path Absolute) -- ^ Build directory, @builddir@
     -> Cabal.Config Identity
     -> Path Absolute
+    -> [(String,String)]
     -> [Module [Located DocTest]]
     -> Peu r Summary
-phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd parsed = do
+phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = do
     let preserveIt = case optPreserveIt dynOpts of
             PreserveIt     -> True
             DontPreserveIt -> False
@@ -73,7 +75,10 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd parsed = do
             | u <- map prettyShow unitIds
             ]
 
-    withInteractiveGhc tracer ghcInfo cwd ghciArgs $ \ghci -> do
+    currEnv <- liftIO getEnvironment
+    let env = Map.toList $ Map.fromList $ extraEnv ++ currEnv
+
+    withInteractiveGhc tracer ghcInfo cwd env ghciArgs $ \ghci -> do
         fmap mconcat $ for parsed $ \m -> do
             traceApp tracer $ TracePhase2 (moduleName m)
 

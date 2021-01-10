@@ -33,10 +33,11 @@ withInteractiveGhc
     :: TracerPeu r Tr
     -> GhcInfo
     -> Path Absolute
+    -> [(String,String)]
     -> [String]
     -> (GHCi -> Peu r a)
     -> Peu r a
-withInteractiveGhc tracer ghcInfo cwd args kont = do
+withInteractiveGhc tracer ghcInfo cwd env args kont = do
     traceApp tracer $ TraceGHCi (ghcPath ghcInfo) args'
 
     Proci.withInteractiveProcess pc1 $ \iph -> do
@@ -54,6 +55,7 @@ withInteractiveGhc tracer ghcInfo cwd args kont = do
     pc0 = Proc.proc (ghcPath ghcInfo) args'
     pc1 = pc0
         { Proc.cwd = Just (toFilePath cwd)
+        , Proc.env = Just env
         }
 
     args' = ["--interactive", "-ignore-dot-ghci", "-v0"] ++ args
