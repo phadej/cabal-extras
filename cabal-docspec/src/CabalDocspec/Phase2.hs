@@ -191,25 +191,29 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
                     = fmap (either id id)
                     . foldl2 runExample skipping (Left acc)
 
-            -- run setup
-            setupRes <- runSetupGroup
-
-            -- if there are no issues in setup
-            if isOk setupRes
+            if Set.null (optModules dynOpts) || Set.member (moduleName m) (optModules dynOpts)
             then do
-                -- ... run content
-                let combine xs = mconcat (mempty { sSetup = setupRes } : xs)
-                fmap combine $ for (moduleContent m) $ \contents -> do
-                    -- we don't recount setups, even they are rerun
-                    _ <- runSetupGroup
-                    runExampleGroup mempty contents
+                -- run setup
+                setupRes <- runSetupGroup
 
+                -- if there are no issues in setup
+                if isOk setupRes
+                then do
+                    -- ... run content
+                    let combine xs = mconcat (mempty { sSetup = setupRes } : xs)
+                    fmap combine $ for (moduleContent m) $ \contents -> do
+                        -- we don't recount setups, even they are rerun
+                        _ <- runSetupGroup
+                        runExampleGroup mempty contents
+
+                else do
+                    -- ... skip run
+                    putWarning tracer WErrorInSetup $
+                        "Issue in $setup, skipping " ++ prettyShow (moduleName m) ++ " module"
+                    let res = foldMap (foldMap (foldMap skipDocTest)) (moduleContent m)
+                    return $ mempty { sSetup = setupRes } <> res
             else do
-                -- ... skip run
-                putWarning tracer WErrorInSetup $
-                    "Issue in $setup, skipping " ++ prettyShow (moduleName m) ++ " module"
-                let res = foldMap (foldMap (foldMap skipDocTest)) (moduleContent m)
-                return $ mempty { sSetup = setupRes } <> res
+                return (skipModule m)
 
 foldl2
     :: (Monad m, Foldable f)
