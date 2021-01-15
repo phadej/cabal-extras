@@ -14,6 +14,7 @@ import Control.Applicative ((<**>))
 import qualified Cabal.Config                                 as Cabal
 import qualified Cabal.Plan                                   as Plan
 import qualified Data.Map.Strict                              as Map
+import qualified Data.Set                                     as Set
 import qualified Distribution.Compiler                        as C
 import qualified Distribution.ModuleName                      as C
 import qualified Distribution.Package                         as C
@@ -187,15 +188,6 @@ checkGhcVersion tracer ghcInfo plan
     planId = toCabal (Plan.pjCompilerId plan)
 
 -------------------------------------------------------------------------------
--- Skipping
--------------------------------------------------------------------------------
-
-skipModule :: Module [Located DocTest] -> Summary
-skipModule m =
-    mempty { sSetup = foldMap (foldMap (foldMap skipSetupDocTest)) (moduleSetup m) } <>
-    foldMap (foldMap (foldMap skipDocTest)) (moduleContent m)
-
--------------------------------------------------------------------------------
 -- With plan.json
 -------------------------------------------------------------------------------
 
@@ -230,8 +222,8 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
     let tracer = adjustTracer (optVerbosity dynOpts) tracer0
 
     -- find extra units
-    extraUnitIds <- findExtraPackages tracer plan (propPkgs dynOpts ++ optExtraPkgs dynOpts)
-        
+    extraUnitIds <- findExtraPackages tracer plan $ Set.toList $ propPkgs dynOpts <> optExtraPkgs dynOpts
+
     -- find library module paths
     modulePaths <- findModules
         tracer
@@ -328,7 +320,7 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
     -- we don't have install plan, so we look for packages in IPI
     depends <- for (C.targetBuildDepends bi) $ \dep -> findUnit (C.depPkgName dep)
     thisUnitId <- findUnit (C.packageName (pkgGpd pkg))
-    extraUnitIds <- traverse findUnit (propPkgs dynOpts ++ optExtraPkgs dynOpts)
+    extraUnitIds <- traverse findUnit $ Set.toList $ propPkgs dynOpts <> optExtraPkgs dynOpts
 
     let pkgIds :: [PackageIdentifier]
         pkgIds = map snd depends
@@ -392,10 +384,10 @@ findExtraPackages tracer plan = traverse $ \pn -> do
 -- Utilities
 -------------------------------------------------------------------------------
 
-propPkgs :: DynOpts -> [PackageName]
+propPkgs :: DynOpts -> Set PackageName
 propPkgs dynOpts = case optProperties dynOpts of
-    SkipProperties  -> []
-    CheckProperties -> [ mkPackageName "QuickCheck" ]
+    SkipProperties  -> mempty
+    CheckProperties -> Set.singleton (mkPackageName "QuickCheck")
 
 manglePackageName :: C.PackageName -> String
 manglePackageName = map fixchar . prettyShow where

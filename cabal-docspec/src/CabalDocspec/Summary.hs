@@ -3,6 +3,7 @@ module CabalDocspec.Summary where
 import Peura
 
 import CabalDocspec.Doctest.Parse
+import CabalDocspec.Located
 
 -- | Summary of a test run.
 data Summary = Summary
@@ -64,3 +65,8 @@ skipDocTest Property {} = mempty { sProperties = ssSkip }
 skipSetupDocTest :: DocTest -> SubSummary
 skipSetupDocTest Example {}  = ssSkip
 skipSetupDocTest Property {} = ssFailure
+
+skipModule :: Module [Located DocTest] -> Summary
+skipModule m =
+    mempty { sSetup = foldMap (foldMap (foldMap skipSetupDocTest)) (moduleSetup m) } <>
+    foldMap (foldMap (foldMap skipDocTest)) (moduleContent m)

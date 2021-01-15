@@ -4,6 +4,7 @@ import Peura
 
 import qualified Data.Set                        as Set
 import qualified Distribution.Compat.CharParsing as P
+import qualified Distribution.ModuleName         as C
 import qualified Distribution.Parsec             as C
 import qualified Distribution.Types.BuildInfo    as C
 import qualified Options.Applicative             as O
@@ -31,7 +32,8 @@ data DynOpts = DynOpts
     , optTimeoutMsg     :: String          -- ^ timeout response
     , optGhciRtsopts    :: [String]
     , optSetup          :: [String]
-    , optExtraPkgs      :: [PackageName]
+    , optExtraPkgs      :: Set PackageName
+    , optModules        :: Set C.ModuleName
     , optCppIncludeDirs :: [FsPath]
     , optProperties     :: Properties
     , optPropVariables  :: Set String
@@ -48,7 +50,8 @@ defaultDynOpts = DynOpts
     , optTimeoutMsg     = "* Hangs forever *"
     , optGhciRtsopts    = []
     , optSetup          = []
-    , optExtraPkgs      = []
+    , optExtraPkgs      = mempty
+    , optModules        = mempty
     , optCppIncludeDirs = []
     , optProperties     = SkipProperties
     , optPropVariables  = mempty
@@ -102,7 +105,7 @@ dynOptsFromBuildInfo tracer bi = do
             Left err -> do
                 putWarning tracer WInvalidField $ name ++ ": " ++ err
                 return id
-            
+
             Right strs -> return $ \dynOpts -> dynOpts
                 { optPropVariables = Set.fromList strs <> optPropVariables dynOpts
                 }
@@ -114,7 +117,7 @@ dynOptsFromBuildInfo tracer bi = do
                 return id
 
             Right pkgs -> return $ \dynOpts -> dynOpts
-                { optExtraPkgs = optExtraPkgs dynOpts ++ pkgs
+                { optExtraPkgs = optExtraPkgs dynOpts <> Set.fromList pkgs
                 }
 
 
@@ -147,20 +150,24 @@ dynOptsP = pure combine
     <*> timeoutMsgP
     <*> monoidP rtsOptsP
     <*> listP (O.strOption (O.long "setup" <> O.metavar "EXPR" <> O.help "A setup expression"))
-    <*> listP extraPkgP
+    <*> setP extraPkgP
+    <*> setP moduleNameP
     <*> listP cppDirP
     <*> propertiesP
     <*> monoidP propVariablesP
     <*> verbosityP
   where
+    setP :: Ord a => O.Parser a -> O.Parser (Set a -> Set a)
+    setP p = (\xs ys -> Set.fromList xs <> ys) <$> many p
+
     listP :: O.Parser a -> O.Parser ([a] -> [a])
     listP p = flip (++) <$> many p
 
     monoidP :: Monoid a => O.Parser a -> O.Parser (a -> a)
     monoidP p = (\xs ys -> mconcat (ys : xs)) <$> many p
 
-    combine f1 f2 f3 f4 f5 f6 f7 f8 f9 fA fB fC fD (DynOpts x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD) =
-        DynOpts (f1 x1) (f2 x2) (f3 x3) (f4 x4) (f5 x5) (f6 x6) (f7 x7) (f8 x8) (f9 x9) (fA xA) (fB xB) (fC xC) (fD xD)
+    combine f1 f2 f3 f4 f5 f6 f7 f8 f9 fA fB fC fD fE (DynOpts x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD xE) =
+        DynOpts (f1 x1) (f2 x2) (f3 x3) (f4 x4) (f5 x5) (f6 x6) (f7 x7) (f8 x8) (f9 x9) (fA xA) (fB xB) (fC xC) (fD xD) (fE xE)
 
 lastOpt :: [a] -> a -> a
 lastOpt xs initial = foldl' (\_ x -> x) initial xs
@@ -199,6 +206,10 @@ extP = O.strOption (O.short 'X' <> O.metavar "EXT" <> O.help "Extensions")
 extraPkgP :: O.Parser PackageName
 extraPkgP = O.option (O.eitherReader C.eitherParsec) $
     O.long "extra-package" <> O.metavar "PKG" <> O.help "Extra packages to require (should exist in a plan)"
+
+moduleNameP :: O.Parser C.ModuleName
+moduleNameP = O.option (O.eitherReader C.eitherParsec) $
+    O.short 'm' <> O.long "module" <> O.metavar "MODULE" <> O.help "Which modules to check (all if empty)"
 
 rtsOptsP :: O.Parser [String]
 rtsOptsP = O.option (fmap words O.str) $

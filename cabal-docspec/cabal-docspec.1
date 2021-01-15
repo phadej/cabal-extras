@@ -1,4 +1,4 @@
-.TH CABAL-DOCSPEC 1 "January 10, 2021" "cabal-docspec 0.0.0.20210111" "Cabal Extras"
+.TH CABAL-DOCSPEC 1 "January 15, 2021" "cabal-docspec 0.0.0.20210115" "Cabal Extras"
 .SH NAME
 .PP
 cabal-docspec - another doctest for Haskell
@@ -114,6 +114,10 @@ doctest examples from their comments.
 .TP
 \f[B]--phase2\f[R]
 Stop after the second phase, i.e.\ evaluation in GHCi phase.
+.TP
+\f[B]-m, --module\f[R] \f[I]modulename\f[R]
+Check only these modules.
+Default is to check all.
 .TP
 \f[B]--builddir\f[R] \f[I]dir\f[R]
 Directory to look for \f[B]plan.json\f[R] and local package database.
