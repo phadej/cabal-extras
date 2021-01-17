@@ -8,9 +8,9 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.11.20201227
+# version: 0.11.20210108
 #
-# REGENDATA ("0.11.20201227",["github","--config=cabal.haskell-ci","cabal.project"])
+# REGENDATA ("0.11.20210108",["github","--config=cabal.haskell-ci","cabal.project"])
 #
 name: Haskell-CI
 on:
@@ -109,8 +109,8 @@ jobs:
       - name: install cabal-docspec
         run: |
           mkdir -p $HOME/.cabal/bin
-          curl -sL https://oleg.fi/cabal-docspec-0.1.0.xz > cabal-docspec.xz
-          echo 'f5190fa5a3e54ea9dcb2ca2f3a30d5ae77e189d957980e298a83193b73fdc3e4  cabal-docspec.xz' | sha256sum -c -
+          curl -sL https://github.com/phadej/cabal-extras/releases/download/cabal-docspec-0.0.0.20210108/cabal-docspec-0.0.0.20210108.xz > cabal-docspec.xz
+          echo '9123f8d5d09beaf3124331c4db1de3e2934b682cd4deebdcdbd3e71b73016b7c  cabal-docspec.xz' | sha256sum -c -
           xz -d < cabal-docspec.xz > $HOME/.cabal/bin/cabal-docspec
           rm -f cabal-docspec.xz
           chmod a+x $HOME/.cabal/bin/cabal-docspec
@@ -178,7 +178,7 @@ jobs:
           echo "package peura" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           cat >> cabal.project <<EOF
-          packages:    https://oleg.fi/gentle-introduction-2020.12.tar.gz
+          packages:    https://oleg.fi/gentle-introduction-2021.1.tar.gz
           constraints: directory     installed
           constraints: process       installed
           constraints: transformers  installed

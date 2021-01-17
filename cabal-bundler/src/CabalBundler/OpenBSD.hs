@@ -1,11 +1,10 @@
 module CabalBundler.OpenBSD (
     generateOpenBSD,
-    )  where
+)  where
 
 import Peura
 
-import Data.Function (on)
-import Data.List     (intercalate, nubBy)
+import Data.List (intercalate)
 
 import qualified Cabal.Index                            as I
 import qualified Cabal.Plan                             as P
@@ -39,8 +38,7 @@ generateOpenBSD tracer packageName exeName' plan meta = do
         [uid0] -> do
             usedUnits <- bfs tracer units uid0
             deps <- unitsToDeps meta usedUnits
-            let cleanedDeps = nubBy ((==) `on` depPackageName)
-                            $ sortBy (compare `on` depPackageName) deps
+            let cleanedDeps = ordNubOn depPackageName $ sortOn depPackageName deps
             return $ unlines $ map manifestLine cleanedDeps
         uids ->
               throwM $ UnknownExecutable exeName uids

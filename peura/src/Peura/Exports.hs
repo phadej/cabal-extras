@@ -30,11 +30,8 @@ module Peura.Exports (
     -- ** Control.Monad.Catch
     handle,
     bracket,
-    -- ** Data.Maybe
-    mapMaybe,
-    catMaybes,
     -- ** Data.List
-    sortBy, sortOn, ordNub, splitOn,
+    sortBy, sortOn, splitOn,
     -- * Cabal
     prettyShow,
     mkPackageName,
@@ -67,9 +64,7 @@ import Control.Monad.Catch
 import Control.Monad.Reader.Class      (MonadReader (ask, local))
 import Data.Binary                     (Binary)
 import Data.List                       (sortBy, sortOn)
-import Data.Maybe                      (catMaybes, mapMaybe)
 import Distribution.Pretty             (prettyShow)
-import Distribution.Simple.Utils       (ordNub)
 import Distribution.Types.PackageId    (PackageIdentifier (..))
 import Distribution.Types.PackageName  (PackageName, mkPackageName)
 import Distribution.Types.UnitId       (UnitId)

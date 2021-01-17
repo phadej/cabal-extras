@@ -71,7 +71,7 @@ library
   build-depends:      Cabal ^>=3.2
 
   -- Common exports
-  build-depends:      gentle-introduction ^>=2020.12
+  build-depends:      gentle-introduction ^>=2021.1
 
   -- Extra dependencies
   build-depends:
