@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveTraversable #-}
 module CabalDocspec.Doctest.Extract where
 
 import Peura
@@ -15,4 +15,4 @@ data Module a = Module
     , moduleSetup   :: Maybe a
     , moduleContent :: [a]
     }
-  deriving (Eq, Show, Functor)
+  deriving (Eq, Show, Functor, Foldable, Traversable)

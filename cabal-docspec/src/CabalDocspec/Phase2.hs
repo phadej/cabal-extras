@@ -10,10 +10,9 @@ import Control.Monad      (foldM)
 import Data.List          (isInfixOf)
 import System.Environment (getEnvironment)
 
-import qualified Cabal.Config           as Cabal
-import qualified Data.Map               as Map
-import qualified Data.Set               as Set
-import qualified Language.Haskell.Lexer as L
+import qualified Cabal.Config as Cabal
+import qualified Data.Map     as Map
+import qualified Data.Set     as Set
 
 import CabalDocspec.Doctest.Example
 import CabalDocspec.Doctest.Extract
@@ -239,6 +238,3 @@ eval tracer ghci preserveIt timeout timeoutMsg expr = do
 
             -- first the "importand" error output, then standard output
             return (fromUTF8BS err ++ fromUTF8BS out)
-
-prettyPos :: L.Pos -> String
-prettyPos pos = "in comment at " ++ show (L.line pos) ++ ":" ++ show (L.column pos)

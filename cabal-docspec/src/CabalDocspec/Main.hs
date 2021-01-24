@@ -264,9 +264,10 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
         parsed = fmap4 (doctestStripComments (optStripComs dynOpts))
             $ parseModules modules where
 
+    validated <- validate tracer parsed
     if optPhase dynOpts > Phase1
     then do
-        phase2 tracer dynOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgDir pkg) env parsed
+        phase2 tracer dynOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgDir pkg) env validated
     else
         return $ foldMap skipModule parsed
 
@@ -356,11 +357,13 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
         parsed = fmap4 (doctestStripComments (optStripComs dynOpts))
             $ parseModules modules where
 
+    validated <- validate tracer parsed
+
     if optPhase dynOpts > Phase1
     then do
         -- Note: we don't pass additional environment
         -- For non-cabal-plan setup we simply don't support data-files.
-        phase2 tracer dynOpts unitIds ghcInfo Nothing cabalCfg (pkgDir pkg) [] parsed
+        phase2 tracer dynOpts unitIds ghcInfo Nothing cabalCfg (pkgDir pkg) [] validated
     else
         return $ foldMap skipModule parsed
 
@@ -391,6 +394,7 @@ findExtraPackages tracer plan = traverse $ \pn -> do
 -------------------------------------------------------------------------------
 -- Utilities
 -------------------------------------------------------------------------------
+
 
 propPkgs :: DynOpts -> [PackageName]
 propPkgs dynOpts = case optProperties dynOpts of
@@ -461,3 +465,56 @@ fmap4
     :: (Functor f1, Functor f2, Functor f3, Functor f4)
     => (a -> b) -> f1 (f2 (f3 (f4 a))) -> f1 (f2 (f3 (f4 b)))
 fmap4 f = fmap (fmap (fmap (fmap f)))
+
+-------------------------------------------------------------------------------
+-- No hanging :{
+-------------------------------------------------------------------------------
+
+validate
+    :: TracerPeu r Tr
+    -> [Module [Located DocTest]] -> Peu r [Module [Located DocTest]]
+validate tracer parsed = for parsed $ \m -> do
+    case traverse (traverse filterExpressionD) m of
+        Right xs -> do
+            return xs
+        Left (L l err) -> do
+            die tracer $ prettyShow (moduleName m) ++ " " ++ prettyPos l ++ " " ++ err
+
+
+filterExpressionD :: Located DocTest -> Either (Located String) (Located DocTest)
+filterExpressionD orig@(L l (Example s _)) =
+    orig <$ first (L l) (filterExpression s)
+filterExpressionD orig@(L l (Property s)) =
+    orig <$ first (L l) (filterExpression s)
+
+-- | Simple check that :{ and :} are there.
+-- From doctest.
+--
+-- Otherwise
+--
+-- @
+-- >>> :{
+-- x = 1
+--
+-- y = 2
+--
+-- x + y
+-- :}
+-- @
+--
+-- like things cause timeout.
+--
+filterExpression :: String -> Either String String
+filterExpression e =
+  case lines e of
+    []     -> Right e
+    (l:ls) -> if firstLine == ":{" && lastLine /= ":}" then fail_ else Right e
+      where
+        firstLine = strip l
+        lastLine  = strip $ last (l:|ls)
+        fail_ = Left "unterminated multiline command"
+  where
+    strip :: String -> String
+    strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
+
+
