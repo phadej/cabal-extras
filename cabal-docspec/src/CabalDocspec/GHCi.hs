@@ -145,9 +145,10 @@ waitGhci _tracer (GHCi iph mt) mitVar microsecs = do
 -- wait for combined response.
 sendExpressions :: TracerPeu r Tr -> GHCi -> Bool -> Int -> [String] -> Peu r Result
 sendExpressions tracer ghci@(GHCi iph _mt) preserveIt timeout exprs = do
+    -- make expressions into single String
+    let expr = unlines exprs
     -- send expressions
-    for_ exprs $ \expr -> do
-        Proci.sendTo iph (toUTF8BS expr <> fromString newlineStr)
+    Proci.sendTo iph (toUTF8BS expr)
 
     -- save @it@
     mitVar <- if not preserveIt then return Nothing else Just <$> do
