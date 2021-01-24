@@ -42,7 +42,7 @@ phase1 tracer ghcInfo pkgDir cppDirs pkgIds bi modname modpath = do
             return $ extractComments tokens
         Nothing -> do
             contents' <- cpphs tracer pkgIds cppIncludes cppDefines modpath contents
-            evaluate $ force $ extractComments $ lexerPass0 contents'
+            evaluate $ force $ extractComments $ stubbornPass0 contents'
 
     -- putDebug tracer $ unlines $ map show comments
 

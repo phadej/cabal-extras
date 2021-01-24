@@ -1,8 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 module CabalDocspec.Lexer (
     -- * Passes
+    stubbornPass0,
     needsCppPass,
-    L.lexerPass0,
     Pos,
     -- * Comments
     Comment (..),
@@ -37,7 +37,7 @@ import CabalDocspec.Located
 needsCppPass :: String -> Maybe [PosToken]
 needsCppPass input = go tokens
   where
-    tokens = L.lexerPass0 input
+    tokens = stubbornPass0 input
 
     go :: [PosToken] -> Maybe [PosToken]
     go []                             = Just tokens
@@ -51,6 +51,29 @@ needsCppPass input = go tokens
         | otherwise
         = go xs
     go _                              = Just tokens
+
+-------------------------------------------------------------------------------
+-- Pass
+-------------------------------------------------------------------------------
+
+-- Stubborn pass filters out error tokens (which start with
+-- and continues with the rest
+--
+-- This works around that @haskell-lexer@ doesn't recognise prefix quotes.
+--
+stubbornPass0 :: String -> [PosToken]
+stubbornPass0 = stubborn . L.lexerPass0 where
+    stubborn :: [PosToken] -> [PosToken]
+    stubborn [] = []
+    stubborn [(L.ErrorToken, (pos, '\'' : s)), (L.TheRest, (_, s'))] =
+        map (second (first (addPos pos))) $ stubbornPass0 (s ++ s')
+
+    stubborn (t : ts) = t : stubborn ts
+
+    -- only line...
+    addPos pos1 pos2 = pos2
+        { L.line   = L.line pos1 + L.line pos2 - 1
+        }
 
 -------------------------------------------------------------------------------
 -- Comment
