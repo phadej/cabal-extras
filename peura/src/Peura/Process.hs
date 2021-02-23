@@ -153,7 +153,10 @@ runProcessOutputImpl
     -> Peu r ExitCode
 runProcessOutputImpl tracer cp = withRunInIO $ \runInIO -> do
     startTime <- getTime Monotonic
-    Proc.withCreateProcess cp' $ \_ _ _ ph -> do
+    Proc.withCreateProcess cp' $ \mi _ _ ph -> do
+        -- close the input immediately.
+        for_ mi $ \inh -> ignoreSigPipe $ hClose inh
+
         ec <- Proc.waitForProcess ph
 
         endTime <- getTime Monotonic
@@ -163,7 +166,9 @@ runProcessOutputImpl tracer cp = withRunInIO $ \runInIO -> do
   where
     cp' :: Proc.CreateProcess
     cp' = cp
-        { Proc.std_in        = Proc.NoStream
+        -- We need to open some pipe, otherwise configure scripts will barf.
+        -- Silly configure assumes it has attached stdin.
+        { Proc.std_in        = Proc.CreatePipe
         , Proc.std_out       = Proc.Inherit
         , Proc.std_err       = Proc.Inherit
         , Proc.delegate_ctlc = True
