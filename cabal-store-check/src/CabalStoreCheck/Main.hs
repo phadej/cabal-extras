@@ -18,9 +18,9 @@ import qualified Data.List.NonEmpty                      as NE
 import qualified Data.Map.Strict                         as Map
 import qualified Data.Set                                as Set
 import qualified Distribution.Compat.Newtype             as C
+import qualified Distribution.FieldGrammar               as C
 import qualified Distribution.ModuleName                 as C
 import qualified Distribution.Parsec                     as C
-import qualified Distribution.Parsec.Newtypes            as C
 import qualified Distribution.Types.InstalledPackageInfo as C
 import qualified Distribution.Types.UnitId               as C
 import qualified Options.Applicative                     as O

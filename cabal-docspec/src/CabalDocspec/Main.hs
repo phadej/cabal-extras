@@ -256,8 +256,9 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
     cppDirs <- traverse makeAbsolute (optCppIncludeDirs dynOpts)
 
     -- first phase: read modules and extract the comments
+    let pkgVer = C.packageVersion (pkgGpd pkg)
     modules <- for modulePaths $ \(modname, modpath) ->
-        phase1 tracer ghcInfo (pkgDir pkg) cppDirs pkgIds bi modname modpath
+        phase1 tracer ghcInfo pkgVer (pkgDir pkg) cppDirs pkgIds bi modname modpath
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
@@ -349,8 +350,9 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
     cppDirs <- traverse makeAbsolute (optCppIncludeDirs dynOpts)
 
     -- first phase: read modules and extract the comments
+    let pkgVer = C.packageVersion (pkgGpd pkg)
     modules <- for modulePaths $ \(modname, modpath) ->
-        phase1 tracer ghcInfo (pkgDir pkg) cppDirs pkgIds bi modname modpath
+        phase1 tracer ghcInfo pkgVer (pkgDir pkg) cppDirs pkgIds bi modname modpath
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
@@ -443,10 +445,10 @@ simplifyCondTree
     -> C.CondTree C.ConfVar d a
     -> (d, a)
 simplifyCondTree ghcInfo flags = C.simplifyCondTree $ \cv -> Right $ case cv of
-    C.OS os     -> os == C.buildOS
-    C.Arch arch -> arch == C.buildArch
-    C.Impl c vr -> c == C.GHC && C.withinRange (ghcVersion ghcInfo) vr
-    C.Flag n    -> Map.findWithDefault False n flags
+    C.OS os         -> os == C.buildOS
+    C.Arch arch     -> arch == C.buildArch
+    C.Impl c vr     -> c == C.GHC && C.withinRange (ghcVersion ghcInfo) vr
+    C.PackageFlag n -> Map.findWithDefault False n flags
 
 -------------------------------------------------------------------------------
 --

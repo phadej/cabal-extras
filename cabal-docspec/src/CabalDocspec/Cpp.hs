@@ -13,13 +13,14 @@ import CabalDocspec.Warning
 -- | C-preprocess file
 cpphs
     :: TracerPeu r Tr
+    -> Version              -- ^ this package version
     -> [PackageIdentifier]  -- ^ package identifiers, for @cabal_macros.h@
     -> [Path Absolute]      -- ^ includes
     -> [(String, String)]   -- ^ additional defines
     -> Path Absolute        -- ^ filepath
     -> String               -- ^ file contents
     -> Peu r String
-cpphs tracer pkgIds includes defines path input = withRunInIO $ \runInIO -> do
+cpphs tracer pkgVer pkgIds includes defines path input = withRunInIO $ \runInIO -> do
     let cpphsActions = Cpphs.CpphsActions
             { Cpphs.cpphsPutWarning = \msg -> runInIO (putWarning tracer WCpphs msg)
             , Cpphs.cpphsDie        = \msg -> runInIO (die tracer msg)
@@ -31,7 +32,7 @@ cpphs tracer pkgIds includes defines path input = withRunInIO $ \runInIO -> do
     path' = toFilePath path
     input' = unlines
         [ "#line 1 \"" ++ Cpphs.cleanPath "cabal_macros.h" ++ "\""
-        , C.generatePackageVersionMacros pkgIds
+        , C.generatePackageVersionMacros pkgVer pkgIds
         , "#line 1 \"" ++ Cpphs.cleanPath path' ++ "\""
         , input
         ]

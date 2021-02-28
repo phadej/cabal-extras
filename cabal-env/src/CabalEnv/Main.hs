@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings   #-}
-{-# LANGUAGE TypeApplications    #-}
 {-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 -- |
 -- Copyright: Oleg Grenrus
 -- License: GPL-3.0-or-later
@@ -17,16 +17,17 @@ import Distribution.Types.Dependency (Dependency (..))
 import Distribution.Version          (intersectVersionRanges)
 import System.FilePath.Glob          (glob)
 
-import qualified Crypto.Hash.SHA256             as SHA256
-import qualified Data.ByteString.Base16         as Base16
-import qualified Data.Map.Strict                as Map
-import qualified Data.Set                       as Set
-import qualified Data.Text                      as T
-import qualified Distribution.Pretty            as C
-import qualified Distribution.Types.LibraryName as C
-import qualified Distribution.Version           as C
-import qualified Options.Applicative            as O
-import qualified System.FilePath                as FP
+import qualified Crypto.Hash.SHA256              as SHA256
+import qualified Data.ByteString.Base16          as Base16
+import qualified Data.Map.Strict                 as Map
+import qualified Data.Set                        as Set
+import qualified Data.Text                       as T
+import qualified Distribution.Compat.NonEmptySet as NES
+import qualified Distribution.Pretty             as C
+import qualified Distribution.Types.LibraryName  as C
+import qualified Distribution.Version            as C
+import qualified Options.Applicative             as O
+import qualified System.FilePath                 as FP
 
 import qualified Cabal.Config as Config
 import qualified Cabal.Plan   as Plan
@@ -358,7 +359,7 @@ bfs xs edge = go Set.empty xs where
 
 nubDeps :: [Dependency] -> [Dependency]
 nubDeps deps =
-    [ Dependency pn (C.simplifyVersionRange vr) (Set.singleton C.LMainLibName)
+    [ Dependency pn (C.simplifyVersionRange vr) (NES.singleton C.LMainLibName)
     | (pn, vr) <- Map.toList m
     ]
   where

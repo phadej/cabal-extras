@@ -222,14 +222,14 @@ condTreeToDepMap excl = go where
             ]
 
 flagCondition :: C.Condition C.ConfVar -> Bool
-flagCondition (C.Var (C.OS _))     = False
-flagCondition (C.Var (C.Arch _))   = False
-flagCondition (C.Var (C.Flag _))   = True
-flagCondition (C.Var (C.Impl _ _)) = False
-flagCondition (C.Lit _)            = False
-flagCondition (C.CNot a)           = flagCondition a
-flagCondition (C.COr a b)          = flagCondition a && flagCondition b
-flagCondition (C.CAnd a b)         = flagCondition a && flagCondition b
+flagCondition (C.Var (C.OS _))          = False
+flagCondition (C.Var (C.Arch _))        = False
+flagCondition (C.Var (C.PackageFlag _)) = True
+flagCondition (C.Var (C.Impl _ _))      = False
+flagCondition (C.Lit _)                 = False
+flagCondition (C.CNot a)                = flagCondition a
+flagCondition (C.COr a b)               = flagCondition a && flagCondition b
+flagCondition (C.CAnd a b)              = flagCondition a && flagCondition b
 
 vrLowerBound :: C.VersionRange -> C.LowerBound
 vrLowerBound vr = case C.asVersionIntervals vr of

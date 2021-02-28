@@ -2,11 +2,11 @@ module CabalStoreGC.Deps (extractDeps) where
 
 import Peura
 
-import qualified Data.ByteString.Char8        as BS8
-import qualified Distribution.Compat.Newtype  as C
-import qualified Distribution.Parsec          as C
-import qualified Distribution.Parsec.Newtypes as C
-import qualified Distribution.Types.UnitId    as C
+import qualified Data.ByteString.Char8       as BS8
+import qualified Distribution.Compat.Newtype as C
+import qualified Distribution.FieldGrammar   as C
+import qualified Distribution.Parsec         as C
+import qualified Distribution.Types.UnitId   as C
 
 extractDeps :: ByteString -> [C.UnitId]
 extractDeps contents =

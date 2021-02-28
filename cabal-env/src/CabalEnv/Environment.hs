@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds    #-}
 {-# LANGUAGE DataKinds          #-}
 {-# LANGUAGE DeriveAnyClass     #-}
 {-# LANGUAGE DeriveGeneric      #-}
@@ -33,7 +34,6 @@ import qualified Distribution.Compat.Newtype     as C
 import qualified Distribution.FieldGrammar       as C
 import qualified Distribution.Fields             as C
 import qualified Distribution.Parsec             as C
-import qualified Distribution.Parsec.Newtypes    as C
 import qualified Distribution.Pretty             as C
 import qualified Text.PrettyPrint                as PP
 
@@ -95,7 +95,11 @@ instance C.Pretty LocalPkgs where
 -------------------------------------------------------------------------------
 
 environmentGrammar
-    :: (C.FieldGrammar g, Applicative (g (Environment BS.ByteString)))
+    :: (C.FieldGrammar c g, Applicative (g (Environment BS.ByteString)),
+        c (C.List C.CommaVCat (Identity PackageName) PackageName),
+        c (C.List C.CommaVCat (Identity Dependency) Dependency),
+        c BS64, c LocalPkgs)
+
     => g (Environment BS.ByteString) (Environment BS.ByteString)
 environmentGrammar = Environment
     <$> C.uniqueFieldAla       "packages"   (C.alaList C.CommaVCat)  (field @"envPackages")
