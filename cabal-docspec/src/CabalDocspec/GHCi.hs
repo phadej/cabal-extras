@@ -75,7 +75,7 @@ setupGhci tracer _ghcInfo ghci@(GHCi iph _mt) = do
     -- wait a little. I'm not sure if we need this delay
     liftIO $ threadDelay 10000
 
-    res <- waitGhci tracer ghci Nothing 3000000 -- TODO: make this delay configurable
+    res <- waitGhci tracer ghci Nothing 10000000 -- 10s TODO: make this delay configurable
     case res of
         Timeout    -> do
             (err,out) <- liftIO $ atomically $ liftA2 (,) (Proci.readErr iph) (Proci.readOut iph)
