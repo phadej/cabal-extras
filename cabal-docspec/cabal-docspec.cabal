@@ -1,6 +1,6 @@
 cabal-version:      2.2
 name:               cabal-docspec
-version:            0.0.0.20210111
+version:            0.0.0.20210228
 synopsis:           Run examples in your docs
 category:           Development
 description:
@@ -94,8 +94,8 @@ library cabal-docspec-internal
     , template-haskell
     , text              ^>=1.2.3.0
 
-  -- We use Cabal-3.2
-  build-depends:      Cabal ^>=3.2
+  -- We use Cabal-3.4
+  build-depends:      Cabal ^>=3.4
 
   -- We also use peura
   build-depends:      peura

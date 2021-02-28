@@ -67,8 +67,8 @@ library
     , process     ^>=1.6.3.0
     , text        ^>=1.2.3.0
 
-  -- We use Cabal-3.2
-  build-depends:      Cabal ^>=3.2
+  -- We use Cabal-3.4
+  build-depends:      Cabal ^>=3.4
 
   -- Common exports
   build-depends:      gentle-introduction ^>=2021.2

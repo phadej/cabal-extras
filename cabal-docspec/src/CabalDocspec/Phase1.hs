@@ -22,6 +22,7 @@ import CabalDocspec.Trace
 phase1
     :: TracerPeu r Tr
     -> GhcInfo
+    -> Version             -- ^ package version
     -> Path Absolute       -- ^ package directory
     -> [Path Absolute]     -- ^ additional include directories
     -> [PackageIdentifier] -- ^ dependencies
@@ -29,7 +30,7 @@ phase1
     -> C.ModuleName
     -> Path Absolute
     -> Peu r (Module (Located String))
-phase1 tracer ghcInfo pkgDir cppDirs pkgIds bi modname modpath = do
+phase1 tracer ghcInfo pkgVer pkgDir cppDirs pkgIds bi modname modpath = do
     traceApp tracer $ TracePhase1 modname modpath
 
     contents <- fromUTF8BS <$> readByteString modpath
@@ -41,7 +42,7 @@ phase1 tracer ghcInfo pkgDir cppDirs pkgIds bi modname modpath = do
             -- putDebug tracer $ unlines $ map show tokens
             return $ extractComments tokens
         Nothing -> do
-            contents' <- cpphs tracer pkgIds cppIncludes cppDefines modpath contents
+            contents' <- cpphs tracer pkgVer pkgIds cppIncludes cppDefines modpath contents
             evaluate $ force $ extractComments $ stubbornPass0 contents'
 
     -- putDebug tracer $ unlines $ map show comments
