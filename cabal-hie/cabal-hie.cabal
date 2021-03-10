@@ -1,0 +1,68 @@
+cabal-version:      2.2
+name:               cabal-hie
+version:            0.1
+synopsis:           Generate hie.yaml files
+category:           Development
+description:
+  Generate hie.yaml files from cabal.project and plan.json data
+
+license:            GPL-2.0-or-later
+license-files:
+  LICENSE
+  LICENSE.GPLv2
+  LICENSE.GPLv3
+
+author:             Oleg Grenrus <oleg.grenrus@iki.fi>
+maintainer:         Oleg Grenrus <oleg.grenrus@iki.fi>
+tested-with:        GHC ==8.6.5 || ==8.8.4 || ==8.10.2
+extra-source-files: Changelog.md
+
+source-repository head
+  type:     git
+  location: https://github.com/phadej/cabal-extras.git
+
+library cabal-hie-internal
+  default-language: Haskell2010
+  hs-source-dirs:   src
+  ghc-options:      -Wall
+  exposed-modules:  CabalHie.Main
+  other-modules:    Paths_cabal_hie
+  autogen-modules:  Paths_cabal_hie
+
+  -- ghc-boot dependencies
+  build-depends:
+    , base        ^>=4.12.0.0 || ^>=4.13.0.0 || ^>=4.14.0.0
+    , bytestring  ^>=0.10.8.2
+    , containers  ^>=0.5.10.2 || ^>=0.6.0.1
+    , deepseq     ^>=1.4.3.0
+    , directory   ^>=1.3.0.2
+    , filepath    ^>=1.4.1.2
+    , mtl         ^>=2.2.2
+    , parsec      ^>=3.1.13.0
+    , pretty      ^>=1.1.3.3
+    , process     ^>=1.6.1.0
+    , text        ^>=1.2.3.0
+
+  -- We use Cabal-3.4
+  build-depends:    Cabal ^>=3.4
+
+  -- We also use peura
+  build-depends:    peura
+
+  -- dependencies in library
+  build-depends:
+    , aeson                  ^>=1.5.6.0
+    , ansi-terminal
+    , cabal-install-parsers
+    , cabal-plan
+    , HsYAML-aeson           ^>=0.2
+    , optparse-applicative
+
+executable cabal-hie
+  default-language: Haskell2010
+  hs-source-dirs:   cli
+  main-is:          Main.hs
+  ghc-options:      -Wall -threaded -rtsopts -with-rtsopts=-N2
+  build-depends:
+    , base
+    , cabal-hie-internal
