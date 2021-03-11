@@ -123,7 +123,7 @@ generateHie tracer opts = do
             componentPaths selector comp0
 
         -- exe
-        exeDirs <- for (C.condBenchmarks gpd) $ \(name, comp0) -> do
+        exeDirs <- for (C.condExecutables gpd) $ \(name, comp0) -> do
             let selector = prettyShow (C.packageName gpd) <> ":exe:" <> C.prettyShow name
             componentPaths selector comp0
 
