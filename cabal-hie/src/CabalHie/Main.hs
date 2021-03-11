@@ -20,6 +20,7 @@ import qualified Data.YAML.Aeson          as YAML.Aeson
 import qualified Distribution.Compat.Lens as L
 import qualified Distribution.Pretty      as C
 import qualified Options.Applicative      as O
+import qualified System.Console.ANSI      as ANSI
 import qualified System.FilePath          as FP
 
 import qualified Distribution.Compiler                        as C
@@ -35,6 +36,26 @@ import qualified Distribution.Version                         as C
 import qualified Distribution.Types.BuildInfo.Lens as CL
 
 import Paths_cabal_hie (version)
+
+data W
+    = WCan'tFindUnit
+  deriving (Eq, Ord, Enum, Bounded)
+
+data Tr
+    = TraceGenHie
+  deriving Show
+
+instance IsPeuraTrace Tr where
+    type TraceW Tr = W
+
+    showTrace TraceGenHie = (ANSI.Green, ["cabal","hie"], "Generating hie.yaml")
+
+instance Universe W where universe = [minBound .. maxBound]
+instance Finite W
+
+instance Warning W where
+    warningToFlag WCan'tFindUnit = "cant-find-unit"
+
 
 main :: IO ()
 main = do
@@ -58,7 +79,7 @@ main = do
 data Opts = Opts
     { optBuildDir :: FsPath
     , optCompiler  :: FilePath
-    , optTracer   :: TracerOptions Void -> TracerOptions Void
+    , optTracer   :: TracerOptions (TraceW Tr) -> TracerOptions (TraceW Tr)
     }
 
 optsP :: O.Parser Opts
@@ -74,7 +95,7 @@ fspath = O.eitherReader $ return . fromFilePath
 -- Generator
 -------------------------------------------------------------------------------
 
-generateHie :: forall r. TracerPeu r Void -> Opts -> Peu r ()
+generateHie :: forall r. TracerPeu r Tr -> Opts -> Peu r ()
 generateHie tracer opts = do
     -- gather info
     cwd     <- getCurrentDirectory
@@ -109,15 +130,15 @@ generateHie tracer opts = do
 
         -- next we collect (directory, selector) pairs
         let componentPaths :: (Semigroup a, CL.HasBuildInfo a) => String -> C.CondTree C.ConfVar [d] a -> Peu r [(Path Absolute, Text)]
-            componentPaths selector comp0  = do
-                (unit, _cn, _ci) <- maybe (die tracer $ "Cannot find unit for " ++ selector) return $
-                    Map.lookup (T.pack selector) components
+            componentPaths selector comp0  =
+                case Map.lookup (T.pack selector) components of
+                    Nothing -> do
+                        putWarning tracer WCan'tFindUnit ("Cannot find unit for " ++ selector)
+                        pure []
+                    Just (unit, _cn, _ci) ->
+                        let (_, comp) = simplifyCondTree ghcInfo (Map.mapKeys toCabal $ Plan.uFlags unit) comp0
+                        in return $ map (\dir -> (absDir dir, T.pack selector)) (L.toListOf (CL.hsSourceDirs . traverse) comp)
 
-                let (_, comp) = simplifyCondTree ghcInfo (Map.mapKeys toCabal $ Plan.uFlags unit) comp0
-
-                return $ map (\dir -> (absDir dir, T.pack selector)) (L.toListOf (CL.hsSourceDirs . traverse) comp)
-
-        -- libraries
         libDirs <- for (toList $ C.condLibrary gpd) $ \comp0 -> do
             let selector = prettyShow (C.packageName gpd) <> ":lib:" <> C.prettyShow (C.packageName gpd)
             componentPaths selector comp0
