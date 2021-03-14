@@ -4,7 +4,7 @@ module CabalBundler.OpenBSD (
 
 import Peura
 
-import Data.List (intercalate)
+import Data.List (intercalate, partition)
 
 import qualified Cabal.Index                            as I
 import qualified Cabal.Plan                             as P
@@ -35,13 +35,17 @@ generateOpenBSD tracer packageName exeName' plan meta = do
         units = P.pjUnits plan
 
     case findExe packageName exeName units of
-        [uid0] -> do
+        [(uid0, pkgId0)] -> do
             usedUnits <- bfs tracer units uid0
             deps <- unitsToDeps meta usedUnits
-            let cleanedDeps = ordNubOn depPackageName $ sortOn depPackageName deps
-            return $ unlines $ map manifestLine cleanedDeps
+            case partition ((pkgId0 == ) . depPkgId) deps of
+                (mainPackage : _, depUnits) -> do
+                    return $ unlines $ makefileLines mainPackage depUnits
+                ([], _) -> do
+                    die tracer $ "Expected to find main package " <>
+                        show (pkgId0, depPkgId <$> deps)
         uids ->
-              throwM $ UnknownExecutable exeName uids
+              throwM $ UnknownExecutable exeName (fst <$> uids)
 
 unitsToDeps :: Map PackageName I.PackageInfo -> [P.Unit] -> Peu r [Dep]
 unitsToDeps meta units = fmap concat $ for units $ \unit -> do
@@ -74,6 +78,7 @@ unitsToDeps meta units = fmap concat $ for units $ \unit -> do
                 { depPackageName = cpkgname
                 , depVersion     = cversion
                 , depRevision    = rev
+                , depPkgId       = P.uPId unit
                 }
 
 data MetadataException
@@ -124,6 +129,19 @@ lookupUnit :: M.Map P.UnitId P.Unit -> P.UnitId -> Peu r P.Unit
 lookupUnit units uid =
     maybe (throwM $ MissingUnit uid) return $ M.lookup uid units
 
+makefileLines :: Dep -> [Dep] -> [String]
+makefileLines mainPackage deps =
+    let cleanedDeps = ordNubOn depPackageName $ sortOn depPackageName deps
+    in  [ "MODCABAL_STEM\t\t= " <> prettyShow (depPackageName mainPackage)
+        , "MODCABAL_VERSION\t= " <>  prettyShow (depVersion mainPackage)
+        ] <>
+        [ "MODCABAL_REVISION\t= " <> show rev
+        | let rev = depRevision mainPackage
+        , rev > 0]
+        <>
+        [ "MODCABAL_MANIFEST\t= \\" | not $ null cleanedDeps ] <>
+        map manifestLine cleanedDeps
+
 manifestLine :: Dep -> String
 manifestLine dep =
     let name = prettyShow $ depPackageName dep
@@ -131,9 +149,9 @@ manifestLine dep =
         rev = show $ depRevision dep
      in intercalate "\t" ["", name, ver, rev, "\\"]
 
-findExe :: PackageName ->  String -> Map P.UnitId P.Unit -> [P.UnitId]
+findExe :: PackageName ->  String -> Map P.UnitId P.Unit -> [(P.UnitId, P.PkgId)]
 findExe pn exeName units =
-    [ uid
+    [ (uid, P.uPId unit)
     | (uid, unit) <- M.toList units
     , pkgName (toCabal (P.uPId unit)) == pn
     , (P.CompNameExe e, _) <- M.toList (P.uComps unit)
@@ -144,5 +162,6 @@ data Dep = Dep
     { depPackageName :: PackageName
     , depVersion     :: Version
     , depRevision    :: Word
+    , depPkgId       :: P.PkgId
     }
   deriving (Show)
