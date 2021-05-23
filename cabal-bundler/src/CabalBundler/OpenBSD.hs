@@ -57,29 +57,30 @@ unitsToDeps meta units = fmap concat $ for units $ \unit -> do
     let cversion :: C.Version
         cversion = C.mkVersion verdigits
 
-    case P.uType unit of
-        P.UnitTypeBuiltin -> return []
-        P.UnitTypeLocal -> return []
+    rev <- case P.uType unit of
+        P.UnitTypeBuiltin -> pure Nothing
+        P.UnitTypeLocal   -> pure $ Just  0  -- Revision unavailable for local packages
         _ -> do
-            rev <- case P.uSha256 unit of
+            case P.uSha256 unit of
                 Just _  -> do
                     pkgInfo <- maybe (throwM $ UnknownPackageName cpkgname) return $
                         M.lookup cpkgname meta
                     relInfo <- maybe (throwM $ UnknownPackageVersion cpkgname cversion) return $
                         M.lookup cversion $ I.piVersions pkgInfo
 
-                    return $ fromIntegral (I.riRevision relInfo)
+                    pure $ Just $ fromIntegral (I.riRevision relInfo)
 
                 Nothing -> case P.uType unit of
-                    P.UnitTypeLocal   -> return 0
+                    P.UnitTypeLocal   -> pure $ Just 0
                     t                 -> throwM $ UnknownUnitType cpkgname t
 
-            return $ pure $ Dep
-                { depPackageName = cpkgname
-                , depVersion     = cversion
-                , depRevision    = rev
-                , depPkgId       = P.uPId unit
-                }
+    let depForRev r = [Dep {
+          depPackageName = cpkgname
+        , depVersion     = cversion
+        , depRevision    = r
+        , depPkgId       = P.uPId unit
+        }]
+    pure $ maybe [] depForRev rev
 
 data MetadataException
     = UnknownPackageName C.PackageName
