@@ -28,7 +28,7 @@ import Data.Foldable    (asum)
 import Data.IORef       (IORef, atomicModifyIORef', newIORef)
 import Data.List        (intercalate, stripPrefix)
 import System.Clock     (Clock (Monotonic), TimeSpec (..), diffTimeSpec, getTime)
-import System.IO        (stderr)
+import System.IO        (stderr, stdout)
 import System.IO.Unsafe (unsafePerformIO)
 import Text.Printf      (printf)
 
@@ -51,7 +51,7 @@ import Peura.Warning
 import System.Console.Concurrent (errorConcurrent, outputConcurrent)
 #else
 import Control.Concurrent.MVar (MVar, newMVar, withMVar)
-import System.IO               (hPutStr, stdout)
+import System.IO               (hPutStr)
 #endif
 
 -------------------------------------------------------------------------------
@@ -146,13 +146,18 @@ traceApp tracer tr = traceWith tracer (TraceApp tr)
 data TracerOptions w = TracerOptions
     { tracerOptionsEnabledWarnings :: Set w
     , tracerOptionsProcess         :: Bool
+    , tracerOptionsColor           :: ColorOption
     }
+  deriving (Show)
+
+data ColorOption = ColorAuto | ColorNo | ColorAlways
   deriving (Show)
 
 defaultTracerOptions :: Warning w => TracerOptions w
 defaultTracerOptions = TracerOptions
     { tracerOptionsEnabledWarnings = Set.fromList universeF
     , tracerOptionsProcess         = True
+    , tracerOptionsColor           = ColorAuto
     }
 
 tracerOptionsParser :: forall w. Warning w => O.Parser (TracerOptions w -> TracerOptions w)
@@ -166,6 +171,17 @@ tracerOptionsParser = fmap (foldr (flip (.)) id) $ many $ asum $
         , O.flag'
             (\opts -> opts { tracerOptionsProcess = False })
             (O.long "no-trace-process" <> O.hidden)
+
+        , O.flag'
+            (\opts -> opts { tracerOptionsColor = ColorAuto })
+            (O.long "color-auto")
+        , O.flag'
+            (\opts -> opts { tracerOptionsColor = ColorNo })
+            (O.long "no-color")
+        , O.flag'
+            (\opts -> opts { tracerOptionsColor = ColorAlways })
+            (O.long "color")
+        
         ]
 
     warnings = O.option (O.eitherReader warningE) (O.short 'W' <> O.metavar "warning")
@@ -209,7 +225,10 @@ makeTracerPeu
     => TracerOptions (TraceW tr)
     -> IO (Tracer m (Trace tr))
 makeTracerPeu TracerOptions {..} = do
-    supportsAnsi <- ANSI.hSupportsANSI stderr
+    supportsAnsi <- case tracerOptionsColor of
+        ColorNo     -> return False
+        ColorAlways -> return True
+        ColorAuto   -> ANSI.hSupportsANSI stdout
     startClock   <- getTime Monotonic
 
     return $ Tracer $ \_cs tr0 -> liftIO $ do
