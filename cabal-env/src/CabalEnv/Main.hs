@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns      #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -76,8 +77,8 @@ listAction tracer Opts {..} ghcInfo = do
 -------------------------------------------------------------------------------
 
 showAction :: TracerPeu r (V1 W) -> Opts -> GhcInfo -> Peu r ()
-showAction tracer Opts {..} ghcInfo = do
-    let envPath = ghcEnvDir ghcInfo </> fromUnrootedFilePath optEnvName
+showAction tracer opts@Opts {..} ghcInfo = do
+    envPath <- getEnvPath opts ghcInfo
     withEnvironment tracer envPath $ \env -> do
         when optVerbose $ putInfo tracer $ "Packages in " ++ optEnvName ++ " environment " ++ toFilePath envPath
 
@@ -101,13 +102,14 @@ showAction tracer Opts {..} ghcInfo = do
 
 installAction :: TracerPeu r (V1 W) -> Opts -> GhcInfo -> Peu r ()
 installAction tracer opts@Opts {..} ghcInfo = unless (null optDeps) $ do
-    let envDir = ghcEnvDir ghcInfo
-    putDebug tracer $ "GHC environment directory: " ++ toFilePath envDir
+    envPath <- getEnvPath opts ghcInfo
+    putDebug tracer $ "GHC environment path: " ++ toFilePath envPath
 
-    createDirectoryIfMissing True envDir
-    withEnvironmentMaybe tracer (envDir </> fromUnrootedFilePath optEnvName) $ \menv ->
+
+    createDirectoryIfMissing True $ takeDirectory envPath
+    withEnvironmentMaybe tracer envPath $ \menv ->
         case menv of
-            Nothing  -> installActionDo tracer opts
+            Nothing  -> installActionDo tracer opts envPath
                 (Environment optDeps [] (fromMaybe defaultTransitive optTransitive) Map.empty ())
                 ghcInfo
             Just env -> do
@@ -123,8 +125,8 @@ installAction tracer opts@Opts {..} ghcInfo = unless (null optDeps) $ do
                 if all (inThePlan plan) (envPackages oldEnv)
                 then do
                     putDebug tracer "Everything in plan, regenerating environment file"
-                    generateEnvironment tracer opts oldEnv ghcInfo plan planBS
-                else installActionDo tracer opts oldEnv ghcInfo
+                    generateEnvironment tracer opts envPath oldEnv ghcInfo plan planBS
+                else installActionDo tracer opts envPath oldEnv ghcInfo
 
 inThePlan :: Plan.PlanJson -> Dependency -> Bool
 inThePlan plan (Dependency pn range _) = case Map.lookup pn pkgIds of
@@ -211,11 +213,11 @@ calculateHash1 fp = do
 
 hideAction :: TracerPeu r (V1 W) -> Opts -> GhcInfo -> Peu r ()
 hideAction tracer opts@Opts {..} ghcInfo = unless (null optDeps) $ do
-    let envDir = ghcEnvDir ghcInfo
-    putDebug tracer $ "GHC environment directory: " ++ toFilePath envDir
+    envPath <- getEnvPath opts ghcInfo
+    putDebug tracer $ "GHC environment path: " ++ toFilePath envPath
 
-    createDirectoryIfMissing True envDir
-    withEnvironmentMaybe tracer (envDir </> fromUnrootedFilePath optEnvName) $ \menv ->
+    createDirectoryIfMissing True $ takeDirectory envPath
+    withEnvironmentMaybe tracer envPath $ \menv ->
         case menv of
             Nothing  -> return ()
             Just env -> do
@@ -232,8 +234,8 @@ hideAction tracer opts@Opts {..} ghcInfo = unless (null optDeps) $ do
                 if all (inThePlan plan) (envPackages oldEnv)
                 then do
                     putDebug tracer "Everything in plan, regenerating environment file"
-                    generateEnvironment tracer opts oldEnv ghcInfo plan planBS
-                else installActionDo tracer opts oldEnv ghcInfo
+                    generateEnvironment tracer opts envPath oldEnv ghcInfo plan planBS
+                else installActionDo tracer opts envPath oldEnv ghcInfo
 
 -------------------------------------------------------------------------------
 -- Environment generation
@@ -242,10 +244,11 @@ hideAction tracer opts@Opts {..} ghcInfo = unless (null optDeps) $ do
 installActionDo
     :: TracerPeu r (V1 W)
     -> Opts
+    -> Path Absolute -- ^ environment file path
     -> Environment () -- ^ old environment
     -> GhcInfo
     -> Peu r ()
-installActionDo tracer opts@Opts {..} oldEnv ghcInfo = do
+installActionDo tracer opts@Opts {..} envPath oldEnv ghcInfo = do
     -- new environment with added local packages
     locals <- getLocalPackages tracer opts
     let env = oldEnv { envLocalPkgs = Map.union locals (envLocalPkgs oldEnv) }
@@ -272,17 +275,18 @@ installActionDo tracer opts@Opts {..} oldEnv ghcInfo = do
             return ()
 
         Just (planBS, plan) ->
-                generateEnvironment tracer opts env ghcInfo plan planBS
+                generateEnvironment tracer opts envPath env ghcInfo plan planBS
 
 generateEnvironment
     :: TracerPeu r (V1 W)
     -> Opts
+    -> Path Absolute -- ^ environment file path
     -> Environment ()
     -> GhcInfo
     -> Plan.PlanJson
     -> ByteString
     -> Peu r ()
-generateEnvironment tracer Opts {..} env ghcInfo plan planBS = do
+generateEnvironment tracer Opts {..} envPath env ghcInfo plan planBS = do
     let units = Plan.pjUnits plan
 
     -- https://github.com/haskell/cabal/issues/6407
@@ -337,7 +341,33 @@ generateEnvironment tracer Opts {..} env ghcInfo plan planBS = do
     putDebug tracer "writing environment file"
     when optVerbose $ outputErr tracer newEnvFileContents
 
-    writeByteString (ghcEnvDir ghcInfo </> fromUnrootedFilePath optEnvName) (toUTF8BS newEnvFileContents)
+    writeByteString envPath (toUTF8BS newEnvFileContents)
+
+-- | Obtain the path to the environment file the user is referring to.
+--
+-- Mirroring the behaviour of ghc and cabal install --lib, a path-like string
+-- is interpreted literally, and a non-path-like one is assumed to be in
+-- the global environment directory.
+--
+-- "foo" -> $ghcEnvDir/foo
+-- "./" -> $pwd/.ghc.environment.$ghcPlarform-$ghcVersion
+-- "./foo" where foo is not a directory -> $pwd/foo
+getEnvPath :: Opts -> GhcInfo -> Peu r (Path Absolute)
+getEnvPath Opts { optEnvName } ghcInfo =
+    if FP.takeBaseName optEnvName == optEnvName
+    then return $ ghcEnvDir ghcInfo </> fromUnrootedFilePath optEnvName
+    else do
+      envPath <- makeAbsolute $ fromFilePath optEnvName
+      isDir <- doesDirectoryExist envPath
+      return $ if isDir
+        then envPath </> localEnvName ghcInfo
+        else envPath
+
+-- | Build the name of the hidden environment file that ghc automatically
+-- picks up.
+localEnvName :: GhcInfo -> Path Unrooted
+localEnvName ghcInfo = fromUnrootedFilePath $ ".ghc.environment." <>
+  ghcPlatform ghcInfo <> "-" <> prettyShow (ghcVersion ghcInfo)
 
 -------------------------------------------------------------------------------
 -- BFS
