@@ -27,6 +27,7 @@ import qualified Distribution.Types.InstalledPackageInfo      as IPI
 import qualified Distribution.Types.Library                   as C
 import qualified Distribution.Types.LibraryName               as C
 import qualified Distribution.Types.PackageDescription        as C
+import qualified Distribution.Utils.Path                      as C
 import qualified Distribution.Version                         as C
 import qualified Language.Haskell.Extension                   as Ext
 import qualified Options.Applicative                          as O
@@ -231,7 +232,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
 
     -- find extra units
     extraUnitIds <- findExtraPackages tracer plan (propPkgs dynOpts ++ optExtraPkgs dynOpts)
-        
+
     -- find library module paths
     modulePaths <- findModules
         tracer
@@ -412,18 +413,18 @@ manglePackageName = map fixchar . prettyShow where
 -- | Return name per module.
 findModules
     :: TracerPeu r Tr
-    -> Path Absolute           -- ^ package root directory
-    -> [String]                -- ^ @hs-source-dirs
+    -> Path Absolute                              -- ^ package root directory
+    -> [C.SymbolicPath C.PackageDir C.SourceDir]  -- ^ @hs-source-dirs
     -> [C.ModuleName]
     -> Peu r [(C.ModuleName, Path Absolute)]
 findModules tracer pkgRoot srcDirs' modules = do
     let srcDirs
-            | null srcDirs' = ["."]
+            | null srcDirs' = [C.sameDirectory]
             | otherwise     = srcDirs'
 
     fmap concat $ for modules $ \modname -> do
         matches <- fmap concat $ for srcDirs $ \srcDir ->
-            globDir1 (srcDir FP.</> C.toFilePath modname FP.-<.> ".hs") pkgRoot
+            globDir1 (C.getSymbolicPath srcDir FP.</> C.toFilePath modname FP.-<.> ".hs") pkgRoot
 
         case matches of
             [m] -> return [(modname, m)]

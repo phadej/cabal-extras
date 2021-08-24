@@ -3,7 +3,7 @@ module Main (main) where
 
 import Data.TreeDiff
 import Data.TreeDiff.Golden       (ediffGolden)
-import Distribution.ModuleName    (ModuleName (..))
+import Distribution.ModuleName    (ModuleName)
 import Distribution.Pretty        (prettyShow)
 import System.FilePath            ((</>))
 import Test.Tasty                 (defaultMain, testGroup)

@@ -32,6 +32,7 @@ import qualified Distribution.Types.ConfVar                   as C
 import qualified Distribution.Types.Flag                      as C
 import qualified Distribution.Types.GenericPackageDescription as C
 import qualified Distribution.Version                         as C
+import qualified Distribution.Utils.Path as C
 
 import qualified Distribution.Types.BuildInfo.Lens as CL
 
@@ -137,7 +138,7 @@ generateHie tracer opts = do
                         pure []
                     Just (unit, _cn, _ci) ->
                         let (_, comp) = simplifyCondTree ghcInfo (Map.mapKeys toCabal $ Plan.uFlags unit) comp0
-                        in return $ map (\dir -> (absDir dir, T.pack selector)) (L.toListOf (CL.hsSourceDirs . traverse) comp)
+                        in return $ map (\dir -> (absDir dir, T.pack selector)) (L.toListOf (CL.hsSourceDirs . traverse . L.getting C.getSymbolicPath) comp)
 
         libDirs <- for (toList $ C.condLibrary gpd) $ \comp0 -> do
             let selector = prettyShow (C.packageName gpd) <> ":lib:" <> C.prettyShow (C.packageName gpd)

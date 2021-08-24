@@ -233,8 +233,8 @@ flagCondition (C.CAnd a b)              = flagCondition a && flagCondition b
 
 vrLowerBound :: C.VersionRange -> C.LowerBound
 vrLowerBound vr = case C.asVersionIntervals vr of
-    (lb, _) : _ -> lb
-    _           -> C.LowerBound C.version0 C.InclusiveBound
+    C.VersionInterval lb _ : _ -> lb
+    _                          -> C.LowerBound C.version0 C.InclusiveBound
 
 lessThanLowerBound :: Version -> C.LowerBound -> Bool
 lessThanLowerBound v (C.LowerBound v' C.InclusiveBound) = v <  v'
