@@ -30,7 +30,7 @@ package peura
   ghc-options: -Wall
   flags: -concurrent-output
 
-constraints: Cabal ^>=3.4
+constraints: Cabal ^>=3.6
 
 constraints: directory     installed
 constraints: process       installed

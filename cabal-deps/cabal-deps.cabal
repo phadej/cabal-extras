@@ -39,8 +39,8 @@ library cabal-deps-internal
     , process     ^>=1.6.1.0
     , text        ^>=1.2.3.0
 
-  -- We use Cabal-3.4
-  build-depends:    Cabal ^>=3.4
+  -- We use Cabal-3.6
+  build-depends:    Cabal ^>=3.6
 
   -- We also use peura
   build-depends:    peura
