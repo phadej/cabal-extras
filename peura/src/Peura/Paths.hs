@@ -174,7 +174,7 @@ recursiveListDirectoryFiles r = do
         dir <- doesDirectoryExist (r </> p) 
         if dir
         then do
-            contents <- listDirectory r
+            contents <- listDirectory (r </> p)
             go acc (map (p </>) contents ++ ps)
         else do
             file <- doesFileExist (r </> p)
