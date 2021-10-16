@@ -1,0 +1,88 @@
+cabal-version:      2.2
+name:               cabal-haddock-server
+version:            0.1
+synopsis:           Spawn a web server providing haddocks docs tarballs
+category:           Development
+description:        Spawn a web server providing haddocks docs tarballs.
+license:            GPL-2.0-or-later
+license-files:
+  LICENSE
+  LICENSE.GPLv2
+  LICENSE.GPLv3
+
+author:             Oleg Grenrus <oleg.grenrus@iki.fi>
+maintainer:         Oleg Grenrus <oleg.grenrus@iki.fi>
+tested-with:        GHC ==8.6.5 || ==8.8.4 || ==8.10.2
+extra-source-files: Changelog.md
+
+source-repository head
+  type:     git
+  location: https://github.com/phadej/cabal-extras.git
+  subdir:   cabal-haddock-server
+
+library cabal-haddock-server-internal
+  default-language:   Haskell2010
+  hs-source-dirs:     src
+  ghc-options:        -Wall
+
+  -- main module separately
+  exposed-modules:    CabalHaddockServer.Main
+  exposed-modules:
+    CabalHaddockServer.DocsContents
+    CabalHaddockServer.Hoogle
+    CabalHaddockServer.Options
+    CabalHaddockServer.Pages.Error
+    CabalHaddockServer.Pages.Index
+    CabalHaddockServer.Pages.NotFound
+    CabalHaddockServer.Pages.Package
+    CabalHaddockServer.Pages.Redirect
+    CabalHaddockServer.Routes
+    CabalHaddockServer.Wai
+    CabalHaddockServer.Warning
+
+  -- ghc-boot dependencies
+  build-depends:
+    , base        ^>=4.12.0.0 || ^>=4.13.0.0 || ^>=4.14.0.0
+    , bytestring  ^>=0.10.8.2
+    , containers  ^>=0.5.10.2 || ^>=0.6.0.1
+    , deepseq     ^>=1.4.3.0
+    , directory   ^>=1.3.0.2
+    , filepath    ^>=1.4.1.2
+    , mtl         ^>=2.2.2
+    , parsec      ^>=3.1.13.0
+    , pretty      ^>=1.1.3.3
+    , process     ^>=1.6.1.0
+    , text        ^>=1.2.3.0
+
+  -- We use Cabal-3.6
+  build-depends:      Cabal ^>=3.6
+
+  -- We also use peura
+  build-depends:      peura
+
+  -- dependencies in library
+  build-depends:
+    , aeson                  ^>=1.5.0.0
+    , base16-bytestring      ^>=1.0.0.0
+    , cabal-install-parsers  ^>=0.4.3
+    , cryptohash-sha256      ^>=0.11.101.0
+    , http-types             ^>=0.12.3
+    , lucid                  ^>=2.9.12
+    , optparse-applicative   ^>=0.16.0.0
+    , tar                    ^>=0.5.1.1
+    , wai                    ^>=3.2.3
+    , warp                   ^>=3.3.17
+    , zlib                   ^>=0.6.2.3
+
+  default-extensions:
+    NoImplicitPrelude
+    OverloadedStrings
+
+executable cabal-haddock-server
+  default-language: Haskell2010
+  hs-source-dirs:   cli
+  main-is:          Main.hs
+  ghc-options:      -Wall -threaded
+  build-depends:
+    , base
+    , cabal-haddock-server-internal

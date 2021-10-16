@@ -33,11 +33,14 @@ module Peura.Paths (
     fromTarPath,
     XdgCache,
     XdgConfig,
+    -- * Extras
+    recursiveListDirectoryFiles,
     ) where
 
 import System.Path
        (Absolute, FsPath (..), Path, Unrooted, fromFilePath,
        fromUnrootedFilePath, takeDirectory, takeFileName, toFilePath,
+       takeExtension, FileExt (..),
        toUnrootedFilePath, (</>))
 import System.Path.Unsafe (Path (..))
 
@@ -155,3 +158,26 @@ instance MakeAbsolute FsPath where
 
 instance P.FsRoot root => MakeAbsolute (Path root) where
     makeAbsolute = makeAbsolute . P.FsPath
+
+-------------------------------------------------------------------------------
+-- Recursive traversal
+-------------------------------------------------------------------------------
+
+recursiveListDirectoryFiles :: Path Absolute -> Peu r [Path Unrooted]
+recursiveListDirectoryFiles r = do
+    contents <- listDirectory r
+    go id contents
+  where
+    go :: ([Path Unrooted] -> [Path Unrooted]) -> [Path Unrooted] -> Peu r [Path Unrooted]
+    go !acc []     = return (acc [])
+    go !acc (p:ps) = do
+        dir <- doesDirectoryExist (r </> p) 
+        if dir
+        then do
+            contents <- listDirectory r
+            go acc (map (p </>) contents ++ ps)
+        else do
+            file <- doesFileExist (r </> p)
+            if file
+            then go (acc . (p :)) ps
+            else go acc ps

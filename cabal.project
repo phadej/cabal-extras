@@ -6,6 +6,7 @@ packages: cabal-deps
 packages: cabal-diff
 packages: cabal-docspec
 packages: cabal-env
+packages: cabal-haddock-server
 packages: cabal-hie
 packages: cabal-iface-query
 
@@ -37,4 +38,4 @@ constraints: process       installed
 constraints: transformers  installed
 
 packages: https://oleg.fi/gentle-introduction-2021.2.tar.gz
--- packages: gentle-introduction-2021.1.tar.gz
+-- packages: gentle-introduction-2021.2.tar.gz
