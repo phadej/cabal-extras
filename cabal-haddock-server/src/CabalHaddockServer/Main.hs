@@ -9,6 +9,8 @@ module CabalHaddockServer.Main (main) where
 
 import Peura
 
+import System.TimeManager (TimeoutThread)
+
 import qualified Data.Map.Strict as Map
 import qualified Data.Set        as Set
 
@@ -38,8 +40,14 @@ main = do
             tarball <- makeAbsolute fspath >>= canonicalizePath
             putInfo tracer $ show tarball
 
-            -- TODO: untar & cache
-            let unpacked = tarball
+            isFile <- doesFileExist tarball
+            unpacked <- if isFile
+            then die tracer "files are not supported yet"
+            else do
+                isDir <- doesDirectoryExist tarball
+                if isDir
+                then return tarball
+                else die tracer $ toFilePath tarball ++ " is not a file or a directory"
 
             readDocsContents tracer unpacked
 
@@ -53,8 +61,10 @@ main = do
 
         putInfo tracer $ "Starting server at http://localhost:" ++ show port
         withRunInIO $ \runInIO -> do
-            let warpOnException _mreq (SomeException exc) = runInIO $ do
-                    putError tracer $ displayException exc
+            let warpOnException _mreq sexc@(SomeException exc) =
+                    case fromException sexc :: Maybe TimeoutThread of
+                        Just _  -> return ()
+                        Nothing -> runInIO $ putError tracer $ displayException exc
 
             let warpExceptionResponse (SomeException exc) =
                     internalErrorResponse exc

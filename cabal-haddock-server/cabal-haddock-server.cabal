@@ -73,6 +73,7 @@ library cabal-haddock-server-internal
     , wai                    ^>=3.2.3
     , warp                   ^>=3.3.17
     , zlib                   ^>=0.6.2.3
+    , time-manager           ^>=0.0.0
 
   default-extensions:
     NoImplicitPrelude
