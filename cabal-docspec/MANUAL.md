@@ -116,6 +116,11 @@ However, in this list we mostly only list and show the --option version of them.
 
 :   Stop after the second phase, i.e. evaluation in GHCi phase.
 
+**-m, \--module** *modulename*
+
+:   Check only these modules.
+    Default is to check all.
+
 **\--builddir** *dir*
 
 :   Directory to look for **plan.json** and local package database.
