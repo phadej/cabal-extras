@@ -6,7 +6,7 @@ packages: cabal-deps
 packages: cabal-diff
 packages: cabal-docspec
 packages: cabal-env
--- packages: cabal-haddock-server
+packages: cabal-haddock-server
 packages: cabal-hie
 packages: cabal-iface-query
 
