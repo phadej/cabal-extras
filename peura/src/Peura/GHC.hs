@@ -39,6 +39,7 @@ import Peura.Tracer
 
 data GhcInfo = GhcInfo
     { ghcPath     :: FilePath
+    , ghcPlatform :: String
     , ghcVersion  :: Version
     , ghcEnvDir   :: Path Absolute
     , ghcGlobalDb :: Path Absolute
@@ -84,6 +85,7 @@ getGhcInfo tracer ghc = do
 
             return GhcInfo
                 { ghcPath     = ghc
+                , ghcPlatform = x ++ "-" ++ y
                 , ghcVersion  = ver
                 , ghcEnvDir   = ghcDir </> fromUnrootedFilePath (x ++ "-" ++ y ++ "-" ++ prettyShow ver) </> fromUnrootedFilePath "environments"
                 , ghcGlobalDb = globalDb
