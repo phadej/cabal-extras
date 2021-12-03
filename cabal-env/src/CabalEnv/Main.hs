@@ -345,23 +345,26 @@ generateEnvironment tracer Opts {..} envPath env ghcInfo plan planBS = do
 
 -- | Obtain the path to the environment file the user is referring to.
 --
--- Mirroring the behaviour of ghc and cabal install --lib, a path-like string
--- is interpreted literally, and a non-path-like one is assumed to be in
--- the global environment directory.
+-- If environment name contains only known charaters (alphanumeric + _-)
+-- interpret it as evnironment name in GHC dir.
 --
--- "foo" -> $ghcEnvDir/foo
--- "./" -> $pwd/.ghc.environment.$ghcPlarform-$ghcVersion
--- "./foo" where foo is not a directory -> $pwd/foo
+-- Otherwise use as path.
+-- If path is an existint directory, write a default file there.
+-- If it isn't, interpret it as a file.
+--
 getEnvPath :: Opts -> GhcInfo -> Peu r (Path Absolute)
 getEnvPath Opts { optEnvName } ghcInfo =
-    if FP.takeBaseName optEnvName == optEnvName
+    if all envNameChar optEnvName
     then return $ ghcEnvDir ghcInfo </> fromUnrootedFilePath optEnvName
     else do
-      envPath <- makeAbsolute $ fromFilePath optEnvName
-      isDir <- doesDirectoryExist envPath
-      return $ if isDir
-        then envPath </> localEnvName ghcInfo
-        else envPath
+        envPath <- makeAbsolute $ fromFilePath optEnvName
+        isDir <- doesDirectoryExist envPath
+        return $
+            if isDir
+            then envPath </> localEnvName ghcInfo
+            else envPath
+  where
+    envNameChar c = isAlphaNum c || c == '-' || c == '_'
 
 -- | Build the name of the hidden environment file that ghc automatically
 -- picks up.
