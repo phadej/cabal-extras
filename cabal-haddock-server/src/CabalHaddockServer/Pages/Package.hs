@@ -14,8 +14,8 @@ import CabalHaddockServer.DocsContents
 import CabalHaddockServer.Hoogle
 import CabalHaddockServer.Routes
 
-packagePage :: DocsContents -> Html ()
-packagePage dc = doctypehtml_ $ do
+packagePage :: [PackageIdentifier] -> DocsContents -> Html ()
+packagePage pis dc = doctypehtml_ $ do
     head_ $ do
         title_ $ toHtml $ prettyShow pkgId ++ " - Haddock Server"
         when (Set.member (fromUnrootedFilePath "quick-jump.css") (docsContentsFiles dc)) $ do
@@ -23,6 +23,10 @@ packagePage dc = doctypehtml_ $ do
 
     body_ $ do
         h1_ $ toHtml $ prettyShow pkgId ++ " - cabal-haddock-server"
+
+        ul_ $ li_ $ a_ [ route_ RouteIndex ] "Local package index"
+
+        h2_ "Modules"
 
         ul_ $ for_ (Map.keys $ apiModules $ docsContentsApi dc) $ \mn -> li_ $
             a_ [ route_ $ RoutePackageDocs pkgId $ mnToPath mn ] $ toHtml $ prettyShow mn
@@ -36,6 +40,11 @@ packagePage dc = doctypehtml_ $ do
 
             script_ [ type_ "text/javascript" ] $
                 "quickNav.init('/package/" ++ prettyShow pkgId ++ "/docs', function(toggle) {var t = document.getElementById('quickjump-trigger');if (t) {t.onclick = function(e) { e.preventDefault(); toggle(); };}});"
+
+        h2_ "Local packages"
+
+        ul_ $ for_ pis $ \pi -> li_ $
+            a_ [ route_ $ RoutePackageId pi ] $ toHtml $ prettyShow pi
   where
 
     pkgId = apiPackageId $ docsContentsApi dc

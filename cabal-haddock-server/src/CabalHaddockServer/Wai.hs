@@ -63,7 +63,7 @@ application ctx req res = case parseRoute (Wai.pathInfo req) of
   where
     indexResponse      = page ok200 $ indexPage (Map.keys (ctxPackages ctx))
     notFoundResponse   = page notFound404 $ notFoundPage (Wai.pathInfo req)
-    packageResponse dc = page ok200 $ packagePage dc
+    packageResponse dc = page ok200 $ packagePage (Map.keys (ctxPackages ctx)) dc
 
     contentType (Just (FileExt "html")) = "text/html"
     contentType (Just (FileExt "css"))  = "text/css"
