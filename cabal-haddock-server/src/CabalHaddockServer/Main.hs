@@ -37,19 +37,17 @@ main = do
                 ]
 
         dcs <- for (optTarballs opts) $ \fspath -> do
-            tarball <- makeAbsolute fspath >>= canonicalizePath
-            putInfo tracer $ show tarball
+            fspath' <- makeAbsolute fspath >>= canonicalizePath
+            putInfo tracer $ show fspath'
 
-            isFile <- doesFileExist tarball
-            unpacked <- if isFile
-            then die tracer "files are not supported yet"
+            isFile <- doesFileExist fspath'
+            if isFile
+            then readDocsContentsTarball tracer fspath'
             else do
-                isDir <- doesDirectoryExist tarball
+                isDir <- doesDirectoryExist fspath'
                 if isDir
-                then return tarball
-                else die tracer $ toFilePath tarball ++ " is not a file or a directory"
-
-            readDocsContents tracer unpacked
+                then readDocsContentsDirectory tracer fspath'
+                else die tracer $ toFilePath fspath' ++ " is not a file or a directory"
 
         let contents :: Map PackageIdentifier DocsContents
             contents = Map.fromList
