@@ -39,10 +39,14 @@ application ctx req res = case parseRoute (Wai.pathInfo req) of
     Just (RoutePackageDocs pkgId fp)
         | Just dc <- Map.lookup pkgId (ctxPackages ctx)
         , Set.member fp (docsContentsFiles dc)
-        -> res $ Wai.responseFile ok200
-            [("Content-Type", contentType (takeExtension fp))]
-            (toFilePath $ docsContentsRoot dc </> fp)
-            Nothing
+        -> res $ case docsContentsServe dc fp of
+            DocsFileOnDisk fp' -> Wai.responseFile ok200
+                [("Content-Type", contentType (takeExtension fp))]
+                (toFilePath fp')
+                Nothing
+            DocsFileInMemory lbs -> Wai.responseLBS ok200
+                [("Content-Type", contentType (takeExtension fp))]
+                lbs
 
     Just (RoutePackageDocs pkgId _fp)
         | Set.member pkgId (ctxHackage ctx)
@@ -59,7 +63,7 @@ application ctx req res = case parseRoute (Wai.pathInfo req) of
   where
     indexResponse      = page ok200 $ indexPage (Map.keys (ctxPackages ctx))
     notFoundResponse   = page notFound404 $ notFoundPage (Wai.pathInfo req)
-    packageResponse dc = page ok200 $ packagePage dc
+    packageResponse dc = page ok200 $ packagePage (Map.keys (ctxPackages ctx)) dc
 
     contentType (Just (FileExt "html")) = "text/html"
     contentType (Just (FileExt "css"))  = "text/css"

@@ -38,14 +38,12 @@ module Peura.Paths (
     ) where
 
 import System.Path
-       (Absolute, FsPath (..), Path, Unrooted, fromFilePath,
-       fromUnrootedFilePath, takeDirectory, takeFileName, toFilePath,
-       takeExtension, FileExt (..),
-       toUnrootedFilePath, (</>))
+       (Absolute, FileExt (..), FsPath (..), Path, Unrooted, fromFilePath, fromUnrootedFilePath, joinFragments,
+       splitFragments, takeDirectory, takeExtension, takeFileName, toFilePath, toUnrootedFilePath, (</>))
 import System.Path.Unsafe (Path (..))
 
-import qualified System.FilePath as FP
 import qualified System.Directory as D
+import qualified System.FilePath  as FP
 import qualified System.Path      as P
 import qualified System.Path.IO   as P
 
@@ -153,7 +151,7 @@ root = Path ""
 class MakeAbsolute p where
     makeAbsolute :: p -> Peu r (Path Absolute)
 
-instance MakeAbsolute FsPath where 
+instance MakeAbsolute FsPath where
     makeAbsolute = liftIO . P.makeAbsolute
 
 instance P.FsRoot root => MakeAbsolute (Path root) where
@@ -171,7 +169,7 @@ recursiveListDirectoryFiles r = do
     go :: ([Path Unrooted] -> [Path Unrooted]) -> [Path Unrooted] -> Peu r [Path Unrooted]
     go !acc []     = return (acc [])
     go !acc (p:ps) = do
-        dir <- doesDirectoryExist (r </> p) 
+        dir <- doesDirectoryExist (r </> p)
         if dir
         then do
             contents <- listDirectory (r </> p)
