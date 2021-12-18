@@ -3,3 +3,4 @@ branches: master
 installed: +all -Cabal
 docspec: True
 docspec-options: --verbose
+jobs-selection: any

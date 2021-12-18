@@ -8,9 +8,9 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.13.20211114
+# version: 0.13.20211116
 #
-# REGENDATA ("0.13.20211114",["github","--config=cabal.haskell-ci","cabal.project"])
+# REGENDATA ("0.13.20211116",["github","--config=cabal.haskell-ci","cabal.project"])
 #
 name: Haskell-CI
 on:
@@ -152,6 +152,8 @@ jobs:
           echo "packages: $GITHUB_WORKSPACE/source/cabal-diff" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-docspec" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-env" >> cabal.project
+          echo "packages: $GITHUB_WORKSPACE/source/cabal-haddock-server" >> cabal.project
+          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then echo "packages: $GITHUB_WORKSPACE/source/cabal-hasklint" >> cabal.project ; fi
           echo "packages: $GITHUB_WORKSPACE/source/cabal-hie" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-iface-query" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-store-check" >> cabal.project
@@ -178,6 +180,10 @@ jobs:
           echo "PKGDIR_cabal_docspec=${PKGDIR_cabal_docspec}" >> "$GITHUB_ENV"
           PKGDIR_cabal_env="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/cabal-env-[0-9.]*')"
           echo "PKGDIR_cabal_env=${PKGDIR_cabal_env}" >> "$GITHUB_ENV"
+          PKGDIR_cabal_haddock_server="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/cabal-haddock-server-[0-9.]*')"
+          echo "PKGDIR_cabal_haddock_server=${PKGDIR_cabal_haddock_server}" >> "$GITHUB_ENV"
+          PKGDIR_cabal_hasklint="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/cabal-hasklint-[0-9.]*')"
+          echo "PKGDIR_cabal_hasklint=${PKGDIR_cabal_hasklint}" >> "$GITHUB_ENV"
           PKGDIR_cabal_hie="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/cabal-hie-[0-9.]*')"
           echo "PKGDIR_cabal_hie=${PKGDIR_cabal_hie}" >> "$GITHUB_ENV"
           PKGDIR_cabal_iface_query="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/cabal-iface-query-[0-9.]*')"
@@ -196,6 +202,8 @@ jobs:
           echo "packages: ${PKGDIR_cabal_diff}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_docspec}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_env}" >> cabal.project
+          echo "packages: ${PKGDIR_cabal_haddock_server}" >> cabal.project
+          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then echo "packages: ${PKGDIR_cabal_hasklint}" >> cabal.project ; fi
           echo "packages: ${PKGDIR_cabal_hie}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_iface_query}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_store_check}" >> cabal.project
@@ -211,6 +219,10 @@ jobs:
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           echo "package cabal-env" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
+          echo "package cabal-haddock-server" >> cabal.project
+          echo "    ghc-options: -Werror=missing-methods" >> cabal.project
+          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then echo "package cabal-hasklint" >> cabal.project ; fi
+          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then echo "    ghc-options: -Werror=missing-methods" >> cabal.project ; fi
           echo "package cabal-hie" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           echo "package cabal-iface-query" >> cabal.project
@@ -232,7 +244,7 @@ jobs:
           constraints: transformers  installed
           constraints: cryptonite <0
           EOF
-          $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: $_ installed\n" unless /^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-docspec|cabal-env|cabal-hie|cabal-iface-query|cabal-store-check|cabal-store-gc|peura)$/; }' >> cabal.project.local
+          $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: $_ installed\n" unless /^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-docspec|cabal-env|cabal-haddock-server|cabal-hasklint|cabal-hie|cabal-iface-query|cabal-store-check|cabal-store-gc|peura)$/; }' >> cabal.project.local
           cat cabal.project
           cat cabal.project.local
       - name: dump install plan
@@ -274,6 +286,10 @@ jobs:
           ${CABAL} -vnormal check
           cd ${PKGDIR_cabal_env} || false
           ${CABAL} -vnormal check
+          cd ${PKGDIR_cabal_haddock_server} || false
+          ${CABAL} -vnormal check
+          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then cd ${PKGDIR_cabal_hasklint} || false ; fi
+          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then ${CABAL} -vnormal check ; fi
           cd ${PKGDIR_cabal_hie} || false
           ${CABAL} -vnormal check
           cd ${PKGDIR_cabal_iface_query} || false
