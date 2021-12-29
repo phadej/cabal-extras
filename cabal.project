@@ -1,4 +1,4 @@
-with-compiler: ghc-8.8.4
+with-compiler: ghc-8.10.4
 tests: True
 
 packages: cabal-bundler
@@ -39,7 +39,16 @@ constraints: process       installed
 constraints: transformers  installed
 
 packages: https://oleg.fi/gentle-introduction-2021.2.tar.gz
--- packages: gentle-introduction-2021.2.tar.gz
-
 packages: https://github.com/phadej/warp-wo-x509/releases/download/v3.3.17/warp-3.3.17.tar.gz
+packages: https://github.com/phadej/hooglite/releases/download/v0.20211229/hooglite-0.20211229.tar.gz
+
+-- For local dev these can be used:
+-- packages: extras/gentle-introduction-*.tar.gz
+-- packages: extras/warp-*.tar.gz
+-- packages: extras/hooglite-*.tar.gz
+
+-- Always use ghc-lib-parser.
+constraints: ghc-lib-parser-ex -no-ghc-lib -auto
+
+-- Never depend on cryptonite. Aptly named package.
 constraints: cryptonite <0

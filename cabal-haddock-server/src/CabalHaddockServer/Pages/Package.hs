@@ -5,23 +5,25 @@ module CabalHaddockServer.Pages.Package (
 
 import Lucid hiding (for_)
 import Peura
+import Hooglite.Haddock
 
 import qualified Data.Map.Strict         as Map
 import qualified Data.Set                as Set
 import qualified Distribution.ModuleName as C
 
 import CabalHaddockServer.DocsContents
-import CabalHaddockServer.Hoogle
 import CabalHaddockServer.Routes
+import CabalHaddockServer.TopPage
 
 packagePage :: [PackageIdentifier] -> DocsContents -> Html ()
 packagePage pis dc = doctypehtml_ $ do
     head_ $ do
+        link_ [ rel_ "stylesheet", href_ $ dispRoute (RouteStatic (fromUnrootedFilePath "bootstrap.min.css")) ]
         title_ $ toHtml $ prettyShow pkgId ++ " - Haddock Server"
         when (Set.member (fromUnrootedFilePath "quick-jump.css") (docsContentsFiles dc)) $ do
             link_ [ rel_ "stylesheet", type_ "text/css", href_ $ "/package/" <> fromString (prettyShow pkgId) <> "/docs/quick-jump.css" ]
 
-    body_ $ do
+    page_ $ do
         h1_ $ toHtml $ prettyShow pkgId ++ " - cabal-haddock-server"
 
         ul_ $ li_ $ a_ [ route_ RouteIndex ] "Local package index"

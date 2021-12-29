@@ -14,8 +14,8 @@ import qualified Codec.Compression.GZip as GZip
 import qualified Data.ByteString.Lazy   as LBS
 import qualified Data.Map.Strict        as Map
 import qualified Data.Set               as Set
+import qualified Hooglite
 
-import CabalHaddockServer.Hoogle
 import CabalHaddockServer.Warning
 
 -------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ import CabalHaddockServer.Warning
 -------------------------------------------------------------------------------
 
 data DocsContents = DocsContents
-    { docsContentsApi   :: API
+    { docsContentsApi   :: Hooglite.API
     , docsContentsServe :: Path Unrooted -> DocsFile
     , docsContentsFiles :: Set (Path Unrooted)
     }
@@ -47,23 +47,20 @@ readDocsContentsDirectory tracer unpacked = do
             hoogleFile <- canonicalizePath (unpacked </> hoogleFile')
             putDebug tracer $ "Found hoogle file " ++ toFilePath hoogleFile
             bs <- readByteString hoogleFile
-            case parseHoogleFile bs of
+            case Hooglite.parseHoogleFile (fromUTF8BS bs) of
                 Left err -> do
                     putWarning tracer WHoogle err
                     return Nothing
 
                 Right api -> do
                     putInfo tracer $
-                        toFilePath unpacked ++ " contains " ++ prettyShow (apiPackageId api)
+                        toFilePath unpacked ++ " contains " ++ prettyShow (Hooglite.apiPackage api)
 
                     return $ Just DocsContents
                         { docsContentsApi   = api
                         , docsContentsServe = \p -> DocsFileOnDisk (unpacked </> p)
                         , docsContentsFiles = Set.fromList unpackedFiles
                         }
-
-
-
 
 -------------------------------------------------------------------------------
 -- Tarball
@@ -84,8 +81,8 @@ readDocsContentsTarball tracer tarball = do
         Nothing -> return Nothing
         Just hoogleFile -> do
             putDebug tracer $ "Found hoogle file " ++ toUnrootedFilePath hoogleFile
-            bs <- maybe (die tracer "PANIC!") (return . toStrict) $ Map.lookup hoogleFile entries
-            case parseHoogleFile bs of
+            bs <- maybe (die tracer "PANIC!") (return . fromUTF8LBS) $ Map.lookup hoogleFile entries
+            case Hooglite.parseHoogleFile bs of
                 Left err -> do
                     putWarning tracer WHoogle err
                     return Nothing

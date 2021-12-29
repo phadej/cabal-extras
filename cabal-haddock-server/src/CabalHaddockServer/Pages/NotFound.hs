@@ -7,13 +7,15 @@ import Lucid
 import Peura
 
 import CabalHaddockServer.Routes
+import CabalHaddockServer.TopPage
 
 notFoundPage :: [Text] -> Html ()
 notFoundPage pi = doctypehtml_ $ do
     head_ $ do
+        link_ [ rel_ "stylesheet", href_ $ dispRoute (RouteStatic (fromUnrootedFilePath "bootstrap.min.css")) ]
         title_ "Not found"
 
-    body_ $ do
+    page_ $ do
         p_ $ do
             code_ $ toHtml $ foldMap ("/" <>) pi
             " not found"
