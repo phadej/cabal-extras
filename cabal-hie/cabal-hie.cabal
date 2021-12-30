@@ -14,7 +14,7 @@ license-files:
 
 author:             Oleg Grenrus <oleg.grenrus@iki.fi>
 maintainer:         Oleg Grenrus <oleg.grenrus@iki.fi>
-tested-with:        GHC ==8.6.5 || ==8.8.4 || ==8.10.2
+tested-with:        GHC ==8.6.5 || ==8.8.4 || ==8.10.7
 extra-source-files: Changelog.md
 
 source-repository head

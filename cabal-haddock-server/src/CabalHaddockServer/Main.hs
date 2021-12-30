@@ -9,16 +9,17 @@ module CabalHaddockServer.Main (main) where
 
 import Peura
 
+import Hooglite.Haddock
 import System.TimeManager (TimeoutThread)
 
 import qualified Data.Map.Strict as Map
 import qualified Data.Set        as Set
 
 import qualified Cabal.Index              as CI
+import qualified Hooglite
 import qualified Network.Wai.Handler.Warp as Warp
 
 import CabalHaddockServer.DocsContents
-import CabalHaddockServer.Hoogle
 import CabalHaddockServer.Options
 import CabalHaddockServer.Wai
 import CabalHaddockServer.Warning
@@ -75,4 +76,5 @@ main = do
             Warp.runSettings settings $ application Ctx
                 { ctxPackages = contents
                 , ctxHackage  = hackagePkgIds
+                , ctxDatabase = foldMap (Hooglite.apiToDatabase . docsContentsApi) contents
                 }
