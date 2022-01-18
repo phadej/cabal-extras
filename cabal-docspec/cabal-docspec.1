@@ -155,9 +155,10 @@ See \f[B]--extra-package\f[R].
 A (space separated) list of property variables.
 See \f[B]--property-variables\f[R].
 .SH EXAMPLES
+.SS Simple setup
 .PP
-A simplest example, which should work for most packages is to run
-\f[B]cabal-docspec\f[R] after \f[B]cabal v2-build all\f[R]:
+For most packages it is sufficient to run \f[B]cabal-docspec\f[R] after
+\f[B]cabal v2-build all\f[R]:
 .IP
 .nf
 \f[C]
@@ -165,8 +166,8 @@ cabal v2-build all
 cabal-docspec
 \f[R]
 .fi
+.SS Testing base library inside GHC source tree
 .PP
-Testing base library inside GHC source tree.
 The GHC source tree doesn\[cq]t have cabal-install generated
 \f[B]plan.json\f[R], therefore we use \f[B]--no-cabal-plan\f[R] and
 supply the \f[I]libraries/base/base.cabal\f[R] path.
@@ -198,8 +199,8 @@ cabal-docspec \[rs]
     libraries/base/base.cabal
 \f[R]
 .fi
+.SS The \f[I]lens\f[R] library
 .PP
-Third example is from \f[I]lens\f[R] library.
 The \f[I]lens\f[R] library uses \f[I]simple-reflect\f[R] library for
 illustration of some examples.
 However, \f[I]simple-reflect\f[R] is not a dependency of lens library.
