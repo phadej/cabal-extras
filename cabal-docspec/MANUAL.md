@@ -169,13 +169,18 @@ through fields in a .cabal file.
 EXAMPLES
 ========
 
-A simplest example, which should work for most packages is to run
+Simple setup
+------------
+
+For most packages it is sufficient to run
 **cabal-docspec** after **cabal v2-build all**:
 
     cabal v2-build all
     cabal-docspec
 
-Testing base library inside GHC source tree.
+Testing base library inside GHC source tree
+-------------------------------------------
+
 The GHC source tree doesn't have cabal-install generated **plan.json**,
 therefore we use **\--no-cabal-plan** and supply the
 *libraries/base/base.cabal* path.
@@ -202,7 +207,9 @@ therefore we have to turn it off.
         -XNoImplicitPrelude \
         libraries/base/base.cabal
 
-Third example is from *lens* library.
+The *lens* library
+------------------
+
 The *lens* library uses *simple-reflect* library for illustration of some examples.
 However, *simple-reflect* is not a dependency of lens library.
 One way to have add such dependency is to create dummy test-suite with it.
