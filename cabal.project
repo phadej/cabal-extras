@@ -34,11 +34,14 @@ package peura
 
 constraints: Cabal ^>=3.6
 
+-- some constraints to force latest versions
+constraints: optics-core ^>=0.4.1
+
 constraints: directory     installed
 constraints: process       installed
 constraints: transformers  installed
 
-packages: https://oleg.fi/gentle-introduction-2021.2.tar.gz
+packages: http://oleg.fi/gentle-introduction-2022.5.tar.gz
 packages: https://github.com/phadej/warp-wo-x509/releases/download/v3.3.17/warp-3.3.17.tar.gz
 packages: https://github.com/phadej/hooglite/releases/download/v0.20211229/hooglite-0.20211229.tar.gz
 

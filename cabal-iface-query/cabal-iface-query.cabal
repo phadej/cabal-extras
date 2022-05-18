@@ -70,7 +70,7 @@ library cabal-iface-query-internal
     , cabal-install-parsers
     , cabal-plan
     , Glob
-    , optparse-applicative   ^>=0.16.0.0
+    , optparse-applicative   ^>=0.17.0.0
 
   default-extensions:
     NoImplicitPrelude
