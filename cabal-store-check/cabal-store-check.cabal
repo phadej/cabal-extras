@@ -47,7 +47,7 @@ library cabal-store-check-internal
   -- dependencies in library
   build-depends:
     , cabal-install-parsers
-    , optparse-applicative   ^>=0.16.0.0
+    , optparse-applicative   ^>=0.17.0.0
     , topograph
 
   default-extensions:

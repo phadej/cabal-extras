@@ -71,23 +71,23 @@ library
   build-depends:      Cabal ^>=3.6
 
   -- Common exports
-  build-depends:      gentle-introduction ^>=2021.2
+  build-depends:      gentle-introduction ^>=2022.5
 
   -- Extra dependencies
   build-depends:
-    , aeson                  ^>=1.5.0.0
+    , aeson                  ^>=2.0.3.0
     , ansi-terminal          ^>=0.11
     , async                  ^>=2.2.2
-    , base-compat            ^>=0.11.0
+    , base-compat            ^>=0.12.1
     , cabal-install-parsers  ^>=0.4
     , cabal-plan             ^>=0.7.2.0
     , clock                  ^>=0.8
     , edit-distance          ^>=0.2.2.1
     , exceptions             ^>=0.10.3
     , Glob                   ^>=0.10.0
-    , optics-core            ^>=0.3
-    , optics-extra           ^>=0.3
-    , optparse-applicative   ^>=0.16.0.0
+    , optics-core            ^>=0.4.1
+    , optics-extra           ^>=0.4.1
+    , optparse-applicative   ^>=0.17.0.0
     , paths                  ^>=0.2.0.0
     , serialise              ^>=0.2.1.0
     , stm                    ^>=2.4.5.1 || ^>=2.5.0.0

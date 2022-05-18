@@ -104,7 +104,7 @@ library cabal-hasklint-internal
     , ghc-lib-parser         ^>=9.0.1.20210324
     , ghc-lib-parser-ex      ^>=9.0.0.4
     , Glob                   ^>=0.10.0
-    , optparse-applicative   ^>=0.16.0.0
+    , optparse-applicative   ^>=0.17.0.0
     , splitmix               ^>=0.1.0.3
     , unliftio-core          ^>=0.2.0.1
 
