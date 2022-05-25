@@ -8,9 +8,9 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.14.3
+# version: 0.15.20220525
 #
-# REGENDATA ("0.14.3",["github","--config=cabal.haskell-ci","cabal.project"])
+# REGENDATA ("0.15.20220525",["github","--config=cabal.haskell-ci","cabal.project"])
 #
 name: Haskell-CI
 on:
@@ -23,7 +23,7 @@ on:
 jobs:
   linux:
     name: Haskell-CI - Linux - ${{ matrix.compiler }}
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     timeout-minutes:
       60
     container:
@@ -37,37 +37,17 @@ jobs:
             compilerVersion: 8.10.7
             setup-method: ghcup
             allow-failure: false
-          - compiler: ghc-8.8.4
-            compilerKind: ghc
-            compilerVersion: 8.8.4
-            setup-method: hvr-ppa
-            allow-failure: false
-          - compiler: ghc-8.6.5
-            compilerKind: ghc
-            compilerVersion: 8.6.5
-            setup-method: hvr-ppa
-            allow-failure: false
       fail-fast: false
     steps:
       - name: apt
         run: |
           apt-get update
           apt-get install -y --no-install-recommends gnupg ca-certificates dirmngr curl git software-properties-common libtinfo5
-          if [ "${{ matrix.setup-method }}" = ghcup ]; then
-            mkdir -p "$HOME/.ghcup/bin"
-            curl -sL https://downloads.haskell.org/ghcup/0.1.17.5/x86_64-linux-ghcup-0.1.17.5 > "$HOME/.ghcup/bin/ghcup"
-            chmod a+x "$HOME/.ghcup/bin/ghcup"
-            "$HOME/.ghcup/bin/ghcup" install ghc "$HCVER"
-            "$HOME/.ghcup/bin/ghcup" install cabal 3.6.2.0
-          else
-            apt-add-repository -y 'ppa:hvr/ghc'
-            apt-get update
-            apt-get install -y "$HCNAME"
-            mkdir -p "$HOME/.ghcup/bin"
-            curl -sL https://downloads.haskell.org/ghcup/0.1.17.5/x86_64-linux-ghcup-0.1.17.5 > "$HOME/.ghcup/bin/ghcup"
-            chmod a+x "$HOME/.ghcup/bin/ghcup"
-            "$HOME/.ghcup/bin/ghcup" install cabal 3.6.2.0
-          fi
+          mkdir -p "$HOME/.ghcup/bin"
+          curl -sL https://downloads.haskell.org/ghcup/0.1.17.8/x86_64-linux-ghcup-0.1.17.8 > "$HOME/.ghcup/bin/ghcup"
+          chmod a+x "$HOME/.ghcup/bin/ghcup"
+          "$HOME/.ghcup/bin/ghcup" install ghc "$HCVER"
+          "$HOME/.ghcup/bin/ghcup" install cabal 3.6.2.0
         env:
           HCKIND: ${{ matrix.compilerKind }}
           HCNAME: ${{ matrix.compiler }}
@@ -79,20 +59,11 @@ jobs:
           echo "CABAL_DIR=$HOME/.cabal" >> "$GITHUB_ENV"
           echo "CABAL_CONFIG=$HOME/.cabal/config" >> "$GITHUB_ENV"
           HCDIR=/opt/$HCKIND/$HCVER
-          if [ "${{ matrix.setup-method }}" = ghcup ]; then
-            HC=$HOME/.ghcup/bin/$HCKIND-$HCVER
-            echo "HC=$HC" >> "$GITHUB_ENV"
-            echo "HCPKG=$HOME/.ghcup/bin/$HCKIND-pkg-$HCVER" >> "$GITHUB_ENV"
-            echo "HADDOCK=$HOME/.ghcup/bin/haddock-$HCVER" >> "$GITHUB_ENV"
-            echo "CABAL=$HOME/.ghcup/bin/cabal-3.6.2.0 -vnormal+nowrap" >> "$GITHUB_ENV"
-          else
-            HC=$HCDIR/bin/$HCKIND
-            echo "HC=$HC" >> "$GITHUB_ENV"
-            echo "HCPKG=$HCDIR/bin/$HCKIND-pkg" >> "$GITHUB_ENV"
-            echo "HADDOCK=$HCDIR/bin/haddock" >> "$GITHUB_ENV"
-            echo "CABAL=$HOME/.ghcup/bin/cabal-3.6.2.0 -vnormal+nowrap" >> "$GITHUB_ENV"
-          fi
-
+          HC=$HOME/.ghcup/bin/$HCKIND-$HCVER
+          echo "HC=$HC" >> "$GITHUB_ENV"
+          echo "HCPKG=$HOME/.ghcup/bin/$HCKIND-pkg-$HCVER" >> "$GITHUB_ENV"
+          echo "HADDOCK=$HOME/.ghcup/bin/haddock-$HCVER" >> "$GITHUB_ENV"
+          echo "CABAL=$HOME/.ghcup/bin/cabal-3.6.2.0 -vnormal+nowrap" >> "$GITHUB_ENV"
           HCNUMVER=$(${HC} --numeric-version|perl -ne '/^(\d+)\.(\d+)\.(\d+)(\.(\d+))?$/; print(10000 * $1 + 100 * $2 + ($3 == 0 ? $5 != 1 : $3))')
           echo "HCNUMVER=$HCNUMVER" >> "$GITHUB_ENV"
           echo "ARG_TESTS=--enable-tests" >> "$GITHUB_ENV"
@@ -169,8 +140,8 @@ jobs:
           echo "packages: $GITHUB_WORKSPACE/source/cabal-diff" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-docspec" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-env" >> cabal.project
-          if [ $((HCNUMVER >= 81000)) -ne 0 ] ; then echo "packages: $GITHUB_WORKSPACE/source/cabal-haddock-server" >> cabal.project ; fi
-          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then echo "packages: $GITHUB_WORKSPACE/source/cabal-hasklint" >> cabal.project ; fi
+          echo "packages: $GITHUB_WORKSPACE/source/cabal-haddock-server" >> cabal.project
+          echo "packages: $GITHUB_WORKSPACE/source/cabal-hasklint" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-hie" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-iface-query" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-store-check" >> cabal.project
@@ -219,8 +190,8 @@ jobs:
           echo "packages: ${PKGDIR_cabal_diff}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_docspec}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_env}" >> cabal.project
-          if [ $((HCNUMVER >= 81000)) -ne 0 ] ; then echo "packages: ${PKGDIR_cabal_haddock_server}" >> cabal.project ; fi
-          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then echo "packages: ${PKGDIR_cabal_hasklint}" >> cabal.project ; fi
+          echo "packages: ${PKGDIR_cabal_haddock_server}" >> cabal.project
+          echo "packages: ${PKGDIR_cabal_hasklint}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_hie}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_iface_query}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_store_check}" >> cabal.project
@@ -236,10 +207,10 @@ jobs:
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           echo "package cabal-env" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
-          if [ $((HCNUMVER >= 81000)) -ne 0 ] ; then echo "package cabal-haddock-server" >> cabal.project ; fi
-          if [ $((HCNUMVER >= 81000)) -ne 0 ] ; then echo "    ghc-options: -Werror=missing-methods" >> cabal.project ; fi
-          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then echo "package cabal-hasklint" >> cabal.project ; fi
-          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then echo "    ghc-options: -Werror=missing-methods" >> cabal.project ; fi
+          echo "package cabal-haddock-server" >> cabal.project
+          echo "    ghc-options: -Werror=missing-methods" >> cabal.project
+          echo "package cabal-hasklint" >> cabal.project
+          echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           echo "package cabal-hie" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           echo "package cabal-iface-query" >> cabal.project
@@ -308,10 +279,10 @@ jobs:
           ${CABAL} -vnormal check
           cd ${PKGDIR_cabal_env} || false
           ${CABAL} -vnormal check
-          if [ $((HCNUMVER >= 81000)) -ne 0 ] ; then cd ${PKGDIR_cabal_haddock_server} || false ; fi
-          if [ $((HCNUMVER >= 81000)) -ne 0 ] ; then ${CABAL} -vnormal check ; fi
-          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then cd ${PKGDIR_cabal_hasklint} || false ; fi
-          if [ $((HCNUMVER >= 80800)) -ne 0 ] ; then ${CABAL} -vnormal check ; fi
+          cd ${PKGDIR_cabal_haddock_server} || false
+          ${CABAL} -vnormal check
+          cd ${PKGDIR_cabal_hasklint} || false
+          ${CABAL} -vnormal check
           cd ${PKGDIR_cabal_hie} || false
           ${CABAL} -vnormal check
           cd ${PKGDIR_cabal_iface_query} || false
@@ -324,7 +295,7 @@ jobs:
           ${CABAL} -vnormal check
       - name: haddock
         run: |
-          $CABAL v2-haddock $ARG_COMPILER --with-haddock $HADDOCK $ARG_TESTS $ARG_BENCH all
+          $CABAL v2-haddock --haddock-all $ARG_COMPILER --with-haddock $HADDOCK $ARG_TESTS $ARG_BENCH all
       - name: unconstrained build
         run: |
           rm -f cabal.project.local
