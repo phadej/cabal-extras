@@ -16,20 +16,10 @@ packages: cabal-store-gc
 
 packages: peura
 
-package cabal-bundler
-  ghc-options: -Wall
-
-package cabal-deps
-  ghc-options: -Wall
-
-package cabal-diff
-  ghc-options: -Wall
-
-package cabal-env
-  ghc-options: -Wall
+package *
+  ghc-options: -fwrite-ide-info
 
 package peura
-  ghc-options: -Wall
   flags: -concurrent-output
 
 constraints: Cabal ^>=3.6
