@@ -10,6 +10,7 @@ packages: cabal-haddock-server
 packages: cabal-hasklint
 packages: cabal-hie
 packages: cabal-iface-query
+packages: cabal-tags
 
 packages: cabal-store-check
 packages: cabal-store-gc
