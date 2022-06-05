@@ -23,6 +23,7 @@ library cabal-tags-internal
     CabalTags.GHC.All
     CabalTags.Tag
     CabalTags.Main
+    Hiero
 
   -- ghc-boot dependencies
   -- cabal-fmt: fragment ../fragments/boot-deps.fragment
