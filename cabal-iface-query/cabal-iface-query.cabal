@@ -54,7 +54,7 @@ library cabal-iface-query-internal
     , ghc-boot
 
   -- We use Cabal-3.6
-  build-depends:      Cabal ^>=3.6
+  build-depends:      Cabal ^>=3.8.1.0
 
   -- We also use peura
   build-depends:      peura

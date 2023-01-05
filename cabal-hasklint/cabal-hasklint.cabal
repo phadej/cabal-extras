@@ -88,7 +88,7 @@ library cabal-hasklint-internal
     , text              ^>=1.2.4.1
 
   -- We use Cabal-3.6
-  build-depends:      Cabal ^>=3.6
+  build-depends:      Cabal ^>=3.8.1.0
 
   -- We also use peura
   build-depends:      peura
@@ -100,7 +100,7 @@ library cabal-hasklint-internal
   build-depends:
     , ansi-terminal          ^>=0.11
     , async                  ^>=2.2.2
-    , cabal-install-parsers  ^>=0.4
+    , cabal-install-parsers  ^>=0.5
     , cabal-plan             ^>=0.7.0.0
     , ghc-lib-parser         ^>=9.0.1.20210324
     , ghc-lib-parser-ex      ^>=9.0.0.4

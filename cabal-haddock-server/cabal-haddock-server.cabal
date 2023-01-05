@@ -63,7 +63,7 @@ library cabal-haddock-server-internal
     , text              ^>=1.2.4.1
 
   -- We use Cabal-3.6
-  build-depends:      Cabal ^>=3.6
+  build-depends:      Cabal ^>=3.8.1.0
 
   -- We also use peura
   build-depends:      peura
@@ -73,9 +73,9 @@ library cabal-haddock-server-internal
 
   -- dependencies in library
   build-depends:
-    , aeson                  ^>=2.0.3.0
+    , aeson                  ^>=2.1.1.0
     , base16-bytestring      ^>=1.0.0.0
-    , cabal-install-parsers  ^>=0.4.3
+    , cabal-install-parsers  ^>=0.5
     , cryptohash-sha256      ^>=0.11.101.0
     , file-embed-lzma
     , haskell-lexer

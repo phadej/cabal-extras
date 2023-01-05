@@ -71,18 +71,18 @@ library
     , text              ^>=1.2.4.1
 
   -- We use Cabal-3.6
-  build-depends:      Cabal ^>=3.6
+  build-depends:      Cabal ^>=3.8.1.0
 
   -- Common exports
   build-depends:      gentle-introduction ^>=2022.5
 
   -- Extra dependencies
   build-depends:
-    , aeson                  ^>=2.0.3.0
+    , aeson                  ^>=2.1.1.0
     , ansi-terminal          ^>=0.11
     , async                  ^>=2.2.2
     , base-compat            ^>=0.12.1
-    , cabal-install-parsers  ^>=0.4
+    , cabal-install-parsers  ^>=0.5
     , cabal-plan             ^>=0.7.2.0
     , clock                  ^>=0.8
     , edit-distance          ^>=0.2.2.1

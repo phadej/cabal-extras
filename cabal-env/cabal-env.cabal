@@ -55,17 +55,17 @@ library cabal-env-internal
     , text              ^>=1.2.4.1
 
   -- We use Cabal-3.6
-  build-depends:      Cabal ^>=3.6
+  build-depends:      Cabal ^>=3.8.1.0
 
   -- We also use peura
   build-depends:      peura
 
   -- dependencies in library
   build-depends:
-    , aeson                  ^>=2.0.3.0
+    , aeson                  ^>=2.1.1.0
     , base16-bytestring      ^>=1.0.0.0
     , base64-bytestring      ^>=1.2.0.0
-    , cabal-install-parsers  ^>=0.4
+    , cabal-install-parsers  ^>=0.5
     , cabal-plan             ^>=0.7.0.0
     , cryptohash-sha256      ^>=0.11.101.0
     , generic-lens-lite      ^>=0.1

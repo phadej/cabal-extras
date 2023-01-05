@@ -162,4 +162,4 @@ withEnvironmentMaybe tracer fp k = do
 encodeEnvironment :: Environment BS.ByteString -> String
 encodeEnvironment env =
     let fields = C.prettyFieldGrammar C.cabalSpecLatest environmentGrammar env
-    in C.showFields (const []) fields
+    in C.showFields (const C.NoComment) fields

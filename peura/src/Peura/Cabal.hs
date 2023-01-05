@@ -178,7 +178,7 @@ ephemeralPlanJson' tracer pi = do
 -------------------------------------------------------------------------------
 
 fakePackage :: PlanInput -> String
-fakePackage pi = C.showFields (const [])
+fakePackage pi = C.showFields (const C.NoComment)
     [ fi "cabal-version" $ PP.text "2.4"
     , fi "name"          $ PP.text "fake-package"
     , fi "version"       $ PP.text "0"
@@ -205,7 +205,7 @@ fakePackage pi = C.showFields (const [])
 -------------------------------------------------------------------------------
 
 cabalProject :: PlanInput -> String
-cabalProject pi = C.showFields (const []) $
+cabalProject pi = C.showFields (const C.NoComment) $
     [ fi "packages" $ PP.text "."
     ] ++
     [ fi "packages" $ PP.text (toFilePath path)
