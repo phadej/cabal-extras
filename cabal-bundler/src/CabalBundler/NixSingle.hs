@@ -53,10 +53,10 @@ generateDerivationNix tracer packageName exeName' plan meta = do
         return ZDep
             { zdepName     = prettyShow pn
             , zdepVersion  = prettyShow ver
-            , zdepSha256   = encodeHash (I.riTarball ri)
+            , zdepSha256   = encodeHash (I.riTarballHash ri)
             , zdepRevision = case I.riRevision ri of
                 0 -> "{}"
-                r -> "{ rev = " ++ show r ++ "; sha256 = \"" ++ encodeHash (I.riCabal ri) ++ "\"; }"
+                r -> "{ rev = " ++ show r ++ "; sha256 = \"" ++ encodeHash (I.riCabalHash ri) ++ "\"; }"
             }
 
     return $ render ZZ

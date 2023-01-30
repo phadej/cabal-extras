@@ -75,7 +75,7 @@ library cabal-haddock-server-internal
   build-depends:
     , aeson                  ^>=2.1.1.0
     , base16-bytestring      ^>=1.0.0.0
-    , cabal-install-parsers  ^>=0.5
+    , cabal-install-parsers  ^>=0.6
     , cryptohash-sha256      ^>=0.11.101.0
     , file-embed-lzma
     , haskell-lexer

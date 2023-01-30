@@ -48,11 +48,11 @@ generateCurl _tracer _packageName _exeName plan meta = do
         let pkgId@(PackageIdentifier pn ver) = toCabal pkgId'
         pi <- strictLookup pn UnknownPackageName meta
         ri <- strictLookup ver (UnknownPackageVersion pn) (I.piVersions pi)
-        let tarGz = DownloadFile (prettyShow pkgId ++ ".tar.gz") (hackagePackageUrl pkgId) (I.riTarball ri)
+        let tarGz = DownloadFile (prettyShow pkgId ++ ".tar.gz") (hackagePackageUrl pkgId) (I.riTarballHash ri)
         return $ case I.riRevision ri of
             0 -> [ tarGz ]
             r -> do
-                let cabal = DownloadFile (prettyShow pkgId ++ ".cabal") (hackageRevisionUrl pkgId r) (I.riCabal ri)
+                let cabal = DownloadFile (prettyShow pkgId ++ ".cabal") (hackageRevisionUrl pkgId r) (I.riCabalHash ri)
                 [ tarGz, cabal ]
 
     return $ concat

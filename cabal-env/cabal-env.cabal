@@ -65,7 +65,7 @@ library cabal-env-internal
     , aeson                  ^>=2.1.1.0
     , base16-bytestring      ^>=1.0.0.0
     , base64-bytestring      ^>=1.2.0.0
-    , cabal-install-parsers  ^>=0.5
+    , cabal-install-parsers  ^>=0.6
     , cabal-plan             ^>=0.7.0.0
     , cryptohash-sha256      ^>=0.11.101.0
     , generic-lens-lite      ^>=0.1
