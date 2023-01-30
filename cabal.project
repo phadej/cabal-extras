@@ -1,4 +1,4 @@
-with-compiler: ghc-8.10.7
+with-compiler: ghc-9.2.5
 tests: True
 
 packages: cabal-bundler
@@ -9,7 +9,7 @@ packages: cabal-env
 packages: cabal-haddock-server
 packages: cabal-hasklint
 packages: cabal-hie
-packages: cabal-iface-query
+-- packages: cabal-iface-query
 
 packages: cabal-store-check
 packages: cabal-store-gc
@@ -31,14 +31,17 @@ constraints: directory     installed
 constraints: process       installed
 constraints: transformers  installed
 
-packages: http://oleg.fi/gentle-introduction-2022.5.tar.gz
-packages: https://github.com/phadej/warp-wo-x509/releases/download/v3.3.17/warp-3.3.17.tar.gz
-packages: https://github.com/phadej/hooglite/releases/download/v0.20211229/hooglite-0.20211229.tar.gz
+-- packages: http://oleg.fi/gentle-introduction-2022.5.tar.gz
+-- packages: https://github.com/phadej/hooglite/releases/download/v0.20230131/hooglite-0.20230131.tar.gz
+
+-- source-repository-package
+--   type: git
+--   location: https://github.com/phadej/hooglite.git
+--   tag: 66ef795dd4d13d54aa5be5e13a07e9f495950e5e
 
 -- For local dev these can be used:
--- packages: extras/gentle-introduction-*.tar.gz
--- packages: extras/warp-*.tar.gz
--- packages: extras/hooglite-*.tar.gz
+packages: extras/gentle-introduction-*.tar.gz
+packages: extras/hooglite-*.tar.gz
 
 -- Always use ghc-lib-parser.
 constraints: ghc-lib-parser-ex -no-ghc-lib -auto
@@ -46,5 +49,6 @@ constraints: ghc-lib-parser-ex -no-ghc-lib -auto
 -- Never depend on cryptonite. Aptly named package.
 constraints: cryptonite <0
 
-allow-older: Cabal:process
-allow-newer: hooglite:Cabal
+-- Warp without x509
+constraints: warp -x509
+

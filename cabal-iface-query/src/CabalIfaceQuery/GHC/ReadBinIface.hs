@@ -10,8 +10,10 @@ module CabalIfaceQuery.GHC.ReadBinIface (
 ) where
 
 
-#if MIN_VERSION_ghc(8,11,0)
+#if MIN_VERSION_ghc(9,3,0)
 #error "Too recent GHC"
+
+#elif MIN_VERSION_ghc(9,2,0)
 
 #elif MIN_VERSION_ghc(8,10,0)
 import Prelude hiding ((<>))

@@ -2,8 +2,9 @@ module CabalHasklint.GHC.Utils where
 
 import Peura
 
+import GHC.Driver.Ppr                                      (showPpr)
 import GHC.Driver.Session                                  (DynFlags, defaultDynFlags)
-import GHC.Utils.Outputable                                (Outputable, showPpr)
+import GHC.Utils.Outputable                                (Outputable)
 import Language.Haskell.GhclibParserEx.GHC.Settings.Config (fakeLlvmConfig, fakeSettings)
 
 fakeDynFlags :: DynFlags

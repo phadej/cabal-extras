@@ -4,3 +4,4 @@ installed: +all -Cabal
 docspec: True
 docspec-options: --verbose
 jobs-selection: uniform
+cabal-install-version: 3.6
