@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module CabalHasklint.Parse (
     parse,
 ) where
@@ -9,12 +10,14 @@ import qualified Distribution.Types.BuildInfo as C
 import qualified Distribution.Types.Version   as C
 
 import GHC.Data.StringBuffer                      (stringToStringBuffer)
-import GHC.Driver.Session                         (parseDynamicFilePragma, parseDynamicFlagsCmdLine, xopt)
+import GHC.Driver.Config.Parser                   (initParserOpts)
+import GHC.Driver.Ppr                             (showPpr)
+import GHC.Driver.Session                         (DynFlags, parseDynamicFilePragma, parseDynamicFlagsCmdLine, xopt)
 import GHC.Hs                                     (HsModule)
 import GHC.Parser.Header                          (getOptions)
-import GHC.Parser.Lexer                           (ParseResult (..), getMessages)
+import GHC.Parser.Lexer                           (ParseResult (..), getPsErrorMessages)
 import GHC.Types.SrcLoc                           (Located, noLoc)
-import GHC.Utils.Error                            (printBagOfErrors)
+import GHC.Utils.Error                            (pprMessages)
 import Language.Haskell.GhclibParserEx.GHC.Parser (parseFile)
 
 import qualified GHC.LanguageExtensions.Type as LangExt
@@ -23,13 +26,15 @@ import CabalHasklint.Cpp
 import CabalHasklint.GHC.Utils
 import CabalHasklint.Trace
 
+import qualified Prelude
+
 -- | Parse module.
 --
 -- Read file, extract doctest blocks.
 --
 -- In particular, this runs CPP preprocessing if needed.
 parse
-    :: TracerPeu r Tr
+    :: forall r. TracerPeu r Tr
     -> GhcInfo
     -> Version             -- ^ package version
     -> Path Absolute       -- ^ package directory
@@ -53,7 +58,7 @@ parse tracer ghcInfo pkgVer pkgDir cppDirs pkgIds bi modname modpath = do
     contents <- fromUTF8BS <$> readByteString modpath
 
     -- parse in-file options
-    let options2 = getOptions dflags1 (stringToStringBuffer contents) (toFilePath modpath)
+    let (_, options2) = getOptions (initParserOpts dflags1) (stringToStringBuffer contents) (toFilePath modpath)
     (dflags2, _, _warns2) <- liftIO $ parseDynamicFilePragma dflags1 options2
 
     -- do CPP
@@ -62,17 +67,18 @@ parse tracer ghcInfo pkgVer pkgDir cppDirs pkgIds bi modname modpath = do
         else return contents
 
     -- reparse in-file options
-    let options = getOptions dflags2 (stringToStringBuffer contents) (toFilePath modpath)
+    let (_, options) = getOptions (initParserOpts dflags2) (stringToStringBuffer contents) (toFilePath modpath)
     (dflags, _, _warns) <- liftIO $ parseDynamicFilePragma dflags1 options
 
     -- parse module
-    md <- fromParseResult dflags $ parseFile (toFilePath modpath) dflags contents'
+    md <- fromParseResult dflags (parseFile (toFilePath modpath) dflags contents')
     return md
   where
+    fromParseResult :: DynFlags -> ParseResult a -> Peu r a
     fromParseResult _dflags (POk _ x)   = return x
     fromParseResult  dflags (PFailed s) = do
-        let (_warns, errors) = getMessages s dflags
-        liftIO $ printBagOfErrors dflags errors
+        let errors = getPsErrorMessages s
+        liftIO $ Prelude.putStrLn $ showPpr dflags $ pprMessages errors
         die tracer "Parse failure"
 
     cppIncludes :: [Path Absolute]

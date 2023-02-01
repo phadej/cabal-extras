@@ -8,9 +8,9 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.15.20220525
+# version: 0.15.20230128
 #
-# REGENDATA ("0.15.20220525",["github","--config=cabal.haskell-ci","cabal.project"])
+# REGENDATA ("0.15.20230128",["github","--config=cabal.haskell-ci","cabal.project"])
 #
 name: Haskell-CI
 on:
@@ -32,9 +32,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - compiler: ghc-8.10.7
+          - compiler: ghc-9.2.5
             compilerKind: ghc
-            compilerVersion: 8.10.7
+            compilerVersion: 9.2.5
             setup-method: ghcup
             allow-failure: false
       fail-fast: false
@@ -44,10 +44,10 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends gnupg ca-certificates dirmngr curl git software-properties-common libtinfo5
           mkdir -p "$HOME/.ghcup/bin"
-          curl -sL https://downloads.haskell.org/ghcup/0.1.17.8/x86_64-linux-ghcup-0.1.17.8 > "$HOME/.ghcup/bin/ghcup"
+          curl -sL https://downloads.haskell.org/ghcup/0.1.18.0/x86_64-linux-ghcup-0.1.18.0 > "$HOME/.ghcup/bin/ghcup"
           chmod a+x "$HOME/.ghcup/bin/ghcup"
-          "$HOME/.ghcup/bin/ghcup" install ghc "$HCVER"
-          "$HOME/.ghcup/bin/ghcup" install cabal 3.6.2.0
+          "$HOME/.ghcup/bin/ghcup" install ghc "$HCVER" || (cat "$HOME"/.ghcup/logs/*.* && false)
+          "$HOME/.ghcup/bin/ghcup" install cabal 3.6.2.0 || (cat "$HOME"/.ghcup/logs/*.* && false)
         env:
           HCKIND: ${{ matrix.compilerKind }}
           HCNAME: ${{ matrix.compiler }}
@@ -129,7 +129,7 @@ jobs:
           chmod a+x $HOME/.cabal/bin/cabal-docspec
           cabal-docspec --version
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: source
       - name: initial cabal.project for sdist
@@ -143,7 +143,6 @@ jobs:
           echo "packages: $GITHUB_WORKSPACE/source/cabal-haddock-server" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-hasklint" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-hie" >> cabal.project
-          echo "packages: $GITHUB_WORKSPACE/source/cabal-iface-query" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-store-check" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-store-gc" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/peura" >> cabal.project
@@ -174,8 +173,6 @@ jobs:
           echo "PKGDIR_cabal_hasklint=${PKGDIR_cabal_hasklint}" >> "$GITHUB_ENV"
           PKGDIR_cabal_hie="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/cabal-hie-[0-9.]*')"
           echo "PKGDIR_cabal_hie=${PKGDIR_cabal_hie}" >> "$GITHUB_ENV"
-          PKGDIR_cabal_iface_query="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/cabal-iface-query-[0-9.]*')"
-          echo "PKGDIR_cabal_iface_query=${PKGDIR_cabal_iface_query}" >> "$GITHUB_ENV"
           PKGDIR_cabal_store_check="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/cabal-store-check-[0-9.]*')"
           echo "PKGDIR_cabal_store_check=${PKGDIR_cabal_store_check}" >> "$GITHUB_ENV"
           PKGDIR_cabal_store_gc="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/cabal-store-gc-[0-9.]*')"
@@ -193,7 +190,6 @@ jobs:
           echo "packages: ${PKGDIR_cabal_haddock_server}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_hasklint}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_hie}" >> cabal.project
-          echo "packages: ${PKGDIR_cabal_iface_query}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_store_check}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_store_gc}" >> cabal.project
           echo "packages: ${PKGDIR_peura}" >> cabal.project
@@ -213,8 +209,6 @@ jobs:
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           echo "package cabal-hie" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
-          echo "package cabal-iface-query" >> cabal.project
-          echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           echo "package cabal-store-check" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           echo "package cabal-store-gc" >> cabal.project
@@ -222,30 +216,28 @@ jobs:
           echo "package peura" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           cat >> cabal.project <<EOF
-          packages:    http://oleg.fi/gentle-introduction-2022.5.tar.gz
           packages:
-            https://github.com/phadej/warp-wo-x509/releases/download/v3.3.17/warp-3.3.17.tar.gz
+            $GITHUB_WORKSPACE/source/extras/gentle-introduction-2022.5.tar.gz
 
-          packages:
-            https://github.com/phadej/hooglite/releases/download/v0.20211229/hooglite-0.20211229.tar.gz
-
-          constraints: Cabal ^>=3.6
+          packages:    $GITHUB_WORKSPACE/source/extras/hooglite-0.20230131.tar.gz
+          constraints: Cabal ^>=3.8.1.0
           constraints: optics-core ^>=0.4.1
           constraints: directory     installed
           constraints: process       installed
           constraints: transformers  installed
           constraints: ghc-lib-parser-ex -no-ghc-lib -auto
           constraints: cryptonite <0
+          constraints: warp -x509
           EOF
-          $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: $_ installed\n" unless /^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-docspec|cabal-env|cabal-haddock-server|cabal-hasklint|cabal-hie|cabal-iface-query|cabal-store-check|cabal-store-gc|peura)$/; }' >> cabal.project.local
+          $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: $_ installed\n" unless /^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-docspec|cabal-env|cabal-haddock-server|cabal-hasklint|cabal-hie|cabal-store-check|cabal-store-gc|peura)$/; }' >> cabal.project.local
           cat cabal.project
           cat cabal.project.local
       - name: dump install plan
         run: |
           $CABAL v2-build $ARG_COMPILER $ARG_TESTS $ARG_BENCH --dry-run all
           cabal-plan
-      - name: cache
-        uses: actions/cache@v2
+      - name: restore cache
+        uses: actions/cache/restore@v3
         with:
           key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
           path: ~/.cabal/store
@@ -285,8 +277,6 @@ jobs:
           ${CABAL} -vnormal check
           cd ${PKGDIR_cabal_hie} || false
           ${CABAL} -vnormal check
-          cd ${PKGDIR_cabal_iface_query} || false
-          ${CABAL} -vnormal check
           cd ${PKGDIR_cabal_store_check} || false
           ${CABAL} -vnormal check
           cd ${PKGDIR_cabal_store_gc} || false
@@ -295,8 +285,14 @@ jobs:
           ${CABAL} -vnormal check
       - name: haddock
         run: |
-          $CABAL v2-haddock --haddock-all $ARG_COMPILER --with-haddock $HADDOCK $ARG_TESTS $ARG_BENCH all
+          $CABAL v2-haddock --disable-documentation --haddock-all $ARG_COMPILER --with-haddock $HADDOCK $ARG_TESTS $ARG_BENCH all
       - name: unconstrained build
         run: |
           rm -f cabal.project.local
           $CABAL v2-build $ARG_COMPILER --disable-tests --disable-benchmarks all
+      - name: save cache
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          key: ${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
+          path: ~/.cabal/store

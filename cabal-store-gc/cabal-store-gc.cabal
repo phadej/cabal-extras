@@ -14,7 +14,7 @@ license-files:
 
 author:             Oleg Grenrus <oleg.grenrus@iki.fi>
 maintainer:         Oleg Grenrus <oleg.grenrus@iki.fi>
-tested-with:        GHC ==8.10.7
+tested-with:        GHC ==9.2.5
 extra-source-files: Changelog.md
 
 source-repository head
@@ -36,20 +36,20 @@ library cabal-store-gc-internal
   -- ghc-boot dependencies
   -- cabal-fmt: fragment ../fragments/boot-deps.fragment
   build-depends:
-    , base              ^>=4.14.0.0
-    , binary            ^>=0.8.8.0
-    , bytestring        ^>=0.10.12.0
+    , base              ^>=4.16.4.0
+    , binary            ^>=0.8.9.0
+    , bytestring        ^>=0.11.3.1
     , containers        ^>=0.6.5.1
-    , deepseq           ^>=1.4.4.0
-    , directory         ^>=1.3.6.0
-    , filepath          ^>=1.4.2.1
+    , deepseq           ^>=1.4.6.1
+    , directory         ^>=1.3.6.2
+    , filepath          ^>=1.4.2.2
     , mtl               ^>=2.2.2
     , parsec            ^>=3.1.14.0
     , pretty            ^>=1.1.3.6
-    , process           ^>=1.6.13.2
+    , process           ^>=1.6.16.0
     , stm               ^>=2.5.0.0
     , template-haskell
-    , text              ^>=1.2.4.1
+    , text              ^>=1.2.5.0
 
   -- We use Cabal-3.6
   build-depends:      Cabal ^>=3.8.1.0
