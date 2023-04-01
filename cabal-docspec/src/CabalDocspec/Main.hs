@@ -214,6 +214,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
         $ C.condLibrary $ pkgGpd pkg
     let (_, lib) = simplifyCondTree ghcInfo (Map.mapKeys toCabal $ Plan.uFlags unit) lib0
     let bi = C.libBuildInfo lib
+    let cppEnabled = Ext.EnableExtension Ext.CPP `elem` C.defaultExtensions bi
 
     -- append options in .cabal file
     dynOptsBi <- dynOptsFromBuildInfo tracerTop bi
@@ -251,7 +252,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
     -- first phase: read modules and extract the comments
     let pkgVer = C.packageVersion (pkgGpd pkg)
     modules <- for modulePaths $ \(modname, modpath) ->
-        phase1 tracer ghcInfo pkgVer (pkgDir pkg) cppDirs pkgIds bi modname modpath
+        phase1 tracer ghcInfo pkgVer (pkgDir pkg) cppEnabled cppDirs pkgIds bi modname modpath
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
@@ -297,6 +298,7 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
         $ C.condLibrary $ pkgGpd pkg
     let (_, lib) = simplifyCondTree ghcInfo flags lib0
     let bi = C.libBuildInfo lib
+    let cppEnabled = Ext.EnableExtension Ext.CPP `elem` C.defaultExtensions bi
 
     -- append options in .cabal file
     dynOptsBi <- dynOptsFromBuildInfo tracerTop bi
@@ -345,7 +347,7 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
     -- first phase: read modules and extract the comments
     let pkgVer = C.packageVersion (pkgGpd pkg)
     modules <- for modulePaths $ \(modname, modpath) ->
-        phase1 tracer ghcInfo pkgVer (pkgDir pkg) cppDirs pkgIds bi modname modpath
+        phase1 tracer ghcInfo pkgVer (pkgDir pkg) cppEnabled cppDirs pkgIds bi modname modpath
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
