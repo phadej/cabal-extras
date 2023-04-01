@@ -34,8 +34,9 @@ import CabalDocspec.Located
 --
 -- Looks for leading LANGUAGE pragmas for occurence of CPP.
 --
-needsCppPass :: String -> Maybe [PosToken]
-needsCppPass input = go tokens
+needsCppPass :: Bool -> String -> Maybe [PosToken]
+needsCppPass True  _     = Nothing
+needsCppPass False input = go tokens
   where
     tokens = stubbornPass0 input
 

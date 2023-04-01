@@ -24,20 +24,21 @@ phase1
     -> GhcInfo
     -> Version             -- ^ package version
     -> Path Absolute       -- ^ package directory
+    -> Bool                -- ^ cpp extension
     -> [Path Absolute]     -- ^ additional include directories
     -> [PackageIdentifier] -- ^ dependencies
     -> C.BuildInfo
     -> C.ModuleName
     -> Path Absolute
     -> Peu r (Module (Located String))
-phase1 tracer ghcInfo pkgVer pkgDir cppDirs pkgIds bi modname modpath = do
+phase1 tracer ghcInfo pkgVer pkgDir cppEnabled cppDirs pkgIds bi modname modpath = do
     traceApp tracer $ TracePhase1 modname modpath
 
     contents <- fromUTF8BS <$> readByteString modpath
 
     -- lex the input.
     -- If it includes {-# LANGUAGE CPP #-}, then cpphs and re-lex.
-    comments <- case needsCppPass contents of
+    comments <- case needsCppPass cppEnabled contents of
         Just tokens -> do
             -- putDebug tracer $ unlines $ map show tokens
             return $ extractComments tokens
