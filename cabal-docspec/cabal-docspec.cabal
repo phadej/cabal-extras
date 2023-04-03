@@ -60,6 +60,7 @@ library cabal-docspec-internal
   -- rest of the implementation
   exposed-modules:
     CabalDocspec.Cpp
+    CabalDocspec.Diff
     CabalDocspec.Doctest.Example
     CabalDocspec.Doctest.Extract
     CabalDocspec.Doctest.Parse
@@ -116,6 +117,7 @@ library cabal-docspec-internal
     , optparse-applicative   ^>=0.17.0.0
     , splitmix               ^>=0.1.0.3
     , unliftio-core          ^>=0.2.0.1
+    , vector                 ^>=0.13.0.0
 
   default-extensions:
     NoImplicitPrelude

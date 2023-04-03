@@ -24,20 +24,23 @@ module Peura.Trace (
     putStrOut,
 ) where
 
-import Data.Foldable    (asum)
-import Data.IORef       (IORef, atomicModifyIORef', newIORef)
-import Data.List        (intercalate, stripPrefix)
-import System.Clock     (Clock (Monotonic), TimeSpec (..), diffTimeSpec, getTime)
-import System.IO        (stderr, stdout)
-import System.IO.Unsafe (unsafePerformIO)
-import Text.Printf      (printf)
+import Prelude (ShowS)
+import Data.Foldable              (asum)
+import Data.IORef                 (IORef, atomicModifyIORef', newIORef)
+import Data.List                  (intercalate, stripPrefix)
+import System.Clock               (Clock (Monotonic), TimeSpec (..), diffTimeSpec, getTime)
+import System.IO                  (stderr, stdout)
+import System.IO.Unsafe           (unsafePerformIO)
 import Text.PrettyPrint.Annotated (Doc)
+import Text.Printf                (printf)
 
-import qualified Data.Map.Strict     as Map
-import qualified Data.Set            as Set
-import qualified Options.Applicative as O
-import qualified System.Console.ANSI as ANSI
-import qualified Text.EditDistance   as ED
+import qualified Data.Map.Strict            as Map
+import qualified Data.Set                   as Set
+import qualified Options.Applicative        as O
+import qualified System.Console.ANSI        as ANSI
+import qualified Text.EditDistance          as ED
+import qualified Text.PrettyPrint.Annotated as PP
+import qualified Text.PrettyPrint.Annotated.HughesPJ as PP
 
 import Peura.Cabal
 import Peura.Exports
@@ -182,7 +185,7 @@ tracerOptionsParser = fmap (foldr (flip (.)) id) $ many $ asum $
         , O.flag'
             (\opts -> opts { tracerOptionsColor = ColorAlways })
             (O.long "color")
-        
+
         ]
 
     warnings = O.option (O.eitherReader warningE) (O.short 'W' <> O.metavar "warning")
@@ -326,7 +329,7 @@ makeTracerPeu TracerOptions {..} = do
 -------------------------------------------------------------------------------
 
 typeNameOf :: forall x. Typeable x => x -> String
-typeNameOf _ = show $ (typeRep :: TypeRep x)
+typeNameOf _ = show (typeRep :: TypeRep x)
 
 timespecToDurr :: TimeSpec -> Double
 timespecToDurr (TimeSpec s ns) = fromIntegral s + fromIntegral ns / 1e9
@@ -348,15 +351,34 @@ traceImpl setSgr clr off pfx msg = do
             [ ANSI.SetConsoleIntensity ANSI.BoldIntensity
             , ANSI.SetColor ANSI.Foreground ANSI.Dull clr
             ]
+
+    let render :: PP.AnnotDetails [ANSI.SGR] -> ([[ANSI.SGR]], ShowS) -> ([[ANSI.SGR]], ShowS)
+        render (PP.AnnotEnd a)   (as,         rest) = (a : as, (setSgr (ANSI.Reset : concat (reverse as)) ++) . rest)
+        render PP.AnnotStart     ([],         rest) = ([],     rest)
+        render PP.AnnotStart     (as@(_:as'), rest) = (as',    (setSgr (ANSI.Reset : reverse (concat as)) ++) . rest)
+        render (PP.NoAnnot td _) (as,         rest) = (as,     renderTD td . rest)
+
+        renderTD :: PP.TextDetails -> String -> String
+        renderTD (PP.Chr c)  = (c :)
+        renderTD (PP.Str s)  = (s ++)
+        renderTD (PP.PStr s) = (s ++)
+
+    let msg' :: String
+        msg' = ($ "") . snd $ PP.fullRenderAnn PP.PageMode 100 1.5
+            render
+            ([], ("" ++))
+            msg
+
     putStrErr $ concat
         [ off
         , setSgr sgr
         , intercalate "." pfx
         , ": "
         , setSgr []
-        , show msg
+        , msg'
         , "\n"
         ]
+
 
 -------------------------------------------------------------------------------
 -- Output

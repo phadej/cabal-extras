@@ -28,155 +28,59 @@ module CabalDocspec.Doctest.Example (
 
 import Prelude
 
-import Data.Char (isPrint, isSpace)
-import Data.List (isPrefixOf)
+import Peura (fromString)
 
+import qualified System.Console.ANSI        as ANSI
+import qualified Text.PrettyPrint.Annotated as PP
+
+import CabalDocspec.Diff
 import CabalDocspec.Doctest.Parse
 
-maxBy :: (Ord a) => (b -> a) -> b -> b -> b
-maxBy f x y = case compare (f x) (f y) of
-  LT -> y
-  EQ -> x
-  GT -> x
-
-data Result = Equal | NotEqual [String]
+data Result = Equal | NotEqual (PP.Doc [ANSI.SGR])
   deriving (Eq, Show)
 
+-- TODO: escape
 mkResult :: ExpectedResult -> [String] -> Result
-mkResult expected_ actual_ =
-  case expected `matches` actual of
-  Full            -> Equal
-  Partial partial -> NotEqual (formatNotEqual expected actual partial)
+mkResult expected actual =
+      case diffLines expected' actual of
+        (0, _) -> Equal
+        (_, d) -> NotEqual (ppDiff d)
   where
-    -- use show to escape special characters in output lines if any output line
-    -- contains any unsafe character
-    escapeOutput
-      | any (not . isSafe) $ concat (expectedAsString ++ actual_) = init . tail . show . stripEnd
-      | otherwise = id
+    expected' :: [Wild [Wild Char]]
+    expected' =
+        [ case l of
+            WildCardLine -> Wildcard
+            ExpectedLine l' -> Exact $ concat
+                [ case c of
+                    WildCardChunk -> [Wildcard]
+                    LineChunk c'  -> map Exact c'
+                | c <- l'
+                ]
 
-    actual :: [String]
-    actual = fmap escapeOutput actual_
+        | l <- expected
+        ]
 
-    expected :: ExpectedResult
-    expected = fmap (transformExcpectedLine escapeOutput) expected_
+ppDiff :: Diff -> PP.Doc [ANSI.SGR]
+ppDiff = PP.vcat . go where
+    go :: Diff -> [PP.Doc [ANSI.SGR]]
+    go DiffEmpty       = []
+    go (DiffSame ls d) =
+        [ fromString $ ' ' : l
+        | l <- ls
+        ] ++ go d
 
-    expectedAsString :: [String]
-    expectedAsString = map (\x -> case x of
-        ExpectedLine str -> concatMap lineChunkToString str
-        WildCardLine -> "..." ) expected_
+    go (DiffChunk xs ys d) =
+        [ PP.annotate [ANSI.SetColor ANSI.Foreground ANSI.Vivid ANSI.Red] $ "-" <> go' ANSI.Red x
+        | x <- xs
+        ] ++
+        [ PP.annotate [ANSI.SetColor ANSI.Foreground ANSI.Vivid ANSI.Green] $ "+" <> go' ANSI.Green y
+        | y <- ys
+        ] ++ go d
 
-    isSafe :: Char -> Bool
-    isSafe c = c == ' ' || (isPrint c && (not . isSpace) c)
+    go' :: ANSI.Color -> EmphString -> PP.Doc [ANSI.SGR]
+    go' _ Empty       = ""
+    go' c (Norm s ss) = fromString s <> go' c ss
+    go' c (Emph s ss) = bold c (fromString s) <> go' c ss
 
-    chunksMatch :: [LineChunk] -> String -> Match ChunksDivergence
-    chunksMatch [] "" = Full
-    chunksMatch [LineChunk xs] ys =
-      if stripEnd xs == stripEnd ys
-      then Full
-      else Partial $ matchingPrefix xs ys
-    chunksMatch (LineChunk x : xs) ys =
-      if x `isPrefixOf` ys
-      then fmap (prependText x) $ (xs `chunksMatch` drop (length x) ys)
-      else Partial $ matchingPrefix x ys
-    chunksMatch zs@(WildCardChunk : xs) (_:ys) =
-      -- Prefer longer matches.
-      fmap prependWildcard $ maxBy
-        (fmap $ length . matchText)
-        (chunksMatch xs ys)
-        (chunksMatch zs ys)
-    chunksMatch [WildCardChunk] [] = Full
-    chunksMatch (WildCardChunk:_) [] = Partial (ChunksDivergence "" "")
-    chunksMatch [] (_:_) = Partial (ChunksDivergence "" "")
-
-    matchingPrefix xs ys =
-      let common = fmap fst (takeWhile (\(x, y) -> x == y) (xs `zip` ys)) in
-      ChunksDivergence common common
-
-    matches :: ExpectedResult -> [String] -> Match LinesDivergence
-    matches (ExpectedLine x : xs) (y : ys) =
-      case x `chunksMatch` y of
-      Full -> fmap incLineNo $ xs `matches` ys
-      Partial partial -> Partial (LinesDivergence 1 (expandedWildcards partial))
-    matches zs@(WildCardLine : xs) us@(_ : ys) =
-      -- Prefer longer matches, and later ones of equal length.
-      let matchWithoutWC = xs `matches` us in
-      let matchWithWC    = fmap incLineNo (zs `matches` ys) in
-      let key (LinesDivergence lineNo line) = (length line, lineNo) in
-      maxBy (fmap key) matchWithoutWC matchWithWC
-    matches [WildCardLine] [] = Full
-    matches [] [] = Full
-    matches [] _  = Partial (LinesDivergence 1 "")
-    matches _  [] = Partial (LinesDivergence 1 "")
-
--- Note: order of constructors matters, so that full matches sort as
--- greater than partial.
-data Match a = Partial a | Full
-  deriving (Eq, Ord, Show)
-
-instance Functor Match where
-  fmap f (Partial a) = Partial (f a)
-  fmap _ Full = Full
-
-data ChunksDivergence = ChunksDivergence { matchText :: String, expandedWildcards :: String }
-  deriving (Show)
-
-prependText :: String -> ChunksDivergence -> ChunksDivergence
-prependText s (ChunksDivergence mt wct) = ChunksDivergence (s++mt) (s++wct)
-
-prependWildcard :: ChunksDivergence -> ChunksDivergence
-prependWildcard (ChunksDivergence mt wct) = ChunksDivergence mt ('.':wct)
-
-data LinesDivergence = LinesDivergence { _mismatchLineNo :: Int, _partialLine :: String }
-  deriving (Show)
-
-incLineNo :: LinesDivergence -> LinesDivergence
-incLineNo (LinesDivergence lineNo partialLineMatch) = LinesDivergence (lineNo + 1) partialLineMatch
-
-formatNotEqual :: ExpectedResult -> [String] -> LinesDivergence -> [String]
-formatNotEqual expected_ actual partial = formatLines "expected: " expected ++ formatLines " but got: " (lineMarker wildcard partial actual)
-  where
-    expected :: [String]
-    expected = map (\x -> case x of
-        ExpectedLine str -> concatMap lineChunkToString str
-        WildCardLine -> "..." ) expected_
-
-    formatLines :: String -> [String] -> [String]
-    formatLines message xs = case xs of
-      y:ys -> (message ++ y) : map (padding ++) ys
-      []   -> [message]
-      where
-        padding = replicate (length message) ' '
-
-    wildcard :: Bool
-    wildcard = any (\x -> case x of
-        ExpectedLine xs -> any (\y -> case y of { WildCardChunk -> True; _ -> False }) xs
-        WildCardLine -> True ) expected_
-
-lineChunkToString :: LineChunk -> String
-lineChunkToString WildCardChunk = "..."
-lineChunkToString (LineChunk str) = str
-
-transformExcpectedLine :: (String -> String) -> ExpectedLine -> ExpectedLine
-transformExcpectedLine f (ExpectedLine xs) =
-  ExpectedLine $ fmap (\el -> case el of
-    LineChunk s -> LineChunk $ f s
-    WildCardChunk -> WildCardChunk
-  ) xs
-transformExcpectedLine _ WildCardLine = WildCardLine
-
-lineMarker :: Bool -> LinesDivergence -> [String] -> [String]
-lineMarker wildcard (LinesDivergence row expanded) actual =
-  let (pre, post) = splitAt row actual in
-  pre ++
-  [(if wildcard && length expanded > 30
-    -- show expanded pattern if match is long, to help understanding what matched what
-    then expanded
-    else replicate (length expanded) ' ') ++ "^"] ++
-  post
-
--- | Remove trailing white space from a string.
---
--- >>> stripEnd "foo   "
--- "foo"
-stripEnd :: String -> String
-stripEnd = reverse . dropWhile isSpace . reverse
+bold :: ANSI.Color -> PP.Doc [ANSI.SGR] -> PP.Doc [ANSI.SGR]
+bold c = PP.annotate  [ANSI.SetColor ANSI.Background ANSI.Dull c, ANSI.SetColor ANSI.Foreground ANSI.Dull ANSI.White]

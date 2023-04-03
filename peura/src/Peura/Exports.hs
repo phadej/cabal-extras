@@ -53,6 +53,8 @@ module Peura.Exports (
     review,
     matching,
     prism',
+    -- * TODO: gentle-introduction
+    these,
     ) where
 
 import Gentle.Introduction hiding (error, traceShow, traceShowId, undefined)
@@ -65,6 +67,7 @@ import Control.Monad.Reader.Class      (MonadReader (ask, local))
 import Data.Binary                     (Binary)
 import Data.List                       (sortBy, sortOn)
 import Distribution.Pretty             (prettyShow)
+import Data.These (these)
 import Distribution.Types.PackageId    (PackageIdentifier (..))
 import Distribution.Types.PackageName  (PackageName, mkPackageName)
 import Distribution.Types.UnitId       (UnitId)
