@@ -31,6 +31,7 @@ import System.Clock     (Clock (Monotonic), TimeSpec (..), diffTimeSpec, getTime
 import System.IO        (stderr, stdout)
 import System.IO.Unsafe (unsafePerformIO)
 import Text.Printf      (printf)
+import Text.PrettyPrint.Annotated (Doc)
 
 import qualified Data.Map.Strict     as Map
 import qualified Data.Set            as Set
@@ -65,7 +66,7 @@ data Trace tr
 
     | TraceDebug String
     | TraceInfo String
-    | TraceError String
+    | TraceError (Doc [ANSI.SGR])
 
     | TraceWarning (TraceW tr) String
 
@@ -264,15 +265,15 @@ makeTracerPeu TracerOptions {..} = do
                    ]
 
             TraceApp tr -> case showTrace tr of
-                (colour, components, msg) -> traceImpl setSgr colour off components msg
+                (colour, components, msg) -> traceImpl setSgr colour off components $ fromString msg
 
             -- Generic trace messages
             TraceError msg -> traceImpl setSgr ANSI.Red   off ["error"] msg
-            TraceDebug msg -> traceImpl setSgr ANSI.Blue  off ["debug"] msg
-            TraceInfo  msg -> traceImpl setSgr ANSI.Green off ["info" ] msg
+            TraceDebug msg -> traceImpl setSgr ANSI.Blue  off ["debug"] $ fromString msg
+            TraceInfo  msg -> traceImpl setSgr ANSI.Green off ["info" ] $ fromString msg
 
             TraceProcess pid (TraceProcessStart cwd cmd args) ->
-                traceImpl setSgr ANSI.Blue off ["process", show pid, "start"] $ unwords $
+                traceImpl setSgr ANSI.Blue off ["process", show pid, "start"] $ fromString $ unwords $
                 cwd' : cmd : args
               where
                 cwd' = "cwd=" ++ toFilePath cwd
@@ -280,10 +281,10 @@ makeTracerPeu TracerOptions {..} = do
             TraceProcess pid (TraceProcessRunTime ts'@(TimeSpec secs _))
                 | secs < 10 -> return ()
                 | otherwise -> when tracerOptionsProcess $
-                    traceImpl setSgr ANSI.Blue off ["process", show pid, "time"] $ printf "%.03f seconds" (timespecToDurr ts')
+                    traceImpl setSgr ANSI.Blue off ["process", show pid, "time"] $ fromString $ printf "%.03f seconds" (timespecToDurr ts')
 
             TraceProcess pid (TraceProcessFailedCheck ec out err) -> when tracerOptionsProcess $ do
-                traceImpl setSgr ANSI.Red off ["process", show pid, "failed"] $ "Exitcode " ++ show ec
+                traceImpl setSgr ANSI.Red off ["process", show pid, "failed"] $ fromString $ "Exitcode " ++ show ec
                 putStrErr ("========= stdout =========" :: String)
                 putStrErr (fromUTF8BS (toStrict out))
                 putStrErr ("========= stderr =========" :: String)
@@ -293,10 +294,10 @@ makeTracerPeu TracerOptions {..} = do
                 traceImpl setSgr ANSI.Green off ["peu", "completed"] "OK"
 
             TracePeu (TracePeuDie msg) ->
-                traceImpl setSgr ANSI.Red off ["peu", "die"] msg
+                traceImpl setSgr ANSI.Red off ["peu", "die"] $ fromString msg
 
             TracePeu (TracePeuException exc) -> do
-                traceImpl setSgr ANSI.Red off ["peu", "exception"] (typeNameOf exc)
+                traceImpl setSgr ANSI.Red off ["peu", "exception"] $ fromString $ typeNameOf exc
                 putStrErr $ displayException exc ++ "\n"
 
             -- TODO: summarise plan?
@@ -307,17 +308,17 @@ makeTracerPeu TracerOptions {..} = do
                 traceImpl setSgr ANSI.Green off ["cabal","hackage"] "Reading Hackage index metadata"
 
             TraceGhc (TraceGhcReadPackageDb p) -> do
-                traceImpl setSgr ANSI.Blue off ["ghc", "read-package-db"] $
+                traceImpl setSgr ANSI.Blue off ["ghc", "read-package-db"] $ fromString $
                     toFilePath p
 
             TraceGhc (TraceGhcGetInfo ghc) -> do
-                traceImpl setSgr ANSI.Blue off ["ghc", "info"] ghc
+                traceImpl setSgr ANSI.Blue off ["ghc", "info"] $ fromString ghc
 
             TraceGhc (TraceGhcFindGhcPkg ghcInfo) -> do
-                traceImpl setSgr ANSI.Blue off ["ghc", "find-ghc-pkg"] (show ghcInfo) -- TODO: pretty
+                traceImpl setSgr ANSI.Blue off ["ghc", "find-ghc-pkg"] $ fromString $ show ghcInfo -- TODO: pretty
 
             TraceGhc (TraceGhcFindGhcPkgResult ghcPkg) -> do
-                traceImpl setSgr ANSI.Blue off ["ghc", "find-ghc-pkg", "result"] ghcPkg
+                traceImpl setSgr ANSI.Blue off ["ghc", "find-ghc-pkg", "result"] $ fromString ghcPkg
 
 
 -------------------------------------------------------------------------------
@@ -339,7 +340,7 @@ traceImpl
     -> ANSI.Color
     -> String
     -> [String]
-    -> String
+    -> Doc [ANSI.SGR]
     -> IO ()
 traceImpl setSgr clr off pfx msg = do
     let sgr :: [ANSI.SGR]
@@ -353,7 +354,7 @@ traceImpl setSgr clr off pfx msg = do
         , intercalate "." pfx
         , ": "
         , setSgr []
-        , msg
+        , show msg
         , "\n"
         ]
 
@@ -372,7 +373,7 @@ putInfo tracer msg = traceWith tracer (TraceInfo msg)
 putWarning :: IsPeuraTrace tr => TracerPeu r tr -> TraceW tr -> String -> Peu r ()
 putWarning tracer w msg = traceWith tracer (TraceWarning w msg)
 
-putError :: HasCallStack => TracerPeu r tr -> String -> Peu r ()
+putError :: HasCallStack => TracerPeu r tr -> Doc [ANSI.SGR] -> Peu r ()
 putError tracer msg = traceWith tracer (TraceError msg)
 
 -------------------------------------------------------------------------------

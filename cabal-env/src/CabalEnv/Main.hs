@@ -192,7 +192,7 @@ elaborateSdistLocation tracer = fmap Map.fromList . traverse go where
     elaboratePkgId :: String -> Peu r PackageIdentifier
     elaboratePkgId str = case stripSuffix ".tar.gz" str of
         Nothing -> do
-            putError tracer $ "tarball path doesn't end with .tar.gz -- " ++ str
+            putError tracer $ fromString $ "tarball path doesn't end with .tar.gz -- " ++ str
             exitFailure
 
         Just pfx -> case eitherParsec pfx of
