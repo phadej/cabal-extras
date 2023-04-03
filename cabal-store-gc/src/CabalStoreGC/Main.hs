@@ -349,7 +349,7 @@ doCleanupRoots tracer = do
                 putInfo tracer $ "Indirect root " ++ toFilePath l ++ " is gone; cleaning up"
                 removePathForcibly r'
             else
-                putError tracer $ "Doesn't exist, but isn't a link either: " ++ toFilePath r'
+                putError tracer $ fromString $ "Doesn't exist, but isn't a link either: " ++ toFilePath r'
 
 -------------------------------------------------------------------------------
 -- getPathSize

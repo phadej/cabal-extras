@@ -63,7 +63,7 @@ main = do
             let warpOnException _mreq sexc@(SomeException exc) =
                     case fromException sexc :: Maybe TimeoutThread of
                         Just _  -> return ()
-                        Nothing -> runInIO $ putError tracer $ displayException exc
+                        Nothing -> runInIO $ putError tracer $ fromString $ displayException exc
 
             let warpExceptionResponse (SomeException exc) =
                     internalErrorResponse exc

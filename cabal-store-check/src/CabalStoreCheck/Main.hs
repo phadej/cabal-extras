@@ -103,7 +103,7 @@ checkConsistency tracer opts = do
         ]
 
     for_ closure $ \unitId ->
-        putError tracer $ prettyShow unitId ++ " is broken transitively"
+        putError tracer $ fromString $ prettyShow unitId ++ " is broken transitively"
 
     let brokenLibs :: Set UnitId
         brokenLibs = brokenUnitIds <> closure
@@ -125,7 +125,7 @@ checkConsistency tracer opts = do
 
         let handler :: IOException -> Peu r (Maybe UnitId)
             handler exc = do
-                putError tracer $ prettyShow unitId ++ " executable is broken: " ++ displayException exc
+                putError tracer $ fromString $ prettyShow unitId ++ " executable is broken: " ++ displayException exc
                 return (Just unitId)
 
         handle handler $ do
@@ -145,7 +145,7 @@ checkConsistency tracer opts = do
             case broken of
                 Right () -> return Nothing
                 Left err -> do
-                    putError tracer $ prettyShow unitId ++ " executable is broken: " ++ show err
+                    putError tracer $ fromString $ prettyShow unitId ++ " executable is broken: " ++ show err
                     return (Just unitId)
 
     -- totals
@@ -166,7 +166,7 @@ checkConsistency tracer opts = do
                 putDebug tracer $ "Removing " ++ toFilePath pkgDir
                 removePathForcibly pkgDir
             -- TODO: Warning
-            else putError tracer $ toFilePath pkgDir ++ " does not exist"
+            else putError tracer $ fromString $ toFilePath pkgDir ++ " does not exist"
 
     when (not (null brokenLibs) && optRepair opts) $ do
         putInfo tracer "Repairing db"
@@ -273,11 +273,11 @@ data V
 type Validate r = ValidateT (NonEmpty V) (Peu r)
 
 reportV :: TracerPeu r w -> V -> Peu r ()
-reportV tracer (VMissingDir pkg) = putError tracer $
+reportV tracer (VMissingDir pkg) = putError tracer $ fromString $
     prettyShow pkg ++ " unit directory is missing"
-reportV tracer (VMissingDep pkg dep) = putError tracer $
+reportV tracer (VMissingDep pkg dep) = putError tracer $ fromString $
     prettyShow pkg ++ " dependency " ++ prettyShow dep ++ " is missing"
-reportV tracer (VMissingModuleFile pkg mdl) = putError tracer $
+reportV tracer (VMissingModuleFile pkg mdl) = putError tracer $ fromString $
     prettyShow pkg ++ " interface file for " ++ prettyShow mdl ++ " is missing"
 
 -------------------------------------------------------------------------------

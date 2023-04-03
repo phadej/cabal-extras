@@ -112,14 +112,14 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
                     case mkResult [] (lines result) of
                             Equal -> return (Left (acc <> ssSuccess))
                             NotEqual diff -> do
-                                putError tracer expr
-                                putError tracer $ unlines ("" : diff)
+                                putError tracer $ fromString expr
+                                putError tracer $ fromString $ unlines ("" : diff)
                                 return (Right (acc <> ssError))
 
             let runSetup :: SubSummary -> Located DocTest -> Peu r (Either SubSummary SubSummary)
                 runSetup acc (L pos doctest) = case doctest of
                     Property expr -> do
-                        putError tracer $ "properties are not supported in setup, skipping: " ++ expr
+                        putError tracer $ fromString $ "properties are not supported in setup, skipping: " ++ expr
                         return (Right (acc <> ssFailure))
 
                     Example expr expected -> do
@@ -127,8 +127,8 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
                         case mkResult expected (lines result) of
                             Equal -> return (Left (acc <> ssSuccess))
                             NotEqual diff -> do
-                                putError tracer expr
-                                putError tracer $ prettyPos pos ++ unlines ("" : diff)
+                                putError tracer $ fromString expr
+                                putError tracer $ fromString $ prettyPos pos ++ unlines ("" : diff)
                                 return (Right (acc <> ssError))
 
             let runSetupGroup :: Peu r SubSummary
@@ -172,8 +172,8 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
                             if "OK, passed" `isInfixOf` result
                             then return (Left (acc <> mempty { sProperties = ssSuccess }))
                             else do
-                                putError tracer expr
-                                putError tracer $ prettyPos pos ++ "\n" ++ result
+                                putError tracer $ fromString expr
+                                putError tracer $ fromString $ prettyPos pos ++ "\n" ++ result
                                 return (Right (acc <> mempty { sProperties = ssError }))
 
                     Example expr expected -> do
@@ -182,8 +182,8 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
                             Equal -> do
                                 return (Left (acc <> mempty { sExamples = ssSuccess }))
                             NotEqual diff -> do
-                                putError tracer expr
-                                putError tracer $ prettyPos pos ++ unlines ("" : diff)
+                                putError tracer $ fromString expr
+                                putError tracer $ fromString $ prettyPos pos ++ unlines ("" : diff)
                                 return (Right (acc <> mempty { sExamples = ssError }))
 
             let runExampleGroup :: Summary -> [Located DocTest] -> Peu r Summary
