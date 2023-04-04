@@ -217,10 +217,10 @@ jobs:
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           cat >> cabal.project <<EOF
           packages:
-            $GITHUB_WORKSPACE/source/extras/gentle-introduction-2022.5.tar.gz
+            $GITHUB_WORKSPACE/source/extras/gentle-introduction-2023.4.tar.gz
 
           packages:    $GITHUB_WORKSPACE/source/extras/hooglite-0.20230131.tar.gz
-          constraints: Cabal ^>=3.8.1.0
+          constraints: Cabal ^>=3.10.1.0
           constraints: optics-core ^>=0.4.1
           constraints: directory     installed
           constraints: process       installed
@@ -228,8 +228,11 @@ jobs:
           constraints: ghc-lib-parser-ex -no-ghc-lib -auto
           constraints: cryptonite <0
           constraints: warp -x509
+          allow-newer: hooglite:Cabal
+          allow-newer: serialise-0.2.6.0:strict
+          allow-newer: serialise-0.2.6.0:these
           EOF
-          $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: $_ installed\n" unless /^(Cabal|cabal-bundler|cabal-deps|cabal-diff|cabal-docspec|cabal-env|cabal-haddock-server|cabal-hasklint|cabal-hie|cabal-store-check|cabal-store-gc|peura)$/; }' >> cabal.project.local
+          $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: $_ installed\n" unless /^(Cabal|Cabal-syntax|cabal-bundler|cabal-deps|cabal-diff|cabal-docspec|cabal-env|cabal-haddock-server|cabal-hasklint|cabal-hie|cabal-store-check|cabal-store-gc|peura)$/; }' >> cabal.project.local
           cat cabal.project
           cat cabal.project.local
       - name: dump install plan

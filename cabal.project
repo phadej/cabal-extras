@@ -22,7 +22,7 @@ package *
 package peura
   flags: -concurrent-output
 
-constraints: Cabal ^>=3.8.1.0
+constraints: Cabal ^>=3.10.1.0
 
 -- some constraints to force latest versions
 constraints: optics-core ^>=0.4.1
@@ -52,3 +52,7 @@ constraints: cryptonite <0
 -- Warp without x509
 constraints: warp -x509
 
+allow-newer: hooglite:Cabal
+
+allow-newer: serialise-0.2.6.0:strict
+allow-newer: serialise-0.2.6.0:these
