@@ -1,6 +1,6 @@
 distribution: bionic
 branches: master
-installed: +all -Cabal
+installed: +all -Cabal -Cabal-syntax
 docspec: True
 docspec-options: --verbose
 jobs-selection: uniform

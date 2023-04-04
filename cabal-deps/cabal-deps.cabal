@@ -47,8 +47,8 @@ library cabal-deps-internal
     , template-haskell
     , text              ^>=1.2.5.0
 
-  -- We use Cabal-3.6
-  build-depends:    Cabal ^>=3.8.1.0
+  -- We use Cabal-3.10
+  build-depends:    Cabal ^>=3.10.1.0
 
   -- We also use peura
   build-depends:    peura
