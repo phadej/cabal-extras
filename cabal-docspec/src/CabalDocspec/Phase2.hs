@@ -6,13 +6,15 @@ module CabalDocspec.Phase2 (
 
 import Peura
 
-import Control.Monad      (foldM)
-import Data.List          (isInfixOf)
-import System.Environment (getEnvironment)
+import Control.Monad              (foldM)
+import Data.List                  (isInfixOf)
+import System.Environment         (getEnvironment)
+import Text.PrettyPrint.Annotated (Doc, ($$))
 
-import qualified Cabal.Config as Cabal
-import qualified Data.Map     as Map
-import qualified Data.Set     as Set
+import qualified Cabal.Config               as Cabal
+import qualified Data.Map                   as Map
+import qualified Data.Set                   as Set
+import qualified System.Console.ANSI        as ANSI
 
 import CabalDocspec.Doctest.Example
 import CabalDocspec.Doctest.Extract
@@ -113,7 +115,7 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
                             Equal -> return (Left (acc <> ssSuccess))
                             NotEqual diff -> do
                                 putError tracer $ fromString expr
-                                putError tracer $ fromString $ unlines ("" : diff)
+                                putError tracer diff
                                 return (Right (acc <> ssError))
 
             let runSetup :: SubSummary -> Located DocTest -> Peu r (Either SubSummary SubSummary)
@@ -128,7 +130,7 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
                             Equal -> return (Left (acc <> ssSuccess))
                             NotEqual diff -> do
                                 putError tracer $ fromString expr
-                                putError tracer $ fromString $ prettyPos pos ++ unlines ("" : diff)
+                                putError tracer $ fromString (prettyPos pos) $$ diff
                                 return (Right (acc <> ssError))
 
             let runSetupGroup :: Peu r SubSummary
@@ -183,7 +185,8 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
                                 return (Left (acc <> mempty { sExamples = ssSuccess }))
                             NotEqual diff -> do
                                 putError tracer $ fromString expr
-                                putError tracer $ fromString $ prettyPos pos ++ unlines ("" : diff)
+                                putError tracer $ fromString (prettyPos pos) $$ diff
+                                putInfo tracer $ "Actual result:\n" ++ result
                                 return (Right (acc <> mempty { sExamples = ssError }))
 
             let runExampleGroup :: Summary -> [Located DocTest] -> Peu r Summary
