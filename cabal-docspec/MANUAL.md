@@ -709,7 +709,7 @@ https://github.com/phadej/cabal-extras
 COPYRIGHT
 =========
 
-Copyright © 2020-2021 Oleg Grenrus. License GPLv2-or-later: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>.
+Copyright © 2020-2023 Oleg Grenrus. License GPLv2-or-later: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it. There is NO WARRANTY, to the extent permitted by law.
 
 AUTHOR

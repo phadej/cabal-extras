@@ -1,15 +1,17 @@
-.TH CABAL-DOCSPEC 1 "January 15, 2021" "cabal-docspec 0.0.0.20211114" "Cabal Extras"
+.TH CABAL-DOCSPEC 1 "April 6th, 2023" "cabal-docspec 0.0.0.20230406" "Cabal Extras"
 .SH NAME
 .PP
 cabal-docspec - another doctest for Haskell
 .SH SYNOPSIS
 .PP
-\f[B]cabal-docspec\f[R] \f[I][OPTION]\f[R]\&... \f[I][PACKAGE]\&...\f[R]
+\f[B]cabal-docspec\f[R] \f[I][OPTION]\f[R]\&...
+\f[I][PACKAGE]\&...\f[R]
 .PD 0
 .P
 .PD
 \f[B]cabal-docspec\f[R] \f[B]--no-cabal-plan\f[R]
-\f[I][OPTION]\f[R]\&... \f[I][CABALFILE]\f[R]\&...
+\f[I][OPTION]\f[R]\&...
+\f[I][CABALFILE]\f[R]\&...
 .SH DESCRIPTION
 .PP
 \f[I]cabal-docspec\f[R] is a doctest runner closely integrated with
@@ -276,12 +278,12 @@ fib n = fib (n - 1) + fib (n - 2)
 \f[R]
 .fi
 .PP
-A comment line starting with \f[C]>>>\f[R] denotes an
+A comment line starting with \f[V]>>>\f[R] denotes an
 \f[I]expression\f[R].
 All comment lines following an expression denote the \f[I]result\f[R] of
 that expression.
-Result is defined by what a REPL (e.g.\ ghci) prints to \f[C]stdout\f[R]
-and \f[C]stderr\f[R] when evaluating that expression.
+Result is defined by what a REPL (e.g.\ ghci) prints to \f[V]stdout\f[R]
+and \f[V]stderr\f[R] when evaluating that expression.
 .SS Example groups
 .PP
 Examples from a single Haddock comment are grouped together and share
@@ -312,8 +314,8 @@ for
 \f[R]
 .fi
 .PP
-\f[C]print n\f[R] is not tried, because \f[C]let n = x + y\f[R] fails
-(\f[C]y\f[R] is not in scope!).
+\f[V]print n\f[R] is not tried, because \f[V]let n = x + y\f[R] fails
+(\f[V]y\f[R] is not in scope!).
 .SS A note on performance
 .PP
 Because cabal-docspec uses compiled library, calling \f[B]:reload:\f[R]
@@ -701,7 +703,7 @@ work.
 No, cabal-doctest doesn\[cq]t need one.
 The library code is loaded as pre-compiled object code, not interpreted
 code.
-As a result, the \f[C]:reload\f[R] command doesn\[cq]t force code to be
+As a result, the \f[V]:reload\f[R] command doesn\[cq]t force code to be
 re-interpreted each time, making to cheap to run.
 pre-compiled object, the \f[B]:reload\f[R] command is cheap.
 It doesn\[cq]t cause the re-interpretation of the sources.
@@ -753,7 +755,7 @@ doctest(1) https://hackage.haskell.org/package/doctest
 https://github.com/phadej/cabal-extras
 .SH COPYRIGHT
 .PP
-Copyright \[co] 2020-2021 Oleg Grenrus.
+Copyright © 2020-2023 Oleg Grenrus.
 License GPLv2-or-later: GNU GPL version 2 or later
 <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
