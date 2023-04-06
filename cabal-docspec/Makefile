@@ -26,10 +26,10 @@ CABALVERSION:=3.10.1.0
 .PHONY: alpine-release
 alpine-release :
 	apk add binutils-gold curl gcc git gmp-dev libc-dev libffi-dev make musl-dev ncurses-dev openssh-client perl tar tmux vim xz zlib-dev zlib-static
-	mkdir -p $(HOME)/.ghcup/bin
 	mkdir -p $(HOME)/.local/bin
-	curl -L https://github.com/haskell-hvr/cabal-plan/releases/download/v0.7.3.0/cabal-plan-0.7.3.0-x86_64-linux.xz > cabal-plan.xz
-	xz -d < cabal-plan.xz > $(CABALPLAN)
+	curl -L https://github.com/haskell-hvr/cabal-plan/releases/download/v0.7.3.0/cabal-plan-0.7.3.0-x86_64-linux.xz | xz -d > $(CABALPLAN)
+	chmod a+x $(CABALPLAN)
+	mkdir -p $(HOME)/.ghcup/bin
 	curl https://downloads.haskell.org/~ghcup/$(GHCUPVERSION)/x86_64-linux-ghcup-$(GHCUPVERSION) > $(GHCUP)
 	chmod a+x $(GHCUP)
 	$(GHCUP) install ghc $(GHCVERSION)
