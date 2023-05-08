@@ -18,12 +18,12 @@ To install individual executables from this repository,
 
 1. Make sure you have `GHC-8.2` and `cabal-install-3.0` or later installed.
 2. Clone it with `git clone https://github.com/phadej/cabal-extras.git`
-3. Install individual executables with `make install-cabal-env`, `make install-cabal-deps` etc.
+3. Install individual executables with `make install-env`, `make install-deps` etc.
 
 You can pass flags to `cabal install` by setting `INSTALL_FLAGS`, e.g.
 
 ```
-make INSTALL_FLAGS="--installdir $HOME/bin --install-method copy" install-cabal-env
+make INSTALL_FLAGS="--installdir $HOME/bin --install-method copy" install-env
 ```
 
 # Executables
