@@ -27,6 +27,7 @@ data DynOpts = DynOpts
     { optPhase          :: Phase
     , optPreserveIt     :: PreserveIt
     , optStripComs      :: StripComments
+    , optStripEOL       :: StripEOL
     , optExts           :: [String]
     , optTimeout        :: Double
     , optTimeoutMsg     :: String          -- ^ timeout response
@@ -45,6 +46,7 @@ defaultDynOpts = DynOpts
     { optPhase          = Phase2
     , optPreserveIt     = DontPreserveIt
     , optStripComs      = DontStripComments
+    , optStripEOL       = DontStripEOL
     , optExts           = []
     , optTimeout        = 3
     , optTimeoutMsg     = "* Hangs forever *"
@@ -62,6 +64,7 @@ newtype Verbosity  = Verbosity Int deriving (Eq, Ord, Show)
 data PreserveIt    = PreserveIt | DontPreserveIt deriving (Eq, Show)
 data CabalPlan     = CabalPlan | NoCabalPlan deriving (Eq, Show)
 data StripComments = StripComments | DontStripComments deriving (Eq, Show)
+data StripEOL      = StripEOL | DontStripEOL deriving (Eq, Show)
 
 data Properties
     = SkipProperties
@@ -145,6 +148,7 @@ dynOptsP = pure combine
     <*> phaseP
     <*> preserveItP
     <*> stripComsP
+    <*> stripEolP
     <*> listP extP
     <*> timeoutP
     <*> timeoutMsgP
@@ -166,8 +170,8 @@ dynOptsP = pure combine
     monoidP :: Monoid a => O.Parser a -> O.Parser (a -> a)
     monoidP p = (\xs ys -> mconcat (ys : xs)) <$> many p
 
-    combine f1 f2 f3 f4 f5 f6 f7 f8 f9 fA fB fC fD fE (DynOpts x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD xE) =
-        DynOpts (f1 x1) (f2 x2) (f3 x3) (f4 x4) (f5 x5) (f6 x6) (f7 x7) (f8 x8) (f9 x9) (fA xA) (fB xB) (fC xC) (fD xD) (fE xE)
+    combine f1 f2 f3 f4 f5 f6 f7 f8 f9 fA fB fC fD fE fG (DynOpts x1 x2 x3 x4 x5 x6 x7 x8 x9 xA xB xC xD xE xG) =
+        DynOpts (f1 x1) (f2 x2) (f3 x3) (f4 x4) (f5 x5) (f6 x6) (f7 x7) (f8 x8) (f9 x9) (fA xA) (fB xB) (fC xC) (fD xD) (fE xE) (fG xG)
 
 lastOpt :: [a] -> a -> a
 lastOpt xs initial = foldl' (\_ x -> x) initial xs
@@ -194,6 +198,18 @@ stripComsP :: O.Parser (StripComments -> StripComments)
 stripComsP = lastOpt <$> many (on <|> off) where
     on  = O.flag'     StripComments $ O.long    "strip-comments" <> O.help "Strip comments in examples"
     off = O.flag' DontStripComments $ O.long "no-strip-comments" <> O.help "Don't strip comments in examples"
+
+-- $ diff --help
+-- <...>
+--   -E, --ignore-tab-expansion      ignore changes due to tab expansion
+--   -Z, --ignore-trailing-space     ignore white space at line end
+--   -b, --ignore-space-change       ignore changes in the amount of white space
+--   -w, --ignore-all-space          ignore all white space
+--   -B, --ignore-blank-lines        ignore changes where lines are all blank
+stripEolP :: O.Parser (StripEOL -> StripEOL)
+stripEolP = lastOpt <$> many (on <|> off) where
+    on  = O.flag'     StripEOL $ O.short 'Z' <> O.long    "ignore-trailing-space" <> O.help "Ignore white space at line end"
+    off = O.flag' DontStripEOL $                O.long "no-ignore-trailing-space" <> O.help "Don't ingore white space at line end"
 
 propertiesP :: O.Parser (Properties -> Properties)
 propertiesP = lastOpt <$> many (skip <|> simple) where
