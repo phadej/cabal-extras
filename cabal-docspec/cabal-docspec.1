@@ -1,4 +1,4 @@
-.TH CABAL-DOCSPEC 1 "April 6th, 2023" "cabal-docspec 0.0.0.20230406" "Cabal Extras"
+.TH CABAL-DOCSPEC 1 "May 17th, 2023" "cabal-docspec 0.0.0.20230517" "Cabal Extras"
 .SH NAME
 .PP
 cabal-docspec - another doctest for Haskell
@@ -71,6 +71,10 @@ Default \f[B]--no-preserve-it\f[R].
 Strip Haskell comments from examples and the outputs.
 Especially outputs are assumed to be Haskell-like.
 Default \f[B]--no-strip-comments\f[R].
+.TP
+\f[B]-Z, --ignore-trailing-space\f[R]
+Strip trailing whitespace from the produced outputs.
+Default \f[B]--no-ignore-trailing-space\f[R].
 .TP
 \f[B]--setup\f[R] \f[I]expr\f[R]
 An additional expression to execute as setup for all examples.

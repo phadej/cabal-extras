@@ -14,7 +14,6 @@ import Text.PrettyPrint.Annotated (Doc, ($$))
 import qualified Cabal.Config               as Cabal
 import qualified Data.Map                   as Map
 import qualified Data.Set                   as Set
-import qualified System.Console.ANSI        as ANSI
 
 import CabalDocspec.Doctest.Example
 import CabalDocspec.Doctest.Extract
@@ -180,7 +179,14 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
 
                     Example expr expected -> do
                         result <- eval tracer ghci preserveIt timeout timeoutMsg expr
-                        case mkResult expected (lines result) of
+
+                        let ls = lines result
+                        -- --strip-trailing-whitespace
+                        let ls' = case optStripEOL dynOpts of
+                                StripEOL -> map (dropWhileEnd isSpace) ls
+                                DontStripEOL -> ls
+
+                        case mkResult expected ls' of
                             Equal -> do
                                 return (Left (acc <> mempty { sExamples = ssSuccess }))
                             NotEqual diff -> do

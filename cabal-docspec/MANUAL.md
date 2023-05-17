@@ -61,6 +61,11 @@ However, in this list we mostly only list and show the --option version of them.
     Especially outputs are assumed to be Haskell-like.
     Default **\--no-strip-comments**.
 
+**-Z, \--ignore-trailing-space**
+
+:   Strip trailing whitespace from the produced outputs.
+    Default **\--no-ignore-trailing-space**.
+
 **\--setup** *expr*
 
 :   An additional expression to execute as setup for all examples.
