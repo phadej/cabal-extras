@@ -64,7 +64,7 @@ library cabal-store-gc-internal
     , cabal-plan
     , cryptohash-sha256
     , optics-core
-    , optparse-applicative   ^>=0.17.0.0
+    , optparse-applicative   ^>=0.18.0.0
     , paths
     , topograph
 
