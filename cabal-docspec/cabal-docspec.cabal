@@ -108,13 +108,13 @@ library cabal-docspec-internal
 
   -- dependencies in library
   build-depends:
-    , ansi-terminal          ^>=0.11
+    , ansi-terminal          ^>=1.0
     , async                  ^>=2.2.2
     , cabal-install-parsers  ^>=0.6
     , cabal-plan             ^>=0.7.0.0
     , Glob                   ^>=0.10.0
     , haskell-lexer          ^>=1.1
-    , optparse-applicative   ^>=0.17.0.0
+    , optparse-applicative   ^>=0.18.0.0
     , splitmix               ^>=0.1.0.3
     , unliftio-core          ^>=0.2.0.1
     , vector                 ^>=0.13.0.0

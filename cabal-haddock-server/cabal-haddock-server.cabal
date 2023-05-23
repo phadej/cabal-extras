@@ -81,7 +81,7 @@ library cabal-haddock-server-internal
     , haskell-lexer
     , http-types             ^>=0.12.3
     , lucid                  ^>=2.11.1
-    , optparse-applicative   ^>=0.17.0.0
+    , optparse-applicative   ^>=0.18.0.0
     , tar                    ^>=0.5.1.1
     , time-manager           ^>=0.0.0
     , wai                    ^>=3.2.3
