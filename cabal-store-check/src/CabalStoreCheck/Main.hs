@@ -195,6 +195,7 @@ checkConsistency tracer opts = do
         void $ runProcessCheck tracer storeDir ghcPkg
             [ "recache"
             , packageDbFlag
+            , "--global-package-db=" <> toFilePath (ghcGlobalDb ghcInfo)
             ]
 
         -- and run vanilla ghc-pkg check on the db
@@ -202,6 +203,7 @@ checkConsistency tracer opts = do
             [ "check"
             , packageDbFlag
             , "--simple-output"
+            , "--global-package-db=" <> toFilePath (ghcGlobalDb ghcInfo)
             ]
 
 -------------------------------------------------------------------------------

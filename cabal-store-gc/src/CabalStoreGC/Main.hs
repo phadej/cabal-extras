@@ -149,6 +149,7 @@ doCollect tracer opts = do
     void $ runProcessCheck tracer storeDir ghcPkg
         [ "recache"
         , packageDbFlag
+        , "--global-package-db=" <> toFilePath (ghcGlobalDb ghcInfo)
         ]
 
     -- and run vanilla ghc-pkg check on the db
@@ -156,6 +157,7 @@ doCollect tracer opts = do
         [ "check"
         , packageDbFlag
         , "--simple-output"
+        , "--global-package-db=" <> toFilePath (ghcGlobalDb ghcInfo)
         ]
 
 flippedFoldlM :: (Foldable f, Monad m) => f a -> b -> (b -> a -> m b) -> m b
