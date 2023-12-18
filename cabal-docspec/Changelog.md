@@ -1,6 +1,7 @@
 # 0.0.0.202312dd
 
 - Pass `default-language` flag to GHC
+- Fix issue with CPP defines without an explicit value (i.e. `-DFOO`, not `-DBAR=42`)
 
 # 0.0.0.20230406
 
