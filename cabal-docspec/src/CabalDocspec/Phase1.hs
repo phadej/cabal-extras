@@ -79,7 +79,7 @@ cppGhcVersion v = case C.versionNumbers v of
 parseDefineFlag :: String -> Maybe (String, String)
 parseDefineFlag ('-' : 'D' : rest) =
     case after of
-        []        -> Nothing
+        []        -> Just (before, "1")
         '=':value -> Just (before, value)
         _         -> Nothing -- shouldn't happen
   where
