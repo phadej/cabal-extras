@@ -84,8 +84,14 @@ data Phase
 -- TODO: take tracer
 dynOptsFromBuildInfo :: TracerPeu r Tr -> C.BuildInfo -> Peu r (DynOpts -> DynOpts)
 dynOptsFromBuildInfo tracer bi = do
+    let lang = case C.defaultLanguage bi of
+            Nothing -> id
+            Just l  -> \dynOpts -> dynOpts
+                { optExts = prettyShow l : optExts dynOpts
+                }
+
     endos <- for customFields (uncurry parse)
-    return $ \x -> foldl' (&) x endos
+    return $ \x -> foldl' (&) x (lang : endos)
   where
     customFields = C.customFieldsBI bi
 
