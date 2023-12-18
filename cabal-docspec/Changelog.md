@@ -1,3 +1,7 @@
+# 0.0.0.202312dd
+
+- Pass `default-language` flag to GHC
+
 # 0.0.0.20230406
 
 - Change failing docspec output to be proper diff.
