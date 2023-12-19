@@ -22,16 +22,18 @@ import CabalDocspec.Trace
 phase1
     :: TracerPeu r Tr
     -> GhcInfo
-    -> Version             -- ^ package version
-    -> Path Absolute       -- ^ package directory
-    -> Bool                -- ^ cpp extension
-    -> [Path Absolute]     -- ^ additional include directories
-    -> [PackageIdentifier] -- ^ dependencies
+    -> Maybe (Path Absolute)  -- ^ builddir
+    -> PackageName            -- ^ package name
+    -> Version                -- ^ package version
+    -> Path Absolute          -- ^ package directory
+    -> Bool                   -- ^ cpp extension
+    -> [Path Absolute]        -- ^ additional include directories
+    -> [PackageIdentifier]    -- ^ dependencies
     -> C.BuildInfo
     -> C.ModuleName
     -> Path Absolute
     -> Peu r (Module (Located String))
-phase1 tracer ghcInfo pkgVer pkgDir cppEnabled cppDirs pkgIds bi modname modpath = do
+phase1 tracer ghcInfo mbuildDir pkgName_ pkgVer pkgDir cppEnabled cppDirs pkgIds bi modname modpath = do
     traceApp tracer $ TracePhase1 modname modpath
 
     contents <- fromUTF8BS <$> readByteString modpath
@@ -59,7 +61,16 @@ phase1 tracer ghcInfo pkgVer pkgDir cppEnabled cppDirs pkgIds bi modname modpath
         -- so may break
         [ pkgDir </> fromUnrootedFilePath dir
         | dir <- C.includeDirs bi
-        ] ++ cppDirs
+        ] ++
+        [ buildDir </>
+          fromUnrootedFilePath "build" </>
+          componentDir ghcInfo (PackageIdentifier pkgName_ pkgVer) </>
+          fromUnrootedFilePath "build" </>
+          fromUnrootedFilePath dir
+        | buildDir <- toList mbuildDir
+        , dir <- C.includeDirs bi
+        ] ++
+        cppDirs
 
     cppDefines :: [(String, String)]
     cppDefines =
@@ -69,6 +80,13 @@ phase1 tracer ghcInfo pkgVer pkgDir cppEnabled cppDirs pkgIds bi modname modpath
         | d <- C.cppOptions bi
         , Just d' <- return (parseDefineFlag d)
         ]
+
+-- x86_64-linux/ghc-9.8.1/streamly-0.10.0
+componentDir :: GhcInfo -> PackageIdentifier -> Path Unrooted
+componentDir ghcInfo pid = 
+    fromUnrootedFilePath(ghcPlatform ghcInfo) </>
+    fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion ghcInfo)) </>
+    fromUnrootedFilePath (prettyShow pid)
 
 cppGhcVersion :: Version -> String
 cppGhcVersion v = case C.versionNumbers v of

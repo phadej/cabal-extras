@@ -1,7 +1,8 @@
-# 0.0.0.202312dd
+# 0.0.0.20231219
 
 - Pass `default-language` flag to GHC
 - Fix issue with CPP defines without an explicit value (i.e. `-DFOO`, not `-DBAR=42`)
+- Include `include-dirs` in build directory (for Configure generated headers)
 
 # 0.0.0.20230406
 
