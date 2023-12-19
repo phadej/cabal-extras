@@ -252,7 +252,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
     -- first phase: read modules and extract the comments
     let pkgVer = C.packageVersion (pkgGpd pkg)
     modules <- for modulePaths $ \(modname, modpath) ->
-        phase1 tracer ghcInfo pkgVer (pkgDir pkg) cppEnabled cppDirs pkgIds bi modname modpath
+        phase1 tracer ghcInfo (Just buildDir) (C.packageName (pkgGpd pkg)) pkgVer (pkgDir pkg) cppEnabled cppDirs pkgIds bi modname modpath
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
@@ -347,7 +347,7 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
     -- first phase: read modules and extract the comments
     let pkgVer = C.packageVersion (pkgGpd pkg)
     modules <- for modulePaths $ \(modname, modpath) ->
-        phase1 tracer ghcInfo pkgVer (pkgDir pkg) cppEnabled cppDirs pkgIds bi modname modpath
+        phase1 tracer ghcInfo Nothing (C.packageName (pkgGpd pkg)) pkgVer (pkgDir pkg) cppEnabled cppDirs pkgIds bi modname modpath
 
     -- extract doctests from the modules.
     let parsed :: [Module [Located DocTest]]
