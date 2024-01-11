@@ -492,6 +492,14 @@ quickCheck $ \xs -> reverse xs === xs
 [0,1] /= [1,0]
 ```
 
+QuickCheck can be used with different options by redefining `quickCheck` before executing
+the property. For example the number of successful test cases to pass may be raised:
+    
+```haskell
+-- $
+-- >>> quickCheck = quickCheckWith stdArgs{maxSuccess = 3000}
+```
+    
 A complete example that uses setup code is below:
 
 ```haskell
@@ -502,6 +510,7 @@ module Fib where
 -- >>> import Test.QuickCheck
 -- >>> newtype Small = Small Int deriving Show
 -- >>> instance Arbitrary Small where arbitrary = Small . (`mod` 10) <$> arbitrary
+-- >>> quickCheck prop = quickCheckWith stdArgs{maxSuccess = 3000}
 
 -- | Compute Fibonacci numbers
 --
