@@ -47,7 +47,7 @@ data GhcInfo = GhcInfo
     }
   deriving Show
 
-getGhcInfo 
+getGhcInfo
     :: (MakeGhcTracer t, MakePeuTracer t, MakeProcessTracer t)
     => Tracer (Peu r) t -> FilePath -> Peu r GhcInfo
 getGhcInfo tracer ghc = do
@@ -105,7 +105,10 @@ findGhcPkg tracer ghcInfo = do
     tracer' <- makeGhcTracer tracer
     traceWith tracer' $ TraceGhcFindGhcPkg ghcInfo
 
-    let guess = toFilePath $ ghcLibDir ghcInfo </> fromUnrootedFilePath "bin/ghc-pkg"
+    let guess =
+          if ghcVersion ghcInfo < mkVersion [9, 4]
+             then toFilePath $ ghcLibDir ghcInfo </> fromUnrootedFilePath "bin/ghc-pkg"
+             else toFilePath $ ghcLibDir ghcInfo </> fromUnrootedFilePath "../bin/ghc-pkg"
 
     ghcDir   <- getAppUserDataDirectory "ghc"
     verBS <- LBS.toStrict <$> runProcessCheck tracer ghcDir guess ["--version"]
@@ -182,7 +185,7 @@ data TraceGhc
     | TraceGhcFindGhcPkg GhcInfo
     | TraceGhcFindGhcPkgResult FilePath
   deriving (Show)
- 
+
 class MakeGhcTracer t where
     makeGhcTracer :: Tracer (Peu r) t -> Peu r (Tracer (Peu r) TraceGhc)
 
