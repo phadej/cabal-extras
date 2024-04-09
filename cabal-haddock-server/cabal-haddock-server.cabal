@@ -82,11 +82,11 @@ library cabal-haddock-server-internal
     , http-types             ^>=0.12.3
     , lucid                  ^>=2.11.1
     , optparse-applicative   ^>=0.18.0.0
-    , tar                    ^>=0.5.1.1
+    , tar                    ^>=0.6.2.0
     , time-manager           ^>=0.0.0
     , wai                    ^>=3.2.3
-    , warp                   ^>=3.3.23
-    , zlib                   ^>=0.6.2.3
+    , warp                   ^>=3.4.0
+    , zlib                   ^>=0.7.0.0
 
   default-extensions:
     NoImplicitPrelude
