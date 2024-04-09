@@ -13,7 +13,7 @@ license-files:
   LICENSE.GPLv2
   LICENSE.GPLv3
 
-tested-with:   GHC ==9.2.7
+tested-with:   GHC ==9.8.2
 
 source-repository head
   type:     git
@@ -55,31 +55,31 @@ library
   -- ghc-boot dependencies
   -- cabal-fmt: fragment ../fragments/boot-deps.fragment
   build-depends:
-    , base              ^>=4.16.4.0
+    , base              ^>=4.19.0.0
     , binary            ^>=0.8.9.0
-    , bytestring        ^>=0.11.3.1
-    , containers        ^>=0.6.5.1
-    , deepseq           ^>=1.4.6.1
-    , directory         ^>=1.3.6.2
-    , filepath          ^>=1.4.2.2
-    , mtl               ^>=2.2.2
-    , parsec            ^>=3.1.14.0
+    , bytestring        ^>=0.12.0.2
+    , containers        ^>=0.6.8
+    , deepseq           ^>=1.5.0.0
+    , directory         ^>=1.3.8.1
+    , filepath          ^>=1.4.100.4
+    , mtl               ^>=2.3.1
+    , parsec            ^>=3.1.17.0
     , pretty            ^>=1.1.3.6
-    , process           ^>=1.6.16.0
+    , process           ^>=1.6.18.0
     , stm               ^>=2.5.0.0
     , template-haskell
-    , text              ^>=1.2.5.0
+    , text              ^>=2.1
 
   -- We use Cabal-3.10
-  build-depends:      Cabal ^>=3.10.1.0
+  build-depends:      Cabal ^>=3.10.3.0
 
   -- Common exports
-  build-depends:      gentle-introduction ^>=2023.4
+  build-depends:      gentle-introduction ^>=2024.4
 
   -- Extra dependencies
   build-depends:
-    , aeson                  ^>=2.1.1.0
-    , ansi-terminal          ^>=1.0
+    , aeson                  ^>=2.2.1.0
+    , ansi-terminal          ^>=1.1
     , async                  ^>=2.2.2
     , base-compat            ^>=0.13.0
     , cabal-install-parsers  ^>=0.6
@@ -104,7 +104,6 @@ library
     build-depends: concurrent-output ^>=1.10.11
 
   default-extensions:
-    NoImplicitPrelude
     BangPatterns
     DeriveAnyClass
     DeriveFunctor
@@ -114,6 +113,7 @@ library
     GADTs
     GeneralizedNewtypeDeriving
     MultiWayIf
+    NoImplicitPrelude
     OverloadedLabels
     OverloadedStrings
     ScopedTypeVariables

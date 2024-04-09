@@ -13,9 +13,10 @@ import GHC.Data.StringBuffer                      (stringToStringBuffer)
 import GHC.Driver.Config.Parser                   (initParserOpts)
 import GHC.Driver.Ppr                             (showPpr)
 import GHC.Driver.Session                         (DynFlags, parseDynamicFilePragma, parseDynamicFlagsCmdLine, xopt)
-import GHC.Hs                                     (HsModule)
+import GHC.Hs                                     (GhcPs, HsModule)
 import GHC.Parser.Header                          (getOptions)
 import GHC.Parser.Lexer                           (ParseResult (..), getPsErrorMessages)
+import GHC.Types.Error                            (NoDiagnosticOpts (NoDiagnosticOpts))
 import GHC.Types.SrcLoc                           (Located, noLoc)
 import GHC.Utils.Error                            (pprMessages)
 import Language.Haskell.GhclibParserEx.GHC.Parser (parseFile)
@@ -43,7 +44,7 @@ parse
     -> C.BuildInfo
     -> C.ModuleName
     -> Path Absolute
-    -> Peu r (Located HsModule)
+    -> Peu r (Located (HsModule GhcPs))
 parse tracer ghcInfo pkgVer pkgDir cppDirs pkgIds bi modname modpath = do
     traceApp tracer $ TraceParse modname modpath
     let dflags0 = fakeDynFlags
@@ -78,7 +79,7 @@ parse tracer ghcInfo pkgVer pkgDir cppDirs pkgIds bi modname modpath = do
     fromParseResult _dflags (POk _ x)   = return x
     fromParseResult  dflags (PFailed s) = do
         let errors = getPsErrorMessages s
-        liftIO $ Prelude.putStrLn $ showPpr dflags $ pprMessages errors
+        liftIO $ Prelude.putStrLn $ showPpr dflags $ pprMessages NoDiagnosticOpts errors
         die tracer "Parse failure"
 
     cppIncludes :: [Path Absolute]
