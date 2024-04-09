@@ -14,7 +14,7 @@ license-files:
 
 author:             Oleg Grenrus <oleg.grenrus@iki.fi>
 maintainer:         Oleg Grenrus <oleg.grenrus@iki.fi>
-tested-with:        GHC ==9.2.7
+tested-with:        GHC ==9.8.2
 extra-source-files: Changelog.md
 
 source-repository head
@@ -36,23 +36,23 @@ library cabal-store-gc-internal
   -- ghc-boot dependencies
   -- cabal-fmt: fragment ../fragments/boot-deps.fragment
   build-depends:
-    , base              ^>=4.16.4.0
+    , base              ^>=4.19.0.0
     , binary            ^>=0.8.9.0
-    , bytestring        ^>=0.11.3.1
-    , containers        ^>=0.6.5.1
-    , deepseq           ^>=1.4.6.1
-    , directory         ^>=1.3.6.2
-    , filepath          ^>=1.4.2.2
-    , mtl               ^>=2.2.2
-    , parsec            ^>=3.1.14.0
+    , bytestring        ^>=0.12.0.2
+    , containers        ^>=0.6.8
+    , deepseq           ^>=1.5.0.0
+    , directory         ^>=1.3.8.1
+    , filepath          ^>=1.4.100.4
+    , mtl               ^>=2.3.1
+    , parsec            ^>=3.1.17.0
     , pretty            ^>=1.1.3.6
-    , process           ^>=1.6.16.0
+    , process           ^>=1.6.18.0
     , stm               ^>=2.5.0.0
     , template-haskell
-    , text              ^>=1.2.5.0
+    , text              ^>=2.1
 
   -- We use Cabal-3.10
-  build-depends:      Cabal ^>=3.10.1.0
+  build-depends:      Cabal ^>=3.10.3.0
 
   -- We also use peura
   build-depends:      peura
@@ -69,8 +69,8 @@ library cabal-store-gc-internal
     , topograph
 
   default-extensions:
-    NoImplicitPrelude
     DeriveFunctor
+    NoImplicitPrelude
     OverloadedStrings
 
 executable cabal-store-gc

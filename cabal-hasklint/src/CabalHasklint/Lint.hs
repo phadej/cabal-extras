@@ -7,10 +7,12 @@ import qualified Data.Set                     as Set
 import qualified Distribution.ModuleName      as C
 import qualified Distribution.Types.BuildInfo as C
 
-import GHC.Hs               (HsModule, hsmodImports, hsmodName)
-import GHC.Hs.ImpExp        (ImportDecl (..), ImportDeclQualifiedStyle (..))
-import GHC.Types.SrcLoc     (GenLocated (..), Located, unLoc)
-import GHC.Unit.Module.Name (moduleNameString)
+import GHC.Hs           (GhcPs, HsModule, hsmodImports, hsmodName)
+import GHC.Hs.ImpExp    (ImportDecl (..), ImportDeclQualifiedStyle (..))
+import GHC.Types.SrcLoc (GenLocated (..), Located, unLoc)
+
+import Language.Haskell.Syntax.ImpExp      (ImportListInterpretation (Exactly))
+import Language.Haskell.Syntax.Module.Name (moduleNameString)
 
 import CabalHasklint.GHC.Utils
 import CabalHasklint.Trace
@@ -20,7 +22,7 @@ lint
     :: TracerPeu r Tr
     -> [C.ModuleName] -- TODO: maybe take configured PD?
     -> C.BuildInfo
-    -> Located HsModule
+    -> Located (HsModule GhcPs)
     -> Peu r All
 lint tracer compModules _bi (L _ module_) = do
     traceApp tracer $ TraceLint (fromString thisModuleName)
@@ -37,9 +39,9 @@ lint tracer compModules _bi (L _ module_) = do
             moduleName = C.fromString (moduleNameString (unLoc (ideclName importDecl)))
 
         unless (Set.member moduleName compModules') $ case ideclQualified importDecl of
-            NotQualified -> case ideclHiding importDecl of
-                Just (False, _) -> return ()
-                _               -> putWarning tracer WUnqualImport $ "Wild import of " ++ prettyShow moduleName ++ " in " ++ fakeShowPpr loc
+            NotQualified -> case ideclImportList importDecl of
+                Just (Exactly, _) -> return ()
+                _                 -> putWarning tracer WUnqualImport $ "Wild import of " ++ prettyShow moduleName ++ " in " ++ fakeShowPpr loc
 
             _ -> return ()
 

@@ -1,4 +1,4 @@
-with-compiler: ghc-9.2.7
+with-compiler: ghc-9.8.2
 tests: True
 
 packages: cabal-bundler
@@ -15,6 +15,9 @@ packages: cabal-store-check
 packages: cabal-store-gc
 
 packages: peura
+
+-- compatibility with new directory
+packages: paths-0.2.0.0
 
 package *
   ghc-options: -fwrite-ide-info

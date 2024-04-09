@@ -8,9 +8,9 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.16.1
+# version: 0.19.20240402
 #
-# REGENDATA ("0.16.1",["github","--config=cabal.haskell-ci","cabal.project"])
+# REGENDATA ("0.19.20240402",["github","--config=cabal.haskell-ci","cabal.project"])
 #
 name: Haskell-CI
 on:
@@ -32,9 +32,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - compiler: ghc-9.2.7
+          - compiler: ghc-9.8.2
             compilerKind: ghc
-            compilerVersion: 9.2.7
+            compilerVersion: 9.8.2
             setup-method: ghcup
             allow-failure: false
       fail-fast: false
@@ -44,8 +44,9 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends gnupg ca-certificates dirmngr curl git software-properties-common libtinfo5
           mkdir -p "$HOME/.ghcup/bin"
-          curl -sL https://downloads.haskell.org/ghcup/0.1.19.2/x86_64-linux-ghcup-0.1.19.2 > "$HOME/.ghcup/bin/ghcup"
+          curl -sL https://downloads.haskell.org/ghcup/0.1.20.0/x86_64-linux-ghcup-0.1.20.0 > "$HOME/.ghcup/bin/ghcup"
           chmod a+x "$HOME/.ghcup/bin/ghcup"
+          "$HOME/.ghcup/bin/ghcup" config add-release-channel https://raw.githubusercontent.com/haskell/ghcup-metadata/master/ghcup-prereleases-0.0.8.yaml;
           "$HOME/.ghcup/bin/ghcup" install ghc "$HCVER" || (cat "$HOME"/.ghcup/logs/*.* && false)
           "$HOME/.ghcup/bin/ghcup" install cabal 3.6.2.0 || (cat "$HOME"/.ghcup/logs/*.* && false)
         env:
@@ -59,10 +60,12 @@ jobs:
           echo "CABAL_DIR=$HOME/.cabal" >> "$GITHUB_ENV"
           echo "CABAL_CONFIG=$HOME/.cabal/config" >> "$GITHUB_ENV"
           HCDIR=/opt/$HCKIND/$HCVER
-          HC=$HOME/.ghcup/bin/$HCKIND-$HCVER
+          HC=$("$HOME/.ghcup/bin/ghcup" whereis ghc "$HCVER")
+          HCPKG=$(echo "$HC" | sed 's#ghc$#ghc-pkg#')
+          HADDOCK=$(echo "$HC" | sed 's#ghc$#haddock#')
           echo "HC=$HC" >> "$GITHUB_ENV"
-          echo "HCPKG=$HOME/.ghcup/bin/$HCKIND-pkg-$HCVER" >> "$GITHUB_ENV"
-          echo "HADDOCK=$HOME/.ghcup/bin/haddock-$HCVER" >> "$GITHUB_ENV"
+          echo "HCPKG=$HCPKG" >> "$GITHUB_ENV"
+          echo "HADDOCK=$HADDOCK" >> "$GITHUB_ENV"
           echo "CABAL=$HOME/.ghcup/bin/cabal-3.6.2.0 -vnormal+nowrap" >> "$GITHUB_ENV"
           HCNUMVER=$(${HC} --numeric-version|perl -ne '/^(\d+)\.(\d+)\.(\d+)(\.(\d+))?$/; print(10000 * $1 + 100 * $2 + ($3 == 0 ? $5 != 1 : $3))')
           echo "HCNUMVER=$HCNUMVER" >> "$GITHUB_ENV"
@@ -122,8 +125,8 @@ jobs:
       - name: install cabal-docspec
         run: |
           mkdir -p $HOME/.cabal/bin
-          curl -sL https://github.com/phadej/cabal-extras/releases/download/cabal-docspec-0.0.0.20230406/cabal-docspec-0.0.0.20230406-x86_64-linux.xz > cabal-docspec.xz
-          echo '68fa9addd5dc453d533a74a763950499d4593b1297c9a05c3ea5bd1acc04c9dd  cabal-docspec.xz' | sha256sum -c -
+          curl -sL https://github.com/phadej/cabal-extras/releases/download/cabal-docspec-0.0.0.20231219/cabal-docspec-0.0.0.20231219-x86_64-linux.xz > cabal-docspec.xz
+          echo '8b60448275466bbe2b9409741b5dd07a41c541283017b95b44efe6e31379d067  cabal-docspec.xz' | sha256sum -c -
           xz -d < cabal-docspec.xz > $HOME/.cabal/bin/cabal-docspec
           rm -f cabal-docspec.xz
           chmod a+x $HOME/.cabal/bin/cabal-docspec
@@ -146,6 +149,7 @@ jobs:
           echo "packages: $GITHUB_WORKSPACE/source/cabal-store-check" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/cabal-store-gc" >> cabal.project
           echo "packages: $GITHUB_WORKSPACE/source/peura" >> cabal.project
+          echo "packages: $GITHUB_WORKSPACE/source/paths-0.2.0.0" >> cabal.project
           cat cabal.project
       - name: sdist
         run: |
@@ -179,6 +183,8 @@ jobs:
           echo "PKGDIR_cabal_store_gc=${PKGDIR_cabal_store_gc}" >> "$GITHUB_ENV"
           PKGDIR_peura="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/peura-[0-9.]*')"
           echo "PKGDIR_peura=${PKGDIR_peura}" >> "$GITHUB_ENV"
+          PKGDIR_paths="$(find "$GITHUB_WORKSPACE/unpacked" -maxdepth 1 -type d -regex '.*/paths-[0-9.]*')"
+          echo "PKGDIR_paths=${PKGDIR_paths}" >> "$GITHUB_ENV"
           rm -f cabal.project cabal.project.local
           touch cabal.project
           touch cabal.project.local
@@ -193,6 +199,7 @@ jobs:
           echo "packages: ${PKGDIR_cabal_store_check}" >> cabal.project
           echo "packages: ${PKGDIR_cabal_store_gc}" >> cabal.project
           echo "packages: ${PKGDIR_peura}" >> cabal.project
+          echo "packages: ${PKGDIR_paths}" >> cabal.project
           echo "package cabal-bundler" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           echo "package cabal-deps" >> cabal.project
@@ -215,11 +222,13 @@ jobs:
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           echo "package peura" >> cabal.project
           echo "    ghc-options: -Werror=missing-methods" >> cabal.project
+          echo "package paths" >> cabal.project
+          echo "    ghc-options: -Werror=missing-methods" >> cabal.project
           cat >> cabal.project <<EOF
           packages:
-            $GITHUB_WORKSPACE/source/extras/gentle-introduction-2023.4.tar.gz
+            $GITHUB_WORKSPACE/source/extras/gentle-introduction-2024.4.tar.gz
 
-          packages:    $GITHUB_WORKSPACE/source/extras/hooglite-0.20230131.tar.gz
+          packages:    $GITHUB_WORKSPACE/source/extras/hooglite-0.20240409.tar.gz
           constraints: Cabal ^>=3.10.1.0
           constraints: optics-core ^>=0.4.1
           constraints: directory     installed
@@ -232,7 +241,7 @@ jobs:
           allow-newer: serialise-0.2.6.0:strict
           allow-newer: serialise-0.2.6.0:these
           EOF
-          $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: $_ installed\n" unless /^(Cabal|Cabal-syntax|cabal-bundler|cabal-deps|cabal-diff|cabal-docspec|cabal-env|cabal-haddock-server|cabal-hasklint|cabal-hie|cabal-store-check|cabal-store-gc|peura)$/; }' >> cabal.project.local
+          $HCPKG list --simple-output --names-only | perl -ne 'for (split /\s+/) { print "constraints: $_ installed\n" unless /^(Cabal|Cabal-syntax|cabal-bundler|cabal-deps|cabal-diff|cabal-docspec|cabal-env|cabal-haddock-server|cabal-hasklint|cabal-hie|cabal-store-check|cabal-store-gc|paths|peura)$/; }' >> cabal.project.local
           cat cabal.project
           cat cabal.project.local
       - name: dump install plan
@@ -285,6 +294,8 @@ jobs:
           cd ${PKGDIR_cabal_store_gc} || false
           ${CABAL} -vnormal check
           cd ${PKGDIR_peura} || false
+          ${CABAL} -vnormal check
+          cd ${PKGDIR_paths} || false
           ${CABAL} -vnormal check
       - name: haddock
         run: |
