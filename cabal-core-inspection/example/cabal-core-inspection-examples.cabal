@@ -1,0 +1,14 @@
+cabal-version: 2.4
+name:          cabal-core-inspection-examples
+version:       0
+
+library
+  default-language: Haskell2010
+  default-extensions: DeriveGeneric FlexibleContexts GADTs TypeOperators
+  hs-source-dirs:   src
+  build-depends:
+    , base
+    , bytestring
+    , text
+
+  exposed-modules:  Example GenericEq
