@@ -22,8 +22,12 @@ import Paths_cabal_iface_query (version)
 
 import CabalIfaceQuery.GHC
 
-import qualified CabalIfaceQuery.GHC.All as GHC
-
+import qualified GHC.Core                 as GHC (isOrphan)
+import qualified GHC.Iface.Syntax         as GHC
+import qualified GHC.Types.Name.Cache     as GHC (initNameCache)
+import qualified GHC.Unit.Module.Deps     as GHC (dep_orphs)
+import qualified GHC.Unit.Module.ModIface as GHC
+import qualified GHC.Unit.Types           as GHC (GenModule (..))
 
 -------------------------------------------------------------------------------
 -- Main
@@ -42,7 +46,9 @@ main = do
         cblCfg  <- liftIO Cbl.readConfig
         storeDir <- makeAbsoluteFilePath $ runIdentity $ Cbl.cfgStoreDir cblCfg
         let storeDir' = storeDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion ghcInfo))
-        let globalDir = takeDirectory $ ghcGlobalDb ghcInfo
+        -- TODO: add platform syntax
+        let globalDir = takeDirectory (ghcGlobalDb ghcInfo) </> fromUnrootedFilePath "x86_64-linux-ghc-9.8.2"
+        putInfo tracer $ "global dir " ++ show globalDir
 
         -- read plan
         plan <- case optPlan opts of
@@ -71,8 +77,8 @@ main = do
             hiFiles <- globDir1 "build/**/*.hi" distDir
             return $ (,) distDir <$> hiFiles
 
-        -- name cache updater, needed for reading interface files
-        ncu <- liftIO makeNameCacheUpdater
+        -- name cache, needed for reading interface files
+        ncu <- liftIO $ GHC.initNameCache 'q' []
 
         -- For each of .hi file we found, let us see if there are orphans
         modules <- fmap (ordNub  . concat) $ for hiFiles $ \(distDir, hiFile) -> do

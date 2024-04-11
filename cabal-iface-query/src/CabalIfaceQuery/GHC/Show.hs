@@ -2,10 +2,10 @@ module CabalIfaceQuery.GHC.Show (
     ghcShow,
 ) where
 
-import Prelude    (String, (.))
+import Prelude (String, (.))
 
-import DynFlags   (DynFlags)
-import Outputable (Outputable, ppr, showSDocOneLine)
+import GHC.Driver.Session   (DynFlags, initSDocContext)
+import GHC.Utils.Outputable (Outputable, defaultDumpStyle, ppr, showSDocOneLine)
 
 ghcShow :: Outputable t => DynFlags -> t -> String
-ghcShow dflags = showSDocOneLine dflags . ppr
+ghcShow dflags = showSDocOneLine (initSDocContext dflags defaultDumpStyle) . ppr
