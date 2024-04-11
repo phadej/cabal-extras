@@ -1,0 +1,6 @@
+packages: .
+
+with-compiler: ghc-9.8.2
+
+package cabal-core-inspection-examples
+  ghc-options: -fwrite-if-simplified-core

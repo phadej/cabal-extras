@@ -2,6 +2,7 @@ with-compiler: ghc-9.8.2
 tests: True
 
 packages: cabal-bundler
+packages: cabal-core-inspection
 packages: cabal-deps
 packages: cabal-diff
 packages: cabal-docspec
