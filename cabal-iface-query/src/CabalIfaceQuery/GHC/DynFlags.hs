@@ -6,15 +6,8 @@ module CabalIfaceQuery.GHC.DynFlags (
 
 import Peura
 
-import DynFlags (DynFlags, defaultDynFlags)
-
-#if MIN_VERSION_ghc(8,10,0)
-import SysTools   (lazyInitLlvmConfig, initSysTools)
-#elif MIN_VERSION_ghc(8,6,0)
-import SysTools   (initLlvmConfig, initSysTools)
-#else
-import SysTools   (initLlvmTargets, initSysTools)
-#endif
+import GHC.Driver.Session (DynFlags, defaultDynFlags)
+import GHC.SysTools       (initSysTools)
 
 -- | Get 'DynFlags' given 'GhcInfo' for this GHC.
 getDynFlags :: TracerPeu r w -> GhcInfo -> Peu r DynFlags
@@ -23,17 +16,6 @@ getDynFlags tracer ghcInfo = do
         die tracer $ "Compiler version mismatch: " ++
             VERSION_ghc ++ " /= " ++ prettyShow (ghcVersion ghcInfo)
 
-#if MIN_VERSION_ghc(8,8,0)
     let libDir = toFilePath $ ghcLibDir ghcInfo
-#else
-    let libDir = Just $ toFilePath $ ghcLibDir ghcInfo
-#endif
     settings <- liftIO $ initSysTools libDir
-#if MIN_VERSION_ghc(8,10,0)
-    llvmConfig <- liftIO $ lazyInitLlvmConfig libDir
-#elif MIN_VERSION_ghc(8,6,0)
-    llvmConfig <- liftIO $ initLlvmConfig libDir
-#else
-    llvmConfig <- liftIO $ initLlvmTargets libDir
-#endif
-    return $ defaultDynFlags settings llvmConfig
+    return $ defaultDynFlags settings

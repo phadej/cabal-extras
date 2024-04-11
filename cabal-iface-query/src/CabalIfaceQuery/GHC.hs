@@ -1,4 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP          #-}
 {-# LANGUAGE RankNTypes   #-}
 {-# OPTIONS -Wno-missing-fields #-}
@@ -7,43 +6,45 @@ module CabalIfaceQuery.GHC (
     getDynFlags,
     -- * Other
     easyReadBinIface,
-    makeNameCacheUpdater,
     ghcShow,
     ghcShowIfaceClsInst,
 ) where
 
 import Peura
 
+import GHC.Driver.Session       (targetProfile)
+import GHC.Iface.Binary         (CheckHiWay (CheckHiWay), TraceBinIFace (QuietBinIFace), readBinIface)
+import GHC.Iface.Syntax         (IfaceClsInst (..), IfaceTyCon (..))
+import GHC.Types.Name           (nameModule_maybe)
+import GHC.Types.Name.Cache     (NameCache)
+import GHC.Unit.Module.ModIface (ModIface)
+
 import CabalIfaceQuery.GHC.DynFlags
 import CabalIfaceQuery.GHC.Show
-import CabalIfaceQuery.GHC.NameCacheUpdater
-import CabalIfaceQuery.GHC.ReadBinIface
-
-import qualified CabalIfaceQuery.GHC.All as GHC
 
 -------------------------------------------------------------------------------
 -- "Easy" interface
 -------------------------------------------------------------------------------
 
-easyReadBinIface :: DynFlags -> NameCacheUpdater -> Path Absolute -> IO GHC.ModIface
-easyReadBinIface dflags ncu path =
-    readBinIface_  dflags CheckHiWay QuietBinIFaceReading (toFilePath path) ncu
+easyReadBinIface :: DynFlags -> NameCache -> Path Absolute -> IO ModIface
+easyReadBinIface dflags nc path =
+    readBinIface (targetProfile dflags) nc CheckHiWay QuietBinIFace (toFilePath path)
 
 -------------------------------------------------------------------------------
 -- Showing
 -------------------------------------------------------------------------------
 
-ghcShowIfaceClsInst :: DynFlags -> GHC.IfaceClsInst -> String
+ghcShowIfaceClsInst :: DynFlags -> IfaceClsInst -> String
 ghcShowIfaceClsInst dflags ifci = unwords $
     "instance" :
-    ghcShow dflags (GHC.ifInstCls ifci) :
+    ghcShow dflags (ifInstCls ifci) :
     [ maybe "_" (ghcShow dflags) tyCon
-    | tyCon <- GHC.ifInstTys ifci
+    | tyCon <- ifInstTys ifci
     ] ++
     extras
   where
-    extras = case GHC.ifInstTys ifci of
-        (Just (GHC.IfaceTyCon n _) : _) ->
-            maybe [] (\m -> ["(from " ++ ghcShow dflags m ++ ")"]) (GHC.nameModule_maybe n)
+    extras = case ifInstTys ifci of
+        (Just (IfaceTyCon n _) : _) ->
+            maybe [] (\m -> ["(from " ++ ghcShow dflags m ++ ")"]) (nameModule_maybe n)
         _                           -> []
 

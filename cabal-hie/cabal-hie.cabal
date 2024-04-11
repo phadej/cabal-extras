@@ -55,7 +55,7 @@ library cabal-hie-internal
 
   -- dependencies in library
   build-depends:
-    , aeson                  ^>=2.2.1.0
+    , aeson
     , ansi-terminal
     , cabal-install-parsers
     , cabal-plan

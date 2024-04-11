@@ -9,7 +9,7 @@ packages: cabal-env
 packages: cabal-haddock-server
 packages: cabal-hasklint
 packages: cabal-hie
--- packages: cabal-iface-query
+packages: cabal-iface-query
 
 packages: cabal-store-check
 packages: cabal-store-gc
@@ -25,10 +25,12 @@ package *
 package peura
   flags: -concurrent-output
 
-constraints: Cabal ^>=3.10.1.0
+constraints: Cabal ^>=3.10.3.0
 
 -- some constraints to force latest versions
 constraints: optics-core ^>=0.4.1
+constraints: aeson ^>=2.2.1.0
+
 
 constraints: directory     installed
 constraints: process       installed

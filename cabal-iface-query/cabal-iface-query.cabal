@@ -21,10 +21,7 @@ library cabal-iface-query-internal
   ghc-options:        -Wall
   exposed-modules:
     CabalIfaceQuery.GHC
-    CabalIfaceQuery.GHC.All
     CabalIfaceQuery.GHC.DynFlags
-    CabalIfaceQuery.GHC.NameCacheUpdater
-    CabalIfaceQuery.GHC.ReadBinIface
     CabalIfaceQuery.GHC.Show
     CabalIfaceQuery.Main
 
