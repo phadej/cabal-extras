@@ -17,6 +17,7 @@ module Peura.Exports (
     -- * Types
     ExitCode (..),
     LazyByteString,
+    LibraryName (..),
     PackageName,
     PackageIdentifier (..),
     Version,
@@ -32,6 +33,8 @@ module Peura.Exports (
     bracket,
     -- ** Data.List
     sortBy, sortOn, splitOn,
+    -- ** Data.Tuple
+    fstOf3, sndOf3, trdOf3,
     -- * Cabal
     prettyShow,
     mkPackageName,
@@ -68,6 +71,7 @@ import Data.Binary                     (Binary)
 import Data.List                       (sortBy, sortOn)
 import Distribution.Pretty             (prettyShow)
 import Data.These (these)
+import Distribution.Types.LibraryName  (LibraryName (..))
 import Distribution.Types.PackageId    (PackageIdentifier (..))
 import Distribution.Types.PackageName  (PackageName, mkPackageName)
 import Distribution.Types.UnitId       (UnitId)
@@ -100,3 +104,12 @@ splitOn sep = go where
         | otherwise = (x : ys) :| yss
       where
         ~(ys :| yss) = go xs
+
+fstOf3 :: (a, b, c) -> a
+fstOf3 (a, _, _) = a
+
+sndOf3 :: (a, b, c) -> b
+sndOf3 (_, b, _) = b
+
+trdOf3 :: (a, b, c) -> c
+trdOf3 (_, _, c) = c
