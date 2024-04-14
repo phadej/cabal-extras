@@ -209,69 +209,84 @@ testComponent
     -> Plan.CompName
     -> Plan.CompInfo
     -> Peu r Summary
-testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pkg unit cn@Plan.CompNameLib ci = do
-    traceApp tracerTop $ TraceComponent (C.packageId (pkgGpd pkg)) cn
+testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pkg unit cn ci = do
+    case cn of
+        Plan.CompNameLib -> do
+            traceApp tracerTop $ TraceComponent (C.packageId (pkgGpd pkg)) cn
 
-    -- "configure"
-    lib0 <- maybe (die tracerTop "no library component in GPD") return
-        $ C.condLibrary $ pkgGpd pkg
-    let (_, lib) = simplifyCondTree ghcInfo (Map.mapKeys toCabal $ Plan.uFlags unit) lib0
-    let bi = C.libBuildInfo lib
-    let cppEnabled = Ext.EnableExtension Ext.CPP `elem` C.defaultExtensions bi
+            lib0 <- maybe (die tracerTop "no library component in GPD") return
+                $ C.condLibrary $ pkgGpd pkg
+            aux lib0
 
-    -- append options in .cabal file
-    dynOptsBi <- dynOptsFromBuildInfo tracerTop bi
-    let dynOpts = dynOptsCli (dynOptsBi defaultDynOpts)
+        Plan.CompNameSubLib ln -> do
+            traceApp tracerTop $ TraceComponent (C.packageId (pkgGpd pkg)) cn
+            let qn = C.mkUnqualComponentName (T.unpack ln)
 
-    -- Once dynOpts is read we can read adjust verbosity of our tracer
-    let tracer = adjustTracer (optVerbosity dynOpts) tracer0
+            lib0 <- maybe (die tracerTop $ "no sublibrary component in GPD" <> prettyShow qn) return
+                $ Map.lookup qn sublibs
+            aux lib0
 
-    -- find extra units
-    extraUnitIds <- findExtraPackages tracer plan $ Set.toList $ propPkgs dynOpts <> optExtraPkgs dynOpts
+        -- Skip other components
+        _ -> return mempty
+  where
+    sublibs :: Map C.UnqualComponentName (C.CondTree C.ConfVar [C.Dependency] C.Library)
+    sublibs = Map.fromList (C.condSubLibraries $ pkgGpd pkg)
 
-    -- find library module paths
-    modulePaths <- findModules
-        tracer
-        (pkgDir pkg)
-        (C.hsSourceDirs bi)
-        (C.exposedModules lib)
+    aux lib0 = do
+        -- "configure"
+        let (_, lib) = simplifyCondTree ghcInfo (Map.mapKeys toCabal $ Plan.uFlags unit) lib0
+        let bi = C.libBuildInfo lib
+        let cppEnabled = Ext.EnableExtension Ext.CPP `elem` C.defaultExtensions bi
 
-    let pkgIds :: [PackageIdentifier]
-        pkgIds =
-            [ toCabal $ Plan.uPId unit'
-            | unitId <- toList (Plan.ciLibDeps ci)
-            , Just unit' <- return $ Plan.pjUnits plan ^? ix unitId
-            ]
+        -- append options in .cabal file
+        dynOptsBi <- dynOptsFromBuildInfo tracerTop bi
+        let dynOpts = dynOptsCli (dynOptsBi defaultDynOpts)
 
-    let unitIds :: [UnitId]
-        unitIds = ordNub $
-            toCabal (Plan.uId unit) :
-            map toCabal (toList (Plan.ciLibDeps ci)) ++
-            extraUnitIds
+        -- Once dynOpts is read we can read adjust verbosity of our tracer
+        let tracer = adjustTracer (optVerbosity dynOpts) tracer0
 
-    -- cpp include dirs
-    cppDirs <- traverse makeAbsolute (optCppIncludeDirs dynOpts)
+        -- find extra units
+        extraUnitIds <- findExtraPackages tracer plan $ Set.toList $ propPkgs dynOpts <> optExtraPkgs dynOpts
 
-    -- first phase: read modules and extract the comments
-    let pkgVer = C.packageVersion (pkgGpd pkg)
-    modules <- for modulePaths $ \(modname, modpath) ->
-        phase1 tracer ghcInfo (Just buildDir) (C.packageName (pkgGpd pkg)) pkgVer (pkgDir pkg) cppEnabled cppDirs pkgIds bi modname modpath
+        -- find library module paths
+        modulePaths <- findModules
+            tracer
+            (pkgDir pkg)
+            (C.hsSourceDirs bi)
+            (C.exposedModules lib)
 
-    -- extract doctests from the modules.
-    let parsed :: [Module [Located DocTest]]
-        parsed = fmap4 (doctestStripComments (optStripComs dynOpts))
-            $ parseModules modules where
+        let pkgIds :: [PackageIdentifier]
+            pkgIds =
+                [ toCabal $ Plan.uPId unit'
+                | unitId <- toList (Plan.ciLibDeps ci)
+                , Just unit' <- return $ Plan.pjUnits plan ^? ix unitId
+                ]
 
-    validated <- validate tracer parsed
-    if optPhase dynOpts > Phase1
-    then do
-        phase2 tracer dynOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgDir pkg) env validated
-    else
-        return $ foldMap skipModule parsed
+        let unitIds :: [UnitId]
+            unitIds = ordNub $
+                toCabal (Plan.uId unit) :
+                map toCabal (toList (Plan.ciLibDeps ci)) ++
+                extraUnitIds
 
--- Skip other components
-testComponent _tracer0 _tracerTop _dynOpts _ghcInfo _buildDir _cabalCfg _plan _env _pkg _unit _cn _ci =
-    return mempty
+        -- cpp include dirs
+        cppDirs <- traverse makeAbsolute (optCppIncludeDirs dynOpts)
+
+        -- first phase: read modules and extract the comments
+        let pkgVer = C.packageVersion (pkgGpd pkg)
+        modules <- for modulePaths $ \(modname, modpath) ->
+            phase1 tracer ghcInfo (Just buildDir) (C.packageName (pkgGpd pkg)) pkgVer (pkgDir pkg) cppEnabled cppDirs pkgIds bi modname modpath
+
+        -- extract doctests from the modules.
+        let parsed :: [Module [Located DocTest]]
+            parsed = fmap4 (doctestStripComments (optStripComs dynOpts))
+                $ parseModules modules where
+
+        validated <- validate tracer parsed
+        if optPhase dynOpts > Phase1
+        then do
+            phase2 tracer dynOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgDir pkg) env validated
+        else
+            return $ foldMap skipModule parsed
 
 -------------------------------------------------------------------------------
 -- Test component without

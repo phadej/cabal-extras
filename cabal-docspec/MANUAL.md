@@ -74,7 +74,7 @@ However, in this list we mostly only list and show the --option version of them.
 **\--extra-package** *pkgname*
 
 :   An extra package to make available in GHCi session. The package must
-    exist in the plan.
+    exist in the plan. Sublibrary syntax **mypkg:mysublib** is also accepted.
 
 **\--timeout** *seconds*
 
@@ -700,6 +700,14 @@ There are a few differences.
    For example *Prelude.Compat* from *base-compat* and *base-compat-batteries*
    won't cause ambiguous module problems, as long as the library being tested
    itself depends only on either one.
+
+Q: How to run tests on internal modules?
+----------------------------------------
+
+cabal-docspec can only test the exported interfaces, so it's not possible to
+test **other-modules**. However, cabal-docspec does test *internal* libraries.
+Therefore you can put the internal modules into internal library and then
+cabal-docspec will be able to test them.
 
 SEE ALSO
 ========

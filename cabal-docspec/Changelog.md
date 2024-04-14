@@ -1,3 +1,8 @@
+# 0.0.0.20240414
+
+- `--extra-package` accepts sublibraries, i.e. `mypkg:sublib` syntax.
+- `cabal-docspec` tests all library components, also internal (visible and invisible) components.
+
 # 0.0.0.20231219
 
 - Pass `default-language` flag to GHC
