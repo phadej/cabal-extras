@@ -1,4 +1,4 @@
-VERSION=0.0.0.20230517
+VERSION=0.0.0.20240414
 EXETARGET=cabal-docspec
 
 cabal-docspec.1 : MANUAL.md

@@ -1,4 +1,4 @@
-.TH CABAL-DOCSPEC 1 "May 17th, 2023" "cabal-docspec 0.0.0.20230517" "Cabal Extras"
+.TH CABAL-DOCSPEC 1 "May 17th, 2023" "cabal-docspec 0.0.0.20240414" "Cabal Extras"
 .SH NAME
 .PP
 cabal-docspec - another doctest for Haskell
@@ -83,6 +83,7 @@ Can be specified multiple times.
 \f[B]--extra-package\f[R] \f[I]pkgname\f[R]
 An extra package to make available in GHCi session.
 The package must exist in the plan.
+Sublibrary syntax \f[B]mypkg:mysublib\f[R] is also accepted.
 .TP
 \f[B]--timeout\f[R] \f[I]seconds\f[R]
 Timeout for evaluation of single expression.
@@ -751,6 +752,13 @@ For example \f[I]Prelude.Compat\f[R] from \f[I]base-compat\f[R] and
 \f[I]base-compat-batteries\f[R] won\[cq]t cause ambiguous module
 problems, as long as the library being tested itself depends only on
 either one.
+.SS Q: How to run tests on internal modules?
+.PP
+cabal-docspec can only test the exported interfaces, so it\[cq]s not
+possible to test \f[B]other-modules\f[R].
+However, cabal-docspec does test \f[I]internal\f[R] libraries.
+Therefore you can put the internal modules into internal library and
+then cabal-docspec will be able to test them.
 .SH SEE ALSO
 .PP
 doctest(1) https://hackage.haskell.org/package/doctest
