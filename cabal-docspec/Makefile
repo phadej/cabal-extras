@@ -8,15 +8,15 @@ cabal-docspec.1 : MANUAL.md
 man : cabal-docspec.1
 	cat cabal-docspec.1 | man -l -
 
+ALPINEVERSION:=3.17.3
+GHCUPVERSION:=0.1.22.0
+GHCVERSION:=9.8.2
+CABALVERSION:=3.10.3.0
+
 CABALPLAN:=$(HOME)/.local/bin/cabal-plan
 CABAL:=$(HOME)/.ghcup/bin/cabal
-GHC:=$(HOME)/.ghcup/bin/ghc-9.2.7
+GHC:=$(HOME)/.ghcup/bin/ghc-$(GHCVERSION)
 GHCUP:=$(HOME)/.ghcup/bin/ghcup
-
-ALPINEVERSION:=3.17.3
-GHCUPVERSION:=0.1.19.2
-GHCVERSION:=9.2.7
-CABALVERSION:=3.10.1.0
 
 # docker run -ti -v $(dirname $(pwd)):/src alpine:3.17.3
 # cd /src/cabal-docspec
@@ -25,7 +25,7 @@ CABALVERSION:=3.10.1.0
 #
 .PHONY: alpine-release
 alpine-release :
-	apk add binutils-gold curl gcc git gmp-dev libc-dev libffi-dev make musl-dev ncurses-dev openssh-client perl tar tmux vim xz zlib-dev zlib-static
+	apk add binutils-gold curl gcc g++ git gmp-dev libc-dev libffi-dev make musl-dev ncurses-dev openssh-client perl tar tmux vim xz xz-dev zlib-dev zlib-static
 	mkdir -p $(HOME)/.local/bin
 	curl -L https://github.com/haskell-hvr/cabal-plan/releases/download/v0.7.3.0/cabal-plan-0.7.3.0-x86_64-linux.xz | xz -d > $(CABALPLAN)
 	chmod a+x $(CABALPLAN)

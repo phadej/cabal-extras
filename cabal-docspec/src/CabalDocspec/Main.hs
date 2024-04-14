@@ -507,7 +507,7 @@ filterExpressionD orig@(L l (Property s)) =
 -- Otherwise
 --
 -- @
--- >>> :{
+-- ghci> :{
 -- x = 1
 --
 -- y = 2
