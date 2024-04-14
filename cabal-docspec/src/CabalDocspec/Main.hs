@@ -15,6 +15,8 @@ import qualified Cabal.Config                                 as Cabal
 import qualified Cabal.Plan                                   as Plan
 import qualified Data.Map.Strict                              as Map
 import qualified Data.Set                                     as Set
+import qualified Data.Text                                    as T
+import qualified Distribution.Compat.NonEmptySet              as NES
 import qualified Distribution.Compiler                        as C
 import qualified Distribution.ModuleName                      as C
 import qualified Distribution.Package                         as C
@@ -26,8 +28,8 @@ import qualified Distribution.Types.Flag                      as C
 import qualified Distribution.Types.GenericPackageDescription as C
 import qualified Distribution.Types.InstalledPackageInfo      as IPI
 import qualified Distribution.Types.Library                   as C
-import qualified Distribution.Types.LibraryName               as C
 import qualified Distribution.Types.PackageDescription        as C
+import qualified Distribution.Types.UnqualComponentName       as C
 import qualified Distribution.Utils.Path                      as C
 import qualified Distribution.Version                         as C
 import qualified Language.Haskell.Extension                   as Ext
@@ -37,6 +39,7 @@ import qualified System.FilePath                              as FP
 import CabalDocspec.Doctest.Extract
 import CabalDocspec.Doctest.Parse
 import CabalDocspec.Lexer
+import CabalDocspec.Library
 import CabalDocspec.Located
 import CabalDocspec.Man
 import CabalDocspec.Opts
@@ -307,31 +310,31 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
     -- Once dynOpts is read we can read adjust verbosity of our tracer
     let tracer = adjustTracer (optVerbosity dynOpts) tracer0
 
-    let findUnit :: PackageName -> Peu r (UnitId, PackageIdentifier)
-        findUnit pn = do
+    let findUnit :: Library -> Peu r (UnitId, PackageIdentifier, LibraryName)
+        findUnit lib'@(Library pn ln) = do
             let units =
-                    [ (unitId, IPI.sourcePackageId ipi)
+                    [ (unitId, IPI.sourcePackageId ipi, ln)
                     | (unitId, ipi) <- itoList dbG
                     , C.packageName (IPI.sourcePackageId ipi) == pn
-                    , IPI.sourceLibName ipi == C.LMainLibName
+                    , IPI.sourceLibName ipi == ln
                     ]
 
             case units of
                 [u] -> return u
-                []  -> die tracer $ "Cannot find unit for " ++ prettyShow pn
-                _   -> die tracer $ "Found multiple units for " ++ prettyShow pn ++ ": " ++
-                    unwords (map (prettyShow . fst) units)
+                []  -> die tracer $ "Cannot find unit for " ++ prettyShow lib'
+                _   -> die tracer $ "Found multiple units for " ++ prettyShow lib' ++ ": " ++
+                    unwords (map (prettyShow . fstOf3) units)
 
     -- we don't have install plan, so we look for packages in IPI
-    depends <- for (C.targetBuildDepends bi) $ \dep -> findUnit (C.depPkgName dep)
-    thisUnitId <- findUnit (C.packageName (pkgGpd pkg))
+    depends <- fmap concat $ for (C.targetBuildDepends bi) $ \dep -> traverse findUnit (toList (depLib dep))
+    thisUnitId <- findUnit (Library (C.packageName (pkgGpd pkg)) LMainLibName) -- TODO: libraryname
     extraUnitIds <- traverse findUnit $ Set.toList $ propPkgs dynOpts <> optExtraPkgs dynOpts
 
     let pkgIds :: [PackageIdentifier]
-        pkgIds = map snd depends
+        pkgIds = map sndOf3 depends
 
     let unitIds :: [UnitId]
-        unitIds = ordNub $ map fst $
+        unitIds = ordNub $ map fstOf3 $
             thisUnitId : depends ++ extraUnitIds
 
     -- find library module paths
@@ -371,31 +374,31 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
 findExtraPackages
     :: TracerPeu r Tr
     -> Plan.PlanJson
-    -> [PackageName]
+    -> [Library]
     -> Peu r [UnitId]
-findExtraPackages tracer plan = traverse $ \pn -> do
+findExtraPackages tracer plan = traverse $ \lib@(Library pn ln) -> do
     let units =
           [ toCabal uid
           | (uid, unit) <- itoList (Plan.pjUnits plan)
           , let PackageIdentifier pn' _ = toCabal (Plan.uPId unit)
           , pn == pn'
-          , Plan.CompNameLib `Map.member` Plan.uComps unit
+          , libNameToCompName ln `Map.member` Plan.uComps unit
           ]
 
     case units of
         [u] -> return u
-        []  -> die tracer $ "Cannot find unit for " ++ prettyShow pn
-        _   -> die tracer $ "Found multiple units for " ++ prettyShow pn ++ ": " ++
+        []  -> die tracer $ "Cannot find unit for " ++ prettyShow lib
+        _   -> die tracer $ "Found multiple units for " ++ prettyShow lib ++ ": " ++
             unwords (map prettyShow units)
 
 -------------------------------------------------------------------------------
 -- Utilities
 -------------------------------------------------------------------------------
 
-propPkgs :: DynOpts -> Set PackageName
+propPkgs :: DynOpts -> Set Library
 propPkgs dynOpts = case optProperties dynOpts of
     SkipProperties  -> mempty
-    CheckProperties -> Set.singleton (mkPackageName "QuickCheck")
+    CheckProperties -> Set.singleton (Library (mkPackageName "QuickCheck") LMainLibName)
 
 manglePackageName :: C.PackageName -> String
 manglePackageName = map fixchar . prettyShow where
@@ -513,4 +516,9 @@ filterExpression e =
     strip :: String -> String
     strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
 
+depLib :: C.Dependency -> NonEmpty Library
+depLib (C.Dependency pn _vr lns) = Library pn <$> NES.toNonEmpty lns
 
+libNameToCompName :: LibraryName -> Plan.CompName
+libNameToCompName LMainLibName = Plan.CompNameLib
+libNameToCompName (LSubLibName n) = Plan.CompNameSubLib (T.pack (C.unUnqualComponentName  n))

@@ -9,6 +9,7 @@ import qualified Distribution.Parsec             as C
 import qualified Distribution.Types.BuildInfo    as C
 import qualified Options.Applicative             as O
 
+import CabalDocspec.Library
 import CabalDocspec.Trace
 import CabalDocspec.Warning
 
@@ -21,7 +22,6 @@ data Opts = Opts
     , optTargets   :: [String]
     }
 
-
 -- | Options which can change per component.
 data DynOpts = DynOpts
     { optPhase          :: Phase
@@ -33,7 +33,7 @@ data DynOpts = DynOpts
     , optTimeoutMsg     :: String          -- ^ timeout response
     , optGhciRtsopts    :: [String]
     , optSetup          :: [String]
-    , optExtraPkgs      :: Set PackageName
+    , optExtraPkgs      :: Set Library
     , optModules        :: Set C.ModuleName
     , optCppIncludeDirs :: [FsPath]
     , optProperties     :: Properties
@@ -225,9 +225,11 @@ propertiesP = lastOpt <$> many (skip <|> simple) where
 extP :: O.Parser String
 extP = O.strOption (O.short 'X' <> O.metavar "EXT" <> O.help "Extensions")
 
-extraPkgP :: O.Parser PackageName
+extraPkgP :: O.Parser Library
 extraPkgP = O.option (O.eitherReader C.eitherParsec) $
     O.long "extra-package" <> O.metavar "PKG" <> O.help "Extra packages to require (should exist in a plan)"
+
+
 
 moduleNameP :: O.Parser C.ModuleName
 moduleNameP = O.option (O.eitherReader C.eitherParsec) $

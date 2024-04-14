@@ -67,6 +67,7 @@ library cabal-docspec-internal
     CabalDocspec.ExprVars
     CabalDocspec.GHCi
     CabalDocspec.Lexer
+    CabalDocspec.Library
     CabalDocspec.Located
     CabalDocspec.Man
     CabalDocspec.Man.Content
