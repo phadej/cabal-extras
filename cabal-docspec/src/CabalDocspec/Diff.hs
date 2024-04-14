@@ -163,8 +163,10 @@ instance Ord LR where
 -- |
 --
 -- >>> diffLines [Exact (map Exact "foo")] ["boo"]
+-- (1 % 3,DiffChunk [Emph "f" (Norm "oo" Empty)] [Emph "b" (Norm "oo" Empty)] DiffEmpty)
 --
 -- >>> diffLines [Exact (map Exact "boo")] ["boo"]
+-- (0 % 1,DiffSame ["boo"] DiffEmpty)
 --
 diffLines :: [Wild [Wild Char]] -> [String] -> (Rational, Diff)
 diffLines xs ys = case cached 0 0 of
