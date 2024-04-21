@@ -61,6 +61,7 @@ library cabal-core-inspection-internal
     , aeson
     , cabal-install-parsers
     , cabal-plan
+    , debruijn               ^>=0.1
     , Glob
     , optparse-applicative   ^>=0.18.0.0
 
