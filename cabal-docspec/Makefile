@@ -1,8 +1,9 @@
-VERSION=0.0.0.20240414
+VERSION=0.0.0.20240702
+DATE="July 2nd, 2024"
 EXETARGET=cabal-docspec
 
 cabal-docspec.1 : MANUAL.md
-	echo '.TH CABAL-DOCSPEC 1 "May 17th, 2023" "cabal-docspec $(VERSION)" "Cabal Extras"' > cabal-docspec.1
+	echo '.TH CABAL-DOCSPEC 1 "$(DATE)" "cabal-docspec $(VERSION)" "Cabal Extras"' > cabal-docspec.1
 	pandoc -f markdown -t man MANUAL.md >> cabal-docspec.1
 
 man : cabal-docspec.1

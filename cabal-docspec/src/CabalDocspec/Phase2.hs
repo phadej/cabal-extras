@@ -31,13 +31,14 @@ phase2
     -> DynOpts
     -> [UnitId]
     -> GhcInfo
+    -> Maybe Version -- ^ cabal-install version
     -> Maybe (Path Absolute) -- ^ Build directory, @builddir@
     -> Cabal.Config Identity
     -> Path Absolute
     -> [(String,String)]
     -> [Module [Located DocTest]]
     -> Peu r Summary
-phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = do
+phase2 tracer dynOpts unitIds ghcInfo mcabalVer mbuildDir cabalCfg cwd extraEnv parsed = do
     let preserveIt = case optPreserveIt dynOpts of
             PreserveIt     -> True
             DontPreserveIt -> False
@@ -50,7 +51,7 @@ phase2 tracer dynOpts unitIds ghcInfo mbuildDir cabalCfg cwd extraEnv parsed = d
 
     -- second phase: fire up the ghci, and execute stuff
     storeDir <- makeAbsoluteFilePath $ runIdentity $ Cabal.cfgStoreDir cabalCfg
-    let storeDir' = storeDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion ghcInfo))
+    let storeDir' = ghcStoreDir mcabalVer ghcInfo storeDir
     let storeDb = storeDir' </> fromUnrootedFilePath "package.db"
     storeExists <- doesDirectoryExist storeDb
 

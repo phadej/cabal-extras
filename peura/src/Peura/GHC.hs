@@ -2,6 +2,8 @@ module Peura.GHC (
     -- * GHC info
     GhcInfo (..),
     getGhcInfo,
+    -- * cabal store dir
+    ghcStoreDir,
     -- * ghc-pkg
     findGhcPkg,
     -- * Package databases
@@ -38,12 +40,13 @@ import Peura.Tracer
 -------------------------------------------------------------------------------
 
 data GhcInfo = GhcInfo
-    { ghcPath     :: FilePath
-    , ghcPlatform :: String
-    , ghcVersion  :: Version
-    , ghcEnvDir   :: Path Absolute
-    , ghcGlobalDb :: Path Absolute
-    , ghcLibDir   :: Path Absolute
+    { ghcPath          :: FilePath
+    , ghcPlatform      :: String
+    , ghcVersion       :: Version
+    , ghcProjectUnitId :: String
+    , ghcEnvDir        :: Path Absolute
+    , ghcGlobalDb      :: Path Absolute
+    , ghcLibDir        :: Path Absolute
     }
   deriving Show
 
@@ -83,16 +86,35 @@ getGhcInfo tracer ghc = do
                 lookup "LibDir" info
             libDir <- makeAbsoluteFilePath libDirStr
 
+            let pui :: String
+                pui = fromMaybe "" $ lookup "Project Unit Id" info
+
             return GhcInfo
                 { ghcPath     = ghc
                 , ghcPlatform = x ++ "-" ++ y
                 , ghcVersion  = ver
+                , ghcProjectUnitId = pui
                 , ghcEnvDir   = ghcDir </> fromUnrootedFilePath (x ++ "-" ++ y ++ "-" ++ prettyShow ver) </> fromUnrootedFilePath "environments"
                 , ghcGlobalDb = globalDb
                 , ghcLibDir   = libDir
                 }
 
         _ -> die tracer "Your compiler is not GHC"
+
+-------------------------------------------------------------------------------
+-- cabal store dir
+-------------------------------------------------------------------------------
+
+ghcStoreDir :: Maybe Version -> GhcInfo -> Path Absolute -> Path Absolute
+ghcStoreDir (Just cabalVer) info storeDir
+    | cabalVer >= mkVersion [3,12]
+    , "" /= pui
+    = storeDir </> fromUnrootedFilePath pui
+  where
+    pui = ghcProjectUnitId info
+
+ghcStoreDir _ info storeDir
+    =  storeDir </> fromUnrootedFilePath ("ghc-" ++ prettyShow (ghcVersion info))
 
 -------------------------------------------------------------------------------
 -- ghc-pkg

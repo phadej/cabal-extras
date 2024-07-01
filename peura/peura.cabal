@@ -119,5 +119,6 @@ library
     ScopedTypeVariables
     TypeApplications
     TypeFamilies
+    TypeOperators
 
   x-docspec-options:  --verbose
