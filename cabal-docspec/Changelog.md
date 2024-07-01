@@ -1,3 +1,7 @@
+# 0.0.0.20240702
+
+- Support `cabal-install-3.12` changed store directory logic
+
 # 0.0.0.20240414
 
 - `--extra-package` accepts sublibraries, i.e. `mypkg:sublib` syntax.

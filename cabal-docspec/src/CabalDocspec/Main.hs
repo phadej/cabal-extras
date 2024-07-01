@@ -229,6 +229,9 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
         -- Skip other components
         _ -> return mempty
   where
+    mcabalVer :: Maybe Version
+    mcabalVer = Just $ toCabal $ Plan.pjCabalVersion plan
+
     sublibs :: Map C.UnqualComponentName (C.CondTree C.ConfVar [C.Dependency] C.Library)
     sublibs = Map.fromList (C.condSubLibraries $ pkgGpd pkg)
 
@@ -284,7 +287,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
         validated <- validate tracer parsed
         if optPhase dynOpts > Phase1
         then do
-            phase2 tracer dynOpts unitIds ghcInfo (Just buildDir) cabalCfg (pkgDir pkg) env validated
+            phase2 tracer dynOpts unitIds ghcInfo mcabalVer (Just buildDir) cabalCfg (pkgDir pkg) env validated
         else
             return $ foldMap skipModule parsed
 
@@ -374,11 +377,15 @@ testComponentNo tracer0 tracerTop dynOptsCli ghcInfo cabalCfg dbG pkg = do
 
     validated <- validate tracer parsed
 
+    -- without plan.json we cannot know which cabal-install is used.
+    -- assume latest.
+    let mcabalVer = Nothing
+
     if optPhase dynOpts > Phase1
     then do
         -- Note: we don't pass additional environment
         -- For non-cabal-plan setup we simply don't support data-files.
-        phase2 tracer dynOpts unitIds ghcInfo Nothing cabalCfg (pkgDir pkg) [] validated
+        phase2 tracer dynOpts unitIds ghcInfo mcabalVer Nothing cabalCfg (pkgDir pkg) [] validated
     else
         return $ foldMap skipModule parsed
 
