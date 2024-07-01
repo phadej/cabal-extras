@@ -22,6 +22,7 @@ import Distribution.Parsec (eitherParsec)
 
 import qualified Cabal.Parse                                          as Cbl
 import qualified Data.ByteString.Lazy                                 as LBS
+import qualified Data.List                                            as L
 import qualified Data.Map.Strict                                      as Map
 import qualified Distribution.CabalSpecVersion                        as C
 import qualified Distribution.FieldGrammar                            as C
@@ -50,7 +51,7 @@ data GhcInfo = GhcInfo
     }
   deriving Show
 
-getGhcInfo 
+getGhcInfo
     :: (MakeGhcTracer t, MakePeuTracer t, MakeProcessTracer t)
     => Tracer (Peu r) t -> FilePath -> Peu r GhcInfo
 getGhcInfo tracer ghc = do
@@ -107,8 +108,9 @@ getGhcInfo tracer ghc = do
 
 ghcStoreDir :: Maybe Version -> GhcInfo -> Path Absolute -> Path Absolute
 ghcStoreDir (Just cabalVer) info storeDir
+    -- https://github.com/haskell/cabal/blob/6eaba73ac95c62f8dc576e227b5f9c346910303c/Cabal/src/Distribution/Simple/GHC.hs#L245
     | cabalVer >= mkVersion [3,12]
-    , "" /= pui
+    , L.isPrefixOf (prettyShow (ghcVersion info) ++ "-") pui
     = storeDir </> fromUnrootedFilePath pui
   where
     pui = ghcProjectUnitId info
@@ -204,7 +206,7 @@ data TraceGhc
     | TraceGhcFindGhcPkg GhcInfo
     | TraceGhcFindGhcPkgResult FilePath
   deriving (Show)
- 
+
 class MakeGhcTracer t where
     makeGhcTracer :: Tracer (Peu r) t -> Peu r (Tracer (Peu r) TraceGhc)
 
