@@ -1,5 +1,5 @@
-VERSION=0.0.0.20240702
-DATE="July 2nd, 2024"
+VERSION=0.0.0.20240703
+DATE="July 3nd, 2024"
 EXETARGET=cabal-docspec
 
 cabal-docspec.1 : MANUAL.md
