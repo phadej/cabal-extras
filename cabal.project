@@ -27,7 +27,7 @@ package *
 package peura
   flags: -concurrent-output
 
-constraints: Cabal ^>=3.10.3.0
+constraints: Cabal ^>=3.12.1.0
 
 -- some constraints to force latest versions
 constraints: optics-core ^>=0.4.1
