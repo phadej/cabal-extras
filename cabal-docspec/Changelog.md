@@ -1,6 +1,7 @@
 # 0.0.0.20240702
 
 - Support `cabal-install-3.12` changed store directory logic
+- Update dependencies, in particular use `Cabal-3.12.1.0`
 
 # 0.0.0.20240414
 
