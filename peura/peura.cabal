@@ -81,7 +81,6 @@ library
     , aeson                  ^>=2.2.1.0
     , ansi-terminal          ^>=1.1
     , async                  ^>=2.2.2
-    , base-compat            ^>=0.13.0
     , cabal-install-parsers  ^>=0.6
     , cabal-plan             ^>=0.7.2.0
     , clock                  ^>=0.8

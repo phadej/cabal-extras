@@ -90,6 +90,10 @@ getGhcInfo tracer ghc = do
             let pui :: String
                 pui = fromMaybe "" $ lookup "Project Unit Id" info
 
+            let prefix = "ghc-" ++ prettyShow ver ++ "-"
+            unless (L.isPrefixOf prefix pui) $
+                die tracer $ prefix ++ " is not prefix of Project Unit Id: " ++ pui
+
             return GhcInfo
                 { ghcPath     = ghc
                 , ghcPlatform = x ++ "-" ++ y
@@ -110,7 +114,7 @@ ghcStoreDir :: Maybe Version -> GhcInfo -> Path Absolute -> Path Absolute
 ghcStoreDir (Just cabalVer) info storeDir
     -- https://github.com/haskell/cabal/blob/6eaba73ac95c62f8dc576e227b5f9c346910303c/Cabal/src/Distribution/Simple/GHC.hs#L245
     | cabalVer >= mkVersion [3,12]
-    , L.isPrefixOf (prettyShow (ghcVersion info) ++ "-") pui
+    , L.isPrefixOf ("ghc-" ++ prettyShow (ghcVersion info) ++ "-") pui
     = storeDir </> fromUnrootedFilePath pui
   where
     pui = ghcProjectUnitId info
