@@ -1,3 +1,7 @@
+# 0.0.0.20240703
+
+- Fix "Project Unit Id" bug
+
 # 0.0.0.20240702
 
 - Support `cabal-install-3.12` changed store directory logic

@@ -87,12 +87,14 @@ getGhcInfo tracer ghc = do
                 lookup "LibDir" info
             libDir <- makeAbsoluteFilePath libDirStr
 
-            let pui :: String
-                pui = fromMaybe "" $ lookup "Project Unit Id" info
+            pui <- case lookup "Project Unit Id" info of
+                Nothing -> return ""
+                Just pui -> do
+                    let prefix = "ghc-" ++ prettyShow ver ++ "-"
+                    unless (L.isPrefixOf prefix pui) $
+                        die tracer $ prefix ++ " is not prefix of Project Unit Id: " ++ pui
 
-            let prefix = "ghc-" ++ prettyShow ver ++ "-"
-            unless (L.isPrefixOf prefix pui) $
-                die tracer $ prefix ++ " is not prefix of Project Unit Id: " ++ pui
+                    return pui
 
             return GhcInfo
                 { ghcPath     = ghc
