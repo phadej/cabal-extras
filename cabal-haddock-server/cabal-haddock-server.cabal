@@ -77,7 +77,7 @@ library cabal-haddock-server-internal
     , base16-bytestring      ^>=1.0.0.0
     , cabal-install-parsers  ^>=0.6
     , cryptohash-sha256      ^>=0.11.101.0
-    , file-embed-lzma
+    , file-embed-lzma        ^>=0.1
     , haskell-lexer
     , http-types             ^>=0.12.3
     , lucid                  ^>=2.11.1
