@@ -22,6 +22,7 @@ import qualified Distribution.ModuleName                      as C
 import qualified Distribution.Package                         as C
 import qualified Distribution.System                          as C
 import qualified Distribution.Types.BuildInfo                 as C
+import qualified Distribution.Types.ComponentName             as C
 import qualified Distribution.Types.CondTree                  as C
 import qualified Distribution.Types.ConfVar                   as C
 import qualified Distribution.Types.Flag                      as C
@@ -94,15 +95,15 @@ main = do
                 pkgs <-
                     if null (optTargets opts)
                     then return pkgs0
-                    else fmap concat $ for (optTargets opts) $ \target -> do
+                    else fmap concat $ for (optTargets opts) $ \(Target pn _) -> do
                         let match =
                                 [ pkg
                                 | pkg <- pkgs0
-                                , prettyShow (C.packageName (pkgGpd pkg)) == target
+                                , C.packageName (pkgGpd pkg) == pn
                                 ]
 
                         case match of
-                            []  -> die tracer $ "No package " ++ target ++ " in the plan"
+                            []  -> die tracer $ "No package " ++ prettyShow pn ++ " in the plan"
                             _   -> return match
 
                 -- collect environment of datadirs
@@ -115,19 +116,32 @@ main = do
                         , not (null (C.dataFiles pd))
                         ]
 
+                let checkComponent :: C.PackageName -> C.ComponentName -> Bool
+                    checkComponent pn cn
+                        | null (optTargets opts) = True
+                        | otherwise = any p $ optTargets opts
+                      where
+                        p (Target pn' Nothing)   = pn == pn'
+                        p (Target pn' (Just ln)) = pn == pn' && cn == C.CLibName ln
+
                 -- process components
                 res <- for pkgs $ \pkg -> do
                     for (pkgUnits pkg) $ \unit ->
                         ifor (Plan.uComps unit) $ \cn ci -> do
-                            testComponent tracer0 tracer (optGhci opts)
-                                ghcInfo buildDir cabalCfg plan env pkg unit cn ci
+                            if checkComponent (C.packageName (pkgGpd pkg)) (toCabal cn)
+                            then testComponent tracer0 tracer (optGhci opts)
+                                    ghcInfo buildDir cabalCfg plan env pkg unit cn ci
+                            else return mempty
 
                 -- summarize Summary's
                 return $ foldMap (foldMap (foldMap id)) res
 
             NoCabalPlan -> do
                 dbG <- readPackageDb tracer (ghcGlobalDb ghcInfo)
-                pkgs <- readDirectCabalFiles tracer (optTargets opts)
+                pkgs <- readDirectCabalFiles tracer
+                    [ prettyShow pn
+                    | Target pn _ <- optTargets opts
+                    ]
 
                 -- process components
                 res <- for pkgs $ \pkg -> do

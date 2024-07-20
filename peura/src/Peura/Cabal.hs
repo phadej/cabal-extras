@@ -26,18 +26,21 @@ import Peura.Tracer
 
 import Text.PrettyPrint ((<+>))
 
-import qualified Cabal.Index                as I
-import qualified Cabal.Plan                 as P
-import qualified Data.Aeson                 as A
-import qualified Data.Map.Strict            as Map
-import qualified Data.Set                   as Set
-import qualified Data.Text                  as T
-import qualified Distribution.Fields.Pretty as C
-import qualified Distribution.Package       as C
-import qualified Distribution.Pretty        as C
-import qualified Distribution.Types.Flag    as C
-import qualified Distribution.Version       as C
-import qualified Text.PrettyPrint           as PP
+import qualified Cabal.Index                            as I
+import qualified Cabal.Plan                             as P
+import qualified Data.Aeson                             as A
+import qualified Data.Map.Strict                        as Map
+import qualified Data.Set                               as Set
+import qualified Data.Text                              as T
+import qualified Distribution.Fields.Pretty             as C
+import qualified Distribution.Package                   as C
+import qualified Distribution.Pretty                    as C
+import qualified Distribution.Types.ComponentName       as C
+import qualified Distribution.Types.Flag                as C
+import qualified Distribution.Types.LibraryName         as C
+import qualified Distribution.Types.UnqualComponentName as C
+import qualified Distribution.Version                   as C
+import qualified Text.PrettyPrint                       as PP
 
 -------------------------------------------------------------------------------
 -- Convert
@@ -68,7 +71,18 @@ instance CabalPlanConvert P.FlagName C.FlagName where
     toCabal (P.FlagName u) = C.mkFlagName (T.unpack u)
     fromCabal u            = P.FlagName (T.pack (C.unFlagName u))
 
--------------------------------------------------------------------------------
+instance CabalPlanConvert P.CompName C.ComponentName where
+    toCabal P.CompNameLib         = C.CLibName C.LMainLibName
+    toCabal (P.CompNameSubLib ln) = C.CLibName $ C.LSubLibName $ C.mkUnqualComponentName $ T.unpack ln
+    toCabal (P.CompNameFLib cn)   = C.CFLibName $ C.mkUnqualComponentName $ T.unpack cn
+    toCabal (P.CompNameExe cn)    = C.CExeName $ C.mkUnqualComponentName $ T.unpack cn
+    toCabal (P.CompNameTest cn)   = C.CTestName $ C.mkUnqualComponentName $ T.unpack cn
+    toCabal (P.CompNameBench cn)  = C.CBenchName $ C.mkUnqualComponentName $ T.unpack cn
+    toCabal P.CompNameSetup       = C.CLibName C.LMainLibName -- wrong
+
+    fromCabal = fromCabal
+
+-----------------------------------------------------------------------
 -- Index
 -------------------------------------------------------------------------------
 

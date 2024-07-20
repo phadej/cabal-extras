@@ -9,7 +9,7 @@ import Peura
 import Control.Monad              (foldM)
 import Data.List                  (isInfixOf)
 import System.Environment         (getEnvironment)
-import Text.PrettyPrint.Annotated (Doc, ($$))
+import Text.PrettyPrint.Annotated (($$))
 
 import qualified Cabal.Config               as Cabal
 import qualified Data.Map                   as Map

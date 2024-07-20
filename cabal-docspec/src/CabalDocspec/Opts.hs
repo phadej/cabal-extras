@@ -2,16 +2,34 @@ module CabalDocspec.Opts where
 
 import Peura
 
-import qualified Data.Set                        as Set
-import qualified Distribution.Compat.CharParsing as P
-import qualified Distribution.ModuleName         as C
-import qualified Distribution.Parsec             as C
-import qualified Distribution.Types.BuildInfo    as C
-import qualified Options.Applicative             as O
+import qualified Data.Set                               as Set
+import qualified Distribution.Compat.CharParsing        as P
+import qualified Distribution.ModuleName                as C
+import qualified Distribution.Parsec                    as C
+import qualified Distribution.Types.LibraryName         as C
+import qualified Distribution.Types.PackageName         as C
+import qualified Distribution.Types.UnqualComponentName as C
+
+import qualified Distribution.Types.BuildInfo as C
+import qualified Options.Applicative          as O
 
 import CabalDocspec.Library
 import CabalDocspec.Trace
 import CabalDocspec.Warning
+
+data Target = Target PackageName (Maybe LibraryName)
+  deriving Show
+
+instance C.Parsec Target where
+    parsec = do
+        pn <- C.parsec
+        ln <- optional (P.char ':' *> (mkLibName pn <$> C.parsec))
+        return (Target pn ln)
+      where
+        mkLibName :: C.PackageName -> C.UnqualComponentName -> LibraryName
+        mkLibName pn cn
+            | C.unUnqualComponentNameST cn == C.unPackageNameST pn = C.LMainLibName
+            | otherwise                                            = C.LSubLibName cn
 
 data Opts = Opts
     { optCabalPlan :: CabalPlan
@@ -19,7 +37,7 @@ data Opts = Opts
     , optCompiler  :: FilePath
     , optBuildDir  :: FsPath
     , optTracer    :: TracerOptions W -> TracerOptions W
-    , optTargets   :: [String]
+    , optTargets   :: [Target]
     }
 
 -- | Options which can change per component.
@@ -144,7 +162,7 @@ optsP = pure Opts
     <*  optional (O.flag' () (O.long "ghc" <> O.help "Compiler is GHC (always on)"))
     <*> O.option fspath (O.long "builddir" <> O.value (fromFilePath "dist-newstyle") <> O.metavar "BUILDDIR")
     <*> tracerOptionsParser
-    <*> many (O.strArgument $ O.metavar "TARGET")
+    <*> many (O.argument (O.eitherReader C.eitherParsec) $ O.metavar "TARGET")
 
 fspath :: O.ReadM FsPath
 fspath = O.eitherReader $ return . fromFilePath

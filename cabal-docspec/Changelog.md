@@ -1,3 +1,7 @@
+# 0.0.0.2024mmdd
+
+- Accecpt @pkgname:libname@ target syntax
+
 # 0.0.0.20240703
 
 - Fix "Project Unit Id" bug
