@@ -15,7 +15,7 @@ module CabalDocspec.Lexer (
 import Peura
 
 import Data.Char              (toLower)
-import Data.List              (init, break)
+import Data.List              (init, break, stripPrefix)
 import Language.Haskell.Lexer (Pos, PosToken)
 import Text.Read              (read)
 
@@ -60,7 +60,9 @@ needsCppPass False input = go tokens
 -- Stubborn pass filters out error tokens (which start with
 -- and continues with the rest
 --
--- This works around that @haskell-lexer@ doesn't recognise prefix quotes.
+-- This works around the following @haskell-lexer@ deficiencies:
+--  - doesn't recognise prefix quotes
+--  - errors on many unicode characters in comments
 --
 stubbornPass0 :: String -> [PosToken]
 stubbornPass0 = stubborn . L.lexerPass0 where
@@ -68,6 +70,14 @@ stubbornPass0 = stubborn . L.lexerPass0 where
     stubborn [] = []
     stubborn [(L.ErrorToken, (pos, '\'' : s)), (L.TheRest, (_, s'))] =
         map (second (first (addPos pos))) $ stubbornPass0 (s ++ s')
+
+    stubborn [(L.Commentstart, (pos, cs)), (L.ErrorToken, (_, s)), (L.TheRest, (_, c : t))] =
+        adjust $ map (second (first (addPos pos))) $ stubbornPass0 (cs ++ s ++ " " ++ t)
+      where
+        adjust (tcs@(L.Commentstart, _) : (L.Comment, (cpos, s')) : ts)
+          | Just (' ' : t') <- stripPrefix s s'
+          = tcs : (L.Comment, (cpos, s <> [c] <> t')) : ts
+        adjust ts = ts
 
     stubborn (t : ts) = t : stubborn ts
 
