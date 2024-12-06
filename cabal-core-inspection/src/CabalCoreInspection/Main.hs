@@ -33,6 +33,7 @@ import qualified GHC.Types.Name.Occurrence as GHC
 import qualified GHC.Types.Var             as GHC
 import qualified GHC.Unit.Module.ModIface  as GHC
 import qualified GHC.Utils.Fingerprint     as GHC
+import qualified GHC.Unit.Module.Deps as GHC
 
 -------------------------------------------------------------------------------
 -- Main
@@ -90,6 +91,12 @@ main = do
             modIface <- liftIO $ easyReadBinIface dflags ncu hiFile
             let mn = ghcShow dflags (GHC.mi_module modIface)
             putInfo tracer $ "Found interface file for " ++ mn
+
+            for_ (GHC.mi_usages modIface) $ \usage -> do
+                putInfo tracer $ "usage: " ++ case usage of
+                    GHC.UsagePackageModule { GHC.usg_mod = m } -> "package module " ++ ghcShow dflags m
+                    GHC.UsageHomeModule { GHC.usg_mod_name = mn } -> "home module " ++ ghcShow dflags mn
+                    _ -> "other"
 
             when (mn == "Example") $ do
 
