@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications    #-}
+{-# LANGUAGE FunctionalDependencies #-}
 module CabalCoreInspection.Main (main) where
 
 import Peura
@@ -34,6 +35,8 @@ import qualified GHC.Types.Var             as GHC
 import qualified GHC.Unit.Module.ModIface  as GHC
 import qualified GHC.Utils.Fingerprint     as GHC
 import qualified GHC.Unit.Module.Deps as GHC
+import qualified GHC.Unit.Types as GHC
+
 
 -------------------------------------------------------------------------------
 -- Main
@@ -70,6 +73,9 @@ main = do
 
         dflags <- getDynFlags tracer ghcInfo
 
+        let units :: Map P.UnitId P.Unit
+            units = P.pjUnits plan
+
         -- read destination directories of units in the plan
         unitDistDirs <- traverse makeAbsoluteFilePath
                 [ distDir
@@ -96,8 +102,19 @@ main = do
                 putInfo tracer $ "usage: " ++ case usage of
                     GHC.UsagePackageModule { GHC.usg_mod = m } -> "package module " ++ ghcShow dflags m
                     GHC.UsageHomeModule { GHC.usg_mod_name = mn } -> "home module " ++ ghcShow dflags mn
-                    _ -> "other"
+                    GHC.UsageHomeModuleInterface { GHC.usg_mod_name = mn } -> "home module if " ++ ghcShow dflags mn
+                    GHC.UsageMergedRequirement { GHC.usg_mod = m } -> "merged requirement " ++ ghcShow dflags m
+                    GHC.UsageFile { GHC.usg_file_path = p } -> "usage file " ++ ghcShow dflags p
 
+                case usage of
+                    GHC.UsagePackageModule { GHC.usg_mod = GHC.Module u mn } -> do
+                        u' <- case u of
+                            GHC.RealUnit (GHC.Definite u') -> return (ghc2plan u')
+                            _ -> error "FAIL" -- TODO
+                        putInfo tracer $ "  " ++ ghcShow dflags u ++ " " ++ show (M.member u' units)
+                    _ -> return ()
+
+{-
             when (mn == "Example") $ do
 
                 case GHC.mi_extra_decls modIface of
@@ -106,6 +123,7 @@ main = do
 
                     Just extra_decls -> do
                         example tracer dflags (GHC.mi_decls modIface) extra_decls
+-}
 
   where
     optsP' = O.info (optsP <**> O.helper <**> versionP) $ mconcat
@@ -337,3 +355,16 @@ noTypes tracer dflags onName = go where
 ifaceBndrType :: GHC.IfaceBndr -> GHC.IfaceType
 ifaceBndrType (GHC.IfaceIdBndr (_, _, t)) = t
 ifaceBndrType (GHC.IfaceTvBndr (_, t)) = t
+
+
+-- | Convert between @Cabal@ and @cabal-plan@ types.
+class CabalPlan2GHC p g | p -> g, g -> p where
+    plan2ghc :: p -> g
+    ghc2plan :: g -> p
+
+instance CabalPlan2GHC P.UnitId GHC.UnitId where
+    plan2ghc = undefined
+    ghc2plan (GHC.UnitId fs) = P.UnitId (fastStringToText fs)
+
+fastStringToText :: FS.FastString -> T.Text
+fastStringToText = T.pack . FS.unpackFS
