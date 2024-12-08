@@ -11,6 +11,9 @@ module Peura.Cabal (
     ephemeralPlanJson',
     -- * Index
     cachedHackageMetadata,
+    -- * Local packages
+    Package (..),
+    readLocalCabalFiles,
     -- * Trace
     TraceCabal (..),
     MakeCabalTracer (..),
@@ -18,6 +21,7 @@ module Peura.Cabal (
 
 import Peura.ByteString
 import Peura.Exports
+import Peura.Glob
 import Peura.Monad
 import Peura.Paths
 import Peura.Process
@@ -26,21 +30,23 @@ import Peura.Tracer
 
 import Text.PrettyPrint ((<+>))
 
-import qualified Cabal.Index                            as I
-import qualified Cabal.Plan                             as P
-import qualified Data.Aeson                             as A
-import qualified Data.Map.Strict                        as Map
-import qualified Data.Set                               as Set
-import qualified Data.Text                              as T
-import qualified Distribution.Fields.Pretty             as C
-import qualified Distribution.Package                   as C
-import qualified Distribution.Pretty                    as C
-import qualified Distribution.Types.ComponentName       as C
-import qualified Distribution.Types.Flag                as C
-import qualified Distribution.Types.LibraryName         as C
-import qualified Distribution.Types.UnqualComponentName as C
-import qualified Distribution.Version                   as C
-import qualified Text.PrettyPrint                       as PP
+import qualified Cabal.Index                                  as I
+import qualified Cabal.Plan                                   as P
+import qualified Data.Aeson                                   as A
+import qualified Data.Map.Strict                              as Map
+import qualified Data.Set                                     as Set
+import qualified Data.Text                                    as T
+import qualified Distribution.Fields.Pretty                   as C
+import qualified Distribution.Package                         as C
+import qualified Distribution.PackageDescription.Parsec       as C
+import qualified Distribution.Pretty                          as C
+import qualified Distribution.Types.ComponentName             as C
+import qualified Distribution.Types.Flag                      as C
+import qualified Distribution.Types.GenericPackageDescription as C
+import qualified Distribution.Types.LibraryName               as C
+import qualified Distribution.Types.UnqualComponentName       as C
+import qualified Distribution.Version                         as C
+import qualified Text.PrettyPrint                             as PP
 
 -------------------------------------------------------------------------------
 -- Convert
@@ -97,7 +103,7 @@ cachedHackageMetadata tracer = do
     return meta
 
 -------------------------------------------------------------------------------
--- plan.json input
+-- P.json input
 -------------------------------------------------------------------------------
 
 data PlanInput = PlanInput
@@ -152,7 +158,7 @@ ephemeralPlanJson
     -> Peu r (Maybe P.PlanJson)
 ephemeralPlanJson tracer = fmap (fmap snd) . ephemeralPlanJson' tracer
 
--- | Like 'ephemeralPlanJson', but also return the @plan.json@ original contents.
+-- | Like 'ephemeralPlanJson', but also return the @P.json@ original contents.
 ephemeralPlanJson'
     :: (MakeCabalTracer t, MakeProcessTracer t, MakePeuTracer t)
     => Tracer (Peu r) t
@@ -183,7 +189,7 @@ ephemeralPlanJson' tracer pi = do
                 planBS    <- readByteString planPath'
                 plan      <- case A.eitherDecodeStrict' planBS of
                     Right x  -> return x
-                    Left err -> die tracer $ "Cannot parse plan.json: " ++ err
+                    Left err -> die tracer $ "Cannot parse P.json: " ++ err
 
                 return $ Just (planBS, plan)
 
@@ -237,3 +243,44 @@ cabalProject pi = C.showFields (const C.NoComment) $
     ]
   where
     fi = C.PrettyField ()
+
+-------------------------------------------------------------------------------
+-- Local cabal files from a plan
+-------------------------------------------------------------------------------
+
+data Package = Package
+    { pkgGpd   :: C.GenericPackageDescription
+    , pkgDir   :: Path Absolute
+    , pkgUnits :: [P.Unit]
+    }
+  deriving Show
+
+readLocalCabalFiles
+    :: MakePeuTracer t
+    => Tracer (Peu r) t
+    -> P.PlanJson
+    -> Peu r [Package]
+readLocalCabalFiles tracer plan =
+    for (itoList units0) $ \(path, units) -> do
+        path' <- makeAbsoluteFilePath path
+        cabalPath <- globDir1First "*.cabal" path'
+        cabalBS <- readByteString cabalPath
+        gpd <- maybe (die tracer $ "cannot parse " ++ toFilePath cabalPath) return
+            $ C.parseGenericPackageDescriptionMaybe cabalBS
+
+        return Package
+            { pkgGpd   = gpd
+            , pkgDir   = path'
+            , pkgUnits = toList units
+            }
+  where
+    units0 :: Map FilePath (NonEmpty P.Unit)
+    units0 = group
+        [ (path, unit)
+        | unit <- toList (P.pjUnits plan)
+        , P.uType unit == P.UnitTypeLocal
+        , Just (P.LocalUnpackedPackage path) <- return (P.uPkgSrc unit)
+        ]
+
+group :: (Ord a) => [(a,b)] -> Map a (NonEmpty b)
+group = Map.fromListWith (<>) . map (fmap pure)
