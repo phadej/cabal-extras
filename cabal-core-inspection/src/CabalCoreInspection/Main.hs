@@ -76,6 +76,10 @@ main = do
         let units :: Map P.UnitId P.Unit
             units = P.pjUnits plan
 
+        return ()
+
+{-
+
         -- read destination directories of units in the plan
         unitDistDirs <- traverse makeAbsoluteFilePath
                 [ distDir
@@ -123,6 +127,7 @@ main = do
 
                     Just extra_decls -> do
                         example tracer dflags (GHC.mi_decls modIface) extra_decls
+-}
 -}
 
   where
