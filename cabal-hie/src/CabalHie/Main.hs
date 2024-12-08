@@ -1,6 +1,6 @@
-{-# LANGUAGE OverloadedStrings      #-}
-{-# LANGUAGE ScopedTypeVariables    #-}
-{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies        #-}
 -- |
 -- Copyright: Oleg Grenrus
 -- License: GPL-2.0-or-later
@@ -25,14 +25,13 @@ import qualified System.FilePath          as FP
 
 import qualified Distribution.Compiler                        as C
 import qualified Distribution.Package                         as C
-import qualified Distribution.PackageDescription.Parsec       as C
 import qualified Distribution.System                          as C
 import qualified Distribution.Types.CondTree                  as C
 import qualified Distribution.Types.ConfVar                   as C
 import qualified Distribution.Types.Flag                      as C
 import qualified Distribution.Types.GenericPackageDescription as C
+import qualified Distribution.Utils.Path                      as C
 import qualified Distribution.Version                         as C
-import qualified Distribution.Utils.Path as C
 
 import qualified Distribution.Types.BuildInfo.Lens as CL
 
@@ -180,7 +179,7 @@ generateHie tracer opts = do
             [ A.object
                 [ "path"      A..= fp
                 , "component" A..= selector
-                ] 
+                ]
             | (fp, selector) <- allDirs'
             ]
         ]]
@@ -188,46 +187,6 @@ generateHie tracer opts = do
 -------------------------------------------------------------------------------
 -- hie cradle
 -------------------------------------------------------------------------------
-
--------------------------------------------------------------------------------
--- From cabal-docspec
--------------------------------------------------------------------------------
-
-data Package = Package
-    { pkgGpd   :: C.GenericPackageDescription
-    , pkgDir   :: Path Absolute
-    , pkgUnits :: [Plan.Unit]
-    }
-  deriving Show
-
-readLocalCabalFiles
-    :: TracerPeu r w
-    -> Plan.PlanJson
-    -> Peu r [Package]
-readLocalCabalFiles tracer plan =
-    for (itoList units0) $ \(path, units) -> do
-        path' <- makeAbsoluteFilePath path
-        cabalPath <- globDir1First "*.cabal" path'
-        cabalBS <- readByteString cabalPath
-        gpd <- maybe (die tracer $ "cannot parse " ++ toFilePath cabalPath) return
-            $ C.parseGenericPackageDescriptionMaybe cabalBS
-
-        return Package
-            { pkgGpd   = gpd
-            , pkgDir   = path'
-            , pkgUnits = toList units
-            }
-  where
-    units0 :: Map FilePath (NonEmpty Plan.Unit)
-    units0 = group
-        [ (path, unit)
-        | unit <- toList (Plan.pjUnits plan)
-        , Plan.uType unit == Plan.UnitTypeLocal
-        , Just (Plan.LocalUnpackedPackage path) <- return (Plan.uPkgSrc unit)
-        ]
-
-group :: (Ord a) => [(a,b)] -> Map a (NonEmpty b)
-group = Map.fromListWith (<>) . map (fmap pure)
 
 -------------------------------------------------------------------------------
 -- cabal-docspec main
