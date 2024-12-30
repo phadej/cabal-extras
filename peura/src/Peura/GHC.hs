@@ -135,7 +135,10 @@ findGhcPkg tracer ghcInfo = do
     tracer' <- makeGhcTracer tracer
     traceWith tracer' $ TraceGhcFindGhcPkg ghcInfo
 
-    let guess = toFilePath $ ghcLibDir ghcInfo </> fromUnrootedFilePath "bin/ghc-pkg"
+    let guess =
+          if ghcVersion ghcInfo < mkVersion [9, 4]
+             then toFilePath $ ghcLibDir ghcInfo </> fromUnrootedFilePath "bin/ghc-pkg"
+             else toFilePath $ ghcLibDir ghcInfo </> fromUnrootedFilePath "../bin/ghc-pkg"
 
     ghcDir   <- getAppUserDataDirectory "ghc"
     verBS <- LBS.toStrict <$> runProcessCheck tracer ghcDir guess ["--version"]
