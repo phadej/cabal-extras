@@ -15,7 +15,7 @@ DESCRIPTION
 *cabal-docspec* is a doctest runner closely integrated with *cabal-install*.
 In common scenarios cabal-docspec is able to self-configure using cabal-install generated metadata (*plan.json*).
 Another important difference is that cabal-docspec
-doesn't depend on *ghc* library, but rather invoke the *ghci* executable.
+doesn't depend on *ghc* library, but rather invokes the *ghci* executable.
 
 cabal-docspec doesn't use GHC to parse input files,
 but rather relies on *haskell-lexer* for comment extraction.
@@ -42,7 +42,7 @@ However, in this list we mostly only list and show the --option version of them.
 
 **\--ghc**
 
-:   Indicate the used compiler is GHC. Currently this options is no-op.
+:   Indicate to use the GHC compiler. (Currently this options is no-op!)
 
 **\--cabal-plan**
 :   Read *plan.json* produced by cabal-install to find out project packages and their dependencies.
@@ -155,7 +155,7 @@ However, in this list we mostly only list and show the --option version of them.
 CABAL FIELDS
 ============
 
-It' is possible to provide cabal-docspec configuration
+It is possible to provide cabal-docspec configuration
 through fields in a .cabal file.
 
 **x-docspec-options:** *[OPTION]*...
