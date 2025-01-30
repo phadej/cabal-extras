@@ -60,7 +60,7 @@ unitsToDeps meta units = fmap concat $ for units $ \unit -> do
     rev <- case P.uType unit of
         P.UnitTypeBuiltin -> pure Nothing
         P.UnitTypeLocal   -> pure $ Just  0  -- Revision unavailable for local packages
-        _ -> do
+        t -> do
             case P.uSha256 unit of
                 Just _  -> do
                     pkgInfo <- maybe (throwM $ UnknownPackageName cpkgname) return $
@@ -70,9 +70,7 @@ unitsToDeps meta units = fmap concat $ for units $ \unit -> do
 
                     pure $ Just $ fromIntegral (I.riRevision relInfo)
 
-                Nothing -> case P.uType unit of
-                    P.UnitTypeLocal   -> pure $ Just 0
-                    t                 -> throwM $ UnknownUnitType cpkgname t
+                Nothing -> throwM $ UnknownUnitType cpkgname t
 
     let depForRev r = [Dep {
           depPackageName = cpkgname
