@@ -1,5 +1,5 @@
 with-compiler: ghc-9.8.2
-index-state: 2024-07-03T13:49:27Z
+-- index-state: 2024-07-03T13:49:27Z
 tests: True
 
 packages: cabal-bundler
