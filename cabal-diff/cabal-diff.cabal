@@ -11,7 +11,7 @@ license:            GPL-2.0-or-later
 license-file:       LICENSE
 author:             Oleg Grenrus <oleg.grenrus@iki.fi>
 maintainer:         Oleg Grenrus <oleg.grenrus@iki.fi>
-tested-with:        GHC ==9.8.2
+tested-with:        GHC ==9.8.4
 extra-source-files:
   Changelog.md
   fixtures/*.golden

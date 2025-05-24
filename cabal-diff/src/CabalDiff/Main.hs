@@ -64,6 +64,7 @@ data OneTwo a
 
 data DiffVersion
     = HackageVersion Version
+    | HoogleFile FilePath
     | LocalVersion
   deriving (Show)
 
@@ -85,8 +86,9 @@ optsP = Opts
 
 readDiffVersion :: O.ReadM DiffVersion
 readDiffVersion = O.eitherReader $ \str -> case str of
-    "." -> Right LocalVersion
-    _   -> HackageVersion <$> eitherParsec str
+    "."     -> Right LocalVersion
+    '/' : _ -> Right (HoogleFile str)
+    _       -> HackageVersion <$> eitherParsec str
 
 -------------------------------------------------------------------------------
 -- cache and locking
@@ -123,6 +125,12 @@ getHoogleTxt tracer withCompiler buildSem pn LocalVersion =
     getLocalHoogleTxt tracer withCompiler buildSem pn
 getHoogleTxt tracer withCompiler buildSem pn (HackageVersion ver) =
     getHackageHoogleTxt tracer withCompiler buildSem (PackageIdentifier pn ver)
+getHoogleTxt tracer _            _        _ (HoogleFile fp) = do
+    fp' <- makeAbsoluteFilePath fp
+    contents <- readByteString fp'
+    case parseFile contents of
+        Right x  -> return x
+        Left err -> die tracer err
 
 -------------------------------------------------------------------------------
 -- Local
