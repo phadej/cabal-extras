@@ -13,7 +13,7 @@ license-files:
   LICENSE.GPLv2
   LICENSE.GPLv3
 
-tested-with:   GHC ==9.8.2
+tested-with:   GHC ==9.8.4
 
 source-repository head
   type:     git
