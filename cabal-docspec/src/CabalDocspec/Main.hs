@@ -272,6 +272,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
             (C.hsSourceDirs bi)
             (C.exposedModules lib)
 
+        -- direct package dependencies
         let pkgIds :: [PackageIdentifier]
             pkgIds =
                 [ toCabal $ Plan.uPId unit'
