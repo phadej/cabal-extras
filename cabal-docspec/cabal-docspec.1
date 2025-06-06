@@ -1,187 +1,178 @@
-.TH CABAL-DOCSPEC 1 ""July 3nd, 2024"" "cabal-docspec 0.0.0.20240703" "Cabal Extras"
+.TH CABAL-DOCSPEC 1 ""June 6th, 2025"" "cabal-docspec 0.0.0.20250606" "Cabal Extras"
 .SH NAME
-.PP
-cabal-docspec - another doctest for Haskell
+cabal\-docspec \- another doctest for Haskell
 .SH SYNOPSIS
-.PP
-\f[B]cabal-docspec\f[R] \f[I][OPTION]\f[R]\&...
+\f[B]cabal\-docspec\f[R] \f[I][OPTION]\f[R]\&...
 \f[I][PACKAGE]\&...\f[R]
 .PD 0
 .P
 .PD
-\f[B]cabal-docspec\f[R] \f[B]--no-cabal-plan\f[R]
+\f[B]cabal\-docspec\f[R] \f[B]\-\-no\-cabal\-plan\f[R]
 \f[I][OPTION]\f[R]\&...
 \f[I][CABALFILE]\f[R]\&...
 .SH DESCRIPTION
-.PP
-\f[I]cabal-docspec\f[R] is a doctest runner closely integrated with
-\f[I]cabal-install\f[R].
-In common scenarios cabal-docspec is able to self-configure using
-cabal-install generated metadata (\f[I]plan.json\f[R]).
-Another important difference is that cabal-docspec doesn\[cq]t depend on
+\f[I]cabal\-docspec\f[R] is a doctest runner closely integrated with
+\f[I]cabal\-install\f[R].
+In common scenarios cabal\-docspec is able to self\-configure using
+cabal\-install generated metadata (\f[I]plan.json\f[R]).
+Another important difference is that cabal\-docspec doesn\(cqt depend on
 \f[I]ghc\f[R] library, but rather invoke the \f[I]ghci\f[R] executable.
 .PP
-cabal-docspec doesn\[cq]t use GHC to parse input files, but rather
-relies on \f[I]haskell-lexer\f[R] for comment extraction.
+cabal\-docspec doesn\(cqt use GHC to parse input files, but rather
+relies on \f[I]haskell\-lexer\f[R] for comment extraction.
 This approach is resilient, but not 100 per cent accurate.
 .PP
-cabal-docspec doesn\[cq]t interpret library code in \f[I]ghci\f[R], but
+cabal\-docspec doesn\(cqt interpret library code in \f[I]ghci\f[R], but
 instead loads precompiled code.
-The effect is similar as using \f[B]-fobject-code\f[R] in GHCi (which is
-mandatory for packages with FFI, for example).
-The consequence is that cabal-docspec is unable to evaluate doctest
-examples in non-exported modules (\f[B]other-modules\f[R]), or which use
-non-exposed symbols.
+The effect is similar as using \f[B]\-fobject\-code\f[R] in GHCi (which
+is mandatory for packages with FFI, for example).
+The consequence is that cabal\-docspec is unable to evaluate doctest
+examples in non\-exported modules (\f[B]other\-modules\f[R]), or which
+use non\-exposed symbols.
 .PP
 GHCi is invoked in a package directory, however it is told to not look
-for modules anywhere (with bare \f[B]-i\f[R] flag).
+for modules anywhere (with bare \f[B]\-i\f[R] flag).
 This way doctests may use package local files, but the code is not
-re-intepreted.
+re\-intepreted.
 .SH OPTIONS
-.PP
-In general, all boolean options are enabled with \f[B]--option\f[R] and
-yet again disabled with \f[B]--no-option\f[R].
+In general, all boolean options are enabled with \f[B]\-\-option\f[R]
+and yet again disabled with \f[B]\-\-no\-option\f[R].
 That is, you use the exact same option name but prefix it with
-\[lq]no-\[rq].
-However, in this list we mostly only list and show the \[en]option
+\(lqno\-\(rq.
+However, in this list we mostly only list and show the \(enoption
 version of them.
 .TP
-\f[B]-w, --with-compiler\f[R] \f[I]path\f[R]
+\f[B]\-w, \-\-with\-compiler\f[R] \f[I]path\f[R]
 A path to compiler to use to run doctest examples.
 Must have the same version as in the cabal plan.
 .TP
-\f[B]--ghc\f[R]
+\f[B]\-\-ghc\f[R]
 Indicate the used compiler is GHC.
-Currently this options is no-op.
+Currently this options is no\-op.
 .TP
-\f[B]--cabal-plan\f[R]
-Read \f[I]plan.json\f[R] produced by cabal-install to find out project
+\f[B]\-\-cabal\-plan\f[R]
+Read \f[I]plan.json\f[R] produced by cabal\-install to find out project
 packages and their dependencies.
-When turned (with \f[B]--no-cabal-plan\f[R]), paths to the cabal files
-have to be given.
+When turned (with \f[B]\-\-no\-cabal\-plan\f[R]), paths to the cabal
+files have to be given.
 Also only the global package db is considered for dependencies.
-Default \f[B]--cabal-plan\f[R].
+Default \f[B]\-\-cabal\-plan\f[R].
 .TP
-\f[B]--preserve-it\f[R]
+\f[B]\-\-preserve\-it\f[R]
 Preserve \f[B]it\f[R] variable, i.e.\ the result in of previous
 expression.
-Default \f[B]--no-preserve-it\f[R].
+Default \f[B]\-\-no\-preserve\-it\f[R].
 .TP
-\f[B]--strip-comments\f[R]
+\f[B]\-\-strip\-comments\f[R]
 Strip Haskell comments from examples and the outputs.
-Especially outputs are assumed to be Haskell-like.
-Default \f[B]--no-strip-comments\f[R].
+Especially outputs are assumed to be Haskell\-like.
+Default \f[B]\-\-no\-strip\-comments\f[R].
 .TP
-\f[B]-Z, --ignore-trailing-space\f[R]
+\f[B]\-Z, \-\-ignore\-trailing\-space\f[R]
 Strip trailing whitespace from the produced outputs.
-Default \f[B]--no-ignore-trailing-space\f[R].
+Default \f[B]\-\-no\-ignore\-trailing\-space\f[R].
 .TP
-\f[B]--setup\f[R] \f[I]expr\f[R]
+\f[B]\-\-setup\f[R] \f[I]expr\f[R]
 An additional expression to execute as setup for all examples.
 Can be specified multiple times.
 .TP
-\f[B]--extra-package\f[R] \f[I]pkgname\f[R]
+\f[B]\-\-extra\-package\f[R] \f[I]pkgname\f[R]
 An extra package to make available in GHCi session.
 The package must exist in the plan.
 Sublibrary syntax \f[B]mypkg:mysublib\f[R] is also accepted.
 .TP
-\f[B]--timeout\f[R] \f[I]seconds\f[R]
+\f[B]\-\-timeout\f[R] \f[I]seconds\f[R]
 Timeout for evaluation of single expression.
 Default: 3 seconds.
 Long timeouts may allow GHCi to acquire a lot of resources.
 On the other hand, too short timeout may cause false negatives.
 .TP
-\f[B]--timeout-message\f[R] \f[I]message\f[R]
+\f[B]\-\-timeout\-message\f[R] \f[I]message\f[R]
 Message to return when the evaluation is timed out.
 Default is \f[B]* Hangs forever *\f[R].
 .TP
-\f[B]--ghci-rtsopts\f[R] \f[I]options\f[R]
+\f[B]\-\-ghci\-rtsopts\f[R] \f[I]options\f[R]
 RTS options for GHCi process
 .TP
-\f[B]--check-properties\f[R]
+\f[B]\-\-check\-properties\f[R]
 Evaluate \f[B]prop> expr x y\f[R] using \f[B]quickCheck (expr x y)\f[R].
 Requires \f[I]QuickCheck\f[R] package in the plan.
-Default \f[B]--no-check-properties\f[R].
+Default \f[B]\-\-no\-check\-properties\f[R].
 .TP
-\f[B]--property-variables\f[R] \f[I]varlist\f[R]
+\f[B]\-\-property\-variables\f[R] \f[I]varlist\f[R]
 Variables to quantify over in properties.
 .TP
-\f[B]-X\f[R] \f[I]extension\f[R]
+\f[B]\-X\f[R] \f[I]extension\f[R]
 Language extension to start GHCi session with.
 Can be specified multiple times.
 .TP
-\f[B]-I\f[R] \f[I]directory\f[R]
+\f[B]\-I\f[R] \f[I]directory\f[R]
 Add \f[I]directory\f[R] to the directory search list for
 \f[B]#include\f[R] files.
 .TP
-\f[B]--phase1\f[R]
+\f[B]\-\-phase1\f[R]
 Stop after the first phase.
 First phase consists of discovering the modules, and extracting the
 doctest examples from their comments.
 .TP
-\f[B]--phase2\f[R]
+\f[B]\-\-phase2\f[R]
 Stop after the second phase, i.e.\ evaluation in GHCi phase.
 .TP
-\f[B]-m, --module\f[R] \f[I]modulename\f[R]
+\f[B]\-m, \-\-module\f[R] \f[I]modulename\f[R]
 Check only these modules.
 Default is to check all.
 .TP
-\f[B]--builddir\f[R] \f[I]dir\f[R]
+\f[B]\-\-builddir\f[R] \f[I]dir\f[R]
 Directory to look for \f[B]plan.json\f[R] and local package database.
 .TP
-\f[B]-v, --verbose\f[R]
+\f[B]\-v, \-\-verbose\f[R]
 Increase verbosity level.
 Can be specified multiple times.
 .TP
-\f[B]-q, --quiet\f[R]
+\f[B]\-q, \-\-quiet\f[R]
 Decrease verbosity level.
 Can be specified multiple times.
 .TP
-\f[B]--version\f[R]
+\f[B]\-\-version\f[R]
 Display numeric version.
 .TP
-\f[B]--help\f[R]
+\f[B]\-\-help\f[R]
 Display short help message.
 .TP
-\f[B]--man\f[R]
+\f[B]\-\-man\f[R]
 Display this manual.
 .SH CABAL FIELDS
-.PP
-It\[cq] is possible to provide cabal-docspec configuration through
+It\(cq is possible to provide cabal\-docspec configuration through
 fields in a .cabal file.
 .TP
-\f[B]x-docspec-options:\f[R] \f[I][OPTION]\f[R]\&...
+\f[B]x\-docspec\-options:\f[R] \f[I][OPTION]\f[R]\&...
 These options will be applied \f[I]before\f[R] command line options, and
-allow configuration of cabal-docspec per component under test.
+allow configuration of cabal\-docspec per component under test.
 .TP
-\f[B]x-docspec-extra-packages:\f[R] \f[I][PKG]\f[R]\&...
+\f[B]x\-docspec\-extra\-packages:\f[R] \f[I][PKG]\f[R]\&...
 A (space separated) list of extra packages.
-See \f[B]--extra-package\f[R].
+See \f[B]\-\-extra\-package\f[R].
 .TP
-\f[B]x-docspec-property-variables:\f[R] \f[I][VAR]\f[R]\&...
+\f[B]x\-docspec\-property\-variables:\f[R] \f[I][VAR]\f[R]\&...
 A (space separated) list of property variables.
-See \f[B]--property-variables\f[R].
+See \f[B]\-\-property\-variables\f[R].
 .SH EXAMPLES
 .SS Simple setup
-.PP
-For most packages it is sufficient to run \f[B]cabal-docspec\f[R] after
-\f[B]cabal v2-build all\f[R]:
+For most packages it is sufficient to run \f[B]cabal\-docspec\f[R] after
+\f[B]cabal v2\-build all\f[R]:
 .IP
-.nf
-\f[C]
-cabal v2-build all
-cabal-docspec
-\f[R]
-.fi
+.EX
+cabal v2\-build all
+cabal\-docspec
+.EE
 .SS Testing base library inside GHC source tree
-.PP
-The GHC source tree doesn\[cq]t have cabal-install generated
-\f[B]plan.json\f[R], therefore we use \f[B]--no-cabal-plan\f[R] and
+The GHC source tree doesn\(cqt have cabal\-install generated
+\f[B]plan.json\f[R], therefore we use \f[B]\-\-no\-cabal\-plan\f[R] and
 supply the \f[I]libraries/base/base.cabal\f[R] path.
 There are some examples using explanatory comments,
-\f[B]--strip-comments\f[R] makes them work.
-Some examples are illustrating non-termination, therefore short
-\f[B]--timeout\f[R] is justified.
+\f[B]\-\-strip\-comments\f[R] makes them work.
+Some examples are illustrating non\-termination, therefore short
+\f[B]\-\-timeout\f[R] is justified.
 Yet, it has to be long enough so the terminating examples have time to
 run.
 We also set RTS options, reducing the maximum stack to make stack
@@ -189,146 +180,127 @@ overflow exceptions occur earlier.
 Since the examples below use symbols from the \f[I]mtl\f[R],
 \f[I]deepseq\f[R] and \f[I]bytestring\f[R] packages, we make them
 available.
-Finally, some modules are documented with no-Prelude assumption,
+Finally, some modules are documented with no\-Prelude assumption,
 therefore we have to turn it off.
 .IP
-.nf
-\f[C]
-cabal-docspec \[rs]
-    -w $PWD/_build/stage1/bin/ghc \[rs]
-    -I $PWD/includes \[rs]
-    --no-cabal-plan \[rs]
-    --strip-comments \[rs]
-    --timeout 2 \[rs]
-    --ghci-rtsopts \[dq]-K500K\[dq] \[rs]
-    --extra-package=mtl --extra-package=deepseq --extra-package=bytestring \[rs]
-    -XNoImplicitPrelude \[rs]
+.EX
+cabal\-docspec \(rs
+    \-w $PWD/_build/stage1/bin/ghc \(rs
+    \-I $PWD/includes \(rs
+    \-\-no\-cabal\-plan \(rs
+    \-\-strip\-comments \(rs
+    \-\-timeout 2 \(rs
+    \-\-ghci\-rtsopts \(dq\-K500K\(dq \(rs
+    \-\-extra\-package=mtl \-\-extra\-package=deepseq \-\-extra\-package=bytestring \(rs
+    \-XNoImplicitPrelude \(rs
     libraries/base/base.cabal
-\f[R]
-.fi
+.EE
 .SS The \f[I]lens\f[R] library
-.PP
-The \f[I]lens\f[R] library uses \f[I]simple-reflect\f[R] library for
+The \f[I]lens\f[R] library uses \f[I]simple\-reflect\f[R] library for
 illustration of some examples.
-However, \f[I]simple-reflect\f[R] is not a dependency of lens library.
-One way to have add such dependency is to create dummy test-suite with
+However, \f[I]simple\-reflect\f[R] is not a dependency of lens library.
+One way to have add such dependency is to create dummy test\-suite with
 it.
 .IP
-.nf
-\f[C]
-test-suite doctests
-    type:             exitcode-stdio-1.0
-    main-is:          doctests.hs
-    hs-source-dirs:   tests
-    default-language: Haskell2010
-    build-depends:    base, simple-reflect >= 0.3.1
-\f[R]
-.fi
+.EX
+test\-suite doctests
+    type:             exitcode\-stdio\-1.0
+    main\-is:          doctests.hs
+    hs\-source\-dirs:   tests
+    default\-language: Haskell2010
+    build\-depends:    base, simple\-reflect >= 0.3.1
+.EE
 .PP
-Where \f[B]doctests.hs\f[R] doesn\[cq]t need to do anything in
+Where \f[B]doctests.hs\f[R] doesn\(cqt need to do anything in
 particular, for example it could be:
 .IP
-.nf
-\f[C]
+.EX
 module Main where
 
 main :: IO ()
 main = do
-    putStrLn \[dq]This test-suite exists only to add dependencies\[dq]
-    putStrLn \[dq]To run doctests: \[dq]
-    putStrLn \[dq]    cabal build all --enable-tests\[dq]
-    putStrLn \[dq]    cabal-docspec\[dq]
-\f[R]
-.fi
+    putStrLn \(dqThis test\-suite exists only to add dependencies\(dq
+    putStrLn \(dqTo run doctests: \(dq
+    putStrLn \(dq    cabal build all \-\-enable\-tests\(dq
+    putStrLn \(dq    cabal\-docspec\(dq
+.EE
 .PP
-The bare \f[B]cabal-docspec\f[R] command works, because needed extra
-packages are configured using \f[B]x-docspec-extra-packages\f[R] field
-in a package definition library stanza:
+The bare \f[B]cabal\-docspec\f[R] command works, because needed extra
+packages are configured using \f[B]x\-docspec\-extra\-packages\f[R]
+field in a package definition library stanza:
 .IP
-.nf
-\f[C]
+.EX
 library
    ...
 
-   x-docspec-extra-packages: simple-reflect
-\f[R]
-.fi
+   x\-docspec\-extra\-packages: simple\-reflect
+.EE
 .SH WRITING DOCTESTS
-.PP
 \f[B]NOTE:\f[R] This section is edited version of a part of the
 \f[I]Doctest\f[R] README.markdown.
-cabal-docspec reuses the way examples are specified.
+cabal\-docspec reuses the way examples are specified.
 .PP
 Below is a small Haskell module.
 The module contains a Haddock comment with some examples of interaction.
 The examples demonstrate how the module is supposed to be used.
 .IP
-.nf
-\f[C]
-module Fib where
+.EX
+\f[B]module\f[R] Fib \f[B]where\f[R]
 
--- | Compute Fibonacci numbers
---
--- Examples:
---
--- >>> fib 10
--- 55
---
--- >>> fib 5
--- 5
-fib :: Int -> Int
+\f[I]\-\- | Compute Fibonacci numbers\f[R]
+\f[I]\-\-\f[R]
+\f[I]\-\- Examples:\f[R]
+\f[I]\-\-\f[R]
+\f[I]\-\- >>> fib 10\f[R]
+\f[I]\-\- 55\f[R]
+\f[I]\-\-\f[R]
+\f[I]\-\- >>> fib 5\f[R]
+\f[I]\-\- 5\f[R]
+fib :: Int \-> Int
 fib 0 = 0
 fib 1 = 1
-fib n = fib (n - 1) + fib (n - 2)
-\f[R]
-.fi
+fib n = fib (n \- 1) + fib (n \- 2)
+.EE
 .PP
-A comment line starting with \f[V]>>>\f[R] denotes an
+A comment line starting with \f[CR]>>>\f[R] denotes an
 \f[I]expression\f[R].
 All comment lines following an expression denote the \f[I]result\f[R] of
 that expression.
-Result is defined by what a REPL (e.g.\ ghci) prints to \f[V]stdout\f[R]
-and \f[V]stderr\f[R] when evaluating that expression.
+Result is defined by what a REPL (e.g.\ ghci) prints to
+\f[CR]stdout\f[R] and \f[CR]stderr\f[R] when evaluating that expression.
 .SS Example groups
-.PP
 Examples from a single Haddock comment are grouped together and share
 the same scope.
 E.g.
 the following works:
 .IP
-.nf
-\f[C]
--- |
--- >>> let x = 23
--- >>> x + 42
--- 65
-\f[R]
-.fi
+.EX
+\f[I]\-\- |\f[R]
+\f[I]\-\- >>> let x = 23\f[R]
+\f[I]\-\- >>> x + 42\f[R]
+\f[I]\-\- 65\f[R]
+.EE
 .PP
 If an example fails, subsequent examples from the same group are
 skipped.
 E.g.
 for
 .IP
-.nf
-\f[C]
--- |
--- >>> let x = 23
--- >>> let n = x + y
--- >>> print n
-\f[R]
-.fi
+.EX
+\f[I]\-\- |\f[R]
+\f[I]\-\- >>> let x = 23\f[R]
+\f[I]\-\- >>> let n = x + y\f[R]
+\f[I]\-\- >>> print n\f[R]
+.EE
 .PP
-\f[V]print n\f[R] is not tried, because \f[V]let n = x + y\f[R] fails
-(\f[V]y\f[R] is not in scope!).
+\f[CR]print n\f[R] is not tried, because \f[CR]let n = x + y\f[R] fails
+(\f[CR]y\f[R] is not in scope!).
 .SS A note on performance
-.PP
-Because cabal-docspec uses compiled library, calling \f[B]:reload:\f[R]
-after each group doesn\[cq]t cause performance problems.
-For that reason, cabal-docspec doesn\[cq]t have \f[B]--fast\f[R]
+Because cabal\-docspec uses compiled library, calling \f[B]:reload:\f[R]
+after each group doesn\(cqt cause performance problems.
+For that reason, cabal\-docspec doesn\(cqt have \f[B]\-\-fast\f[R]
 variant, it is not needed.
 .SS Setup code
-.PP
 You can put setup code in a \f[I]named chunk\f[R] with the name
 \f[B]$setup\f[R].
 The setup code is run before each example group.
@@ -337,40 +309,35 @@ module are skipped.
 .PP
 Here is an example:
 .IP
-.nf
-\f[C]
-module Foo where
+.EX
+\f[B]module\f[R] Foo \f[B]where\f[R]
 
-import Bar.Baz
+\f[B]import\f[R] Bar.Baz
 
--- $setup
--- >>> let x = 23 :: Int
+\f[I]\-\- $setup\f[R]
+\f[I]\-\- >>> let x = 23 :: Int\f[R]
 
--- |
--- >>> foo + x
--- 65
+\f[I]\-\- |\f[R]
+\f[I]\-\- >>> foo + x\f[R]
+\f[I]\-\- 65\f[R]
 foo :: Int
 foo = 42
-\f[R]
-.fi
-.SS Multi-line input
-.PP
+.EE
+.SS Multi\-line input
 GHCi supports commands which span multiple lines, and the same syntax
 works for Doctest:
 .IP
-.nf
-\f[C]
--- |
--- >>> :{
---  let
---    x = 1
---    y = 2
---  in x + y + multiline
--- :}
--- 6
+.EX
+\f[I]\-\- |\f[R]
+\f[I]\-\- >>> :{\f[R]
+\f[I]\-\-  let\f[R]
+\f[I]\-\-    x = 1\f[R]
+\f[I]\-\-    y = 2\f[R]
+\f[I]\-\-  in x + y + multiline\f[R]
+\f[I]\-\- :}\f[R]
+\f[I]\-\- 6\f[R]
 multiline = 3
-\f[R]
-.fi
+.EE
 .PP
 Note that \f[B]>>>\f[R] can be left off for the lines following the
 first: this is so that haddock does not strip leading whitespace.
@@ -379,211 +346,182 @@ The expected output has whitespace stripped relative to the
 .PP
 Some peculiarities on the ghci side mean that whitespace at the very
 start is lost.
-This breaks the example \f[I]broken\[ga]\f[R] since the x and y
-aren\[cq]t aligned from ghci\[cq]s perspective.
+This breaks the example \f[I]broken\(ga\f[R] since the x and y aren\(cqt
+aligned from ghci\(cqs perspective.
 A workaround is to avoid leading space, or add a newline such that the
 indentation does not matter:
 .IP
-.nf
-\f[C]
-{- | >>> :{
-let x = 1
-    y = 2
-  in x + y + works
-:}
-6
--}
+.EX
+\f[I]{\- | >>> :{\f[R]
+\f[I]let x = 1\f[R]
+\f[I]    y = 2\f[R]
+\f[I]  in x + y + works\f[R]
+\f[I]:}\f[R]
+\f[I]6\f[R]
+\f[I]\-}\f[R]
 works = 3
 
-{- | >>> :{
- let x = 1
-     y = 2
-  in x + y + broken
-:}
-3
--}
+\f[I]{\- | >>> :{\f[R]
+\f[I] let x = 1\f[R]
+\f[I]     y = 2\f[R]
+\f[I]  in x + y + broken\f[R]
+\f[I]:}\f[R]
+\f[I]3\f[R]
+\f[I]\-}\f[R]
 broken = 3
-\f[R]
-.fi
-.SS Multi-line output
-.PP
+.EE
+.SS Multi\-line output
 If there are no blank lines in the output, multiple lines are handled
 automatically.
 .IP
-.nf
-\f[C]
--- | >>> putStr \[dq]Hello\[rs]nWorld!\[dq]
--- Hello
--- World!
-\f[R]
-.fi
+.EX
+\f[I]\-\- | >>> putStr \(dqHello\(rsnWorld!\(dq\f[R]
+\f[I]\-\- Hello\f[R]
+\f[I]\-\- World!\f[R]
+.EE
 .PP
 If however the output contains blank lines, they must be noted
 explicitly with \f[B]\f[R].
 For example,
 .IP
-.nf
-\f[C]
-import Data.List ( intercalate )
+.EX
+\f[B]import\f[R] Data.List ( intercalate )
 
--- | Double-space a paragraph.
---
---   Examples:
---
---   >>> let s1 = \[dq]\[rs]\[dq]Every one of whom?\[rs]\[dq]\[dq]
---   >>> let s2 = \[dq]\[rs]\[dq]Every one of whom do you think?\[rs]\[dq]\[dq]
---   >>> let s3 = \[dq]\[rs]\[dq]I haven\[aq]t any idea.\[rs]\[dq]\[dq]
---   >>> let paragraph = unlines [s1,s2,s3]
---   >>> putStrLn $ doubleSpace paragraph
---   \[dq]Every one of whom?\[dq]
---   <BLANKLINE>
---   \[dq]Every one of whom do you think?\[dq]
---   <BLANKLINE>
---   \[dq]I haven\[aq]t any idea.\[dq]
---
-doubleSpace :: String -> String
-doubleSpace = (intercalate \[dq]\[rs]n\[rs]n\[dq]) . lines
-\f[R]
-.fi
+\f[I]\-\- | Double\-space a paragraph.\f[R]
+\f[I]\-\-\f[R]
+\f[I]\-\-   Examples:\f[R]
+\f[I]\-\-\f[R]
+\f[I]\-\-   >>> let s1 = \(dq\(rs\(dqEvery one of whom?\(rs\(dq\(dq\f[R]
+\f[I]\-\-   >>> let s2 = \(dq\(rs\(dqEvery one of whom do you think?\(rs\(dq\(dq\f[R]
+\f[I]\-\-   >>> let s3 = \(dq\(rs\(dqI haven\(aqt any idea.\(rs\(dq\(dq\f[R]
+\f[I]\-\-   >>> let paragraph = unlines [s1,s2,s3]\f[R]
+\f[I]\-\-   >>> putStrLn $ doubleSpace paragraph\f[R]
+\f[I]\-\-   \(dqEvery one of whom?\(dq\f[R]
+\f[I]\-\-   <BLANKLINE>\f[R]
+\f[I]\-\-   \(dqEvery one of whom do you think?\(dq\f[R]
+\f[I]\-\-   <BLANKLINE>\f[R]
+\f[I]\-\-   \(dqI haven\(aqt any idea.\(dq\f[R]
+\f[I]\-\-\f[R]
+doubleSpace :: String \-> String
+doubleSpace = (intercalate \(dq\(rsn\(rsn\(dq) . lines
+.EE
 .SS Matching arbitrary output
-.PP
 Any lines containing only three dots (\f[B]\&...\f[R]) will match one or
 more lines with arbitrary content.
 For instance,
 .IP
-.nf
-\f[C]
--- |
--- >>> putStrLn \[dq]foo\[rs]nbar\[rs]nbaz\[dq]
--- foo
--- ...
--- baz
-\f[R]
-.fi
+.EX
+\f[I]\-\- |\f[R]
+\f[I]\-\- >>> putStrLn \(dqfoo\(rsnbar\(rsnbaz\(dq\f[R]
+\f[I]\-\- foo\f[R]
+\f[I]\-\- ...\f[R]
+\f[I]\-\- baz\f[R]
+.EE
 .PP
 If a line contains three dots and additional content, the three dots
 will match anything \f[I]within that line\f[R]:
 .IP
-.nf
-\f[C]
--- |
--- >>> putStrLn \[dq]foo bar baz\[dq]
--- foo ... baz
-\f[R]
-.fi
+.EX
+\f[I]\-\- |\f[R]
+\f[I]\-\- >>> putStrLn \(dqfoo bar baz\(dq\f[R]
+\f[I]\-\- foo ... baz\f[R]
+.EE
 .SS QuickCheck properties
-.PP
 Haddock (since version 2.13.0) has markup support for properties
-cabal-docspec can verify properties with QuickCheck.
+cabal\-docspec can verify properties with QuickCheck.
 Note: this works somewhat differently than it does in Doctest.
 .PP
 By default properties are not checked.
-cabal-docspec has a simple mechanism to evaluate properties enabled by
-\f[B]--check-properties\f[R].
+cabal\-docspec has a simple mechanism to evaluate properties enabled by
+\f[B]\-\-check\-properties\f[R].
 For it to work, the \f[I]QuickCheck\f[R] package has to be in the
 install plan.
 .PP
 A simple property looks like this:
 .IP
-.nf
-\f[C]
--- |
--- prop> \[rs]xs -> sort xs == (sort . sort) (xs :: [Int])
-\f[R]
-.fi
+.EX
+\f[I]\-\- |\f[R]
+\f[I]\-\- prop> \(rsxs \-> sort xs == (sort . sort) (xs :: [Int])\f[R]
+.EE
 .PP
 The lambda abstraction is required by default.
-cabal-docspec will quantify over variables passed in with
-\f[B]--property-variables\f[R] command line flag.
+cabal\-docspec will quantify over variables passed in with
+\f[B]\-\-property\-variables\f[R] command line flag.
 .PP
-With \f[B]\[en]property-variables xs\f[R] the following will work:
+With \f[B]\(enproperty\-variables xs\f[R] the following will work:
 .IP
-.nf
-\f[C]
--- |
--- prop> sort xs == (sort . sort) (xs :: [Int])
-\f[R]
-.fi
+.EX
+\f[I]\-\- |\f[R]
+\f[I]\-\- prop> sort xs == (sort . sort) (xs :: [Int])\f[R]
+.EE
 .PP
 Doctest uses a hack to find which variables are free in the the
 expression.
-cabal-docspec\[cq]s approach is more deterministic, as it doesn\[cq]t
-try to infer anything.
+cabal\-docspec\(cqs approach is more deterministic, as it doesn\(cqt try
+to infer anything.
 .PP
-Also, in contrast to \f[I]Doctest\f[R], cabal-docspec doesn\[cq]t use
+Also, in contrast to \f[I]Doctest\f[R], cabal\-docspec doesn\(cqt use
 the \f[B]polyQuickCheck\f[R] trick.
 Therefore some false properties may pass
 .IP
-.nf
-\f[C]
-quickCheck $ \[rs]xs -> reverse xs === xs
+.EX
+quickCheck $ \(rsxs \-> reverse xs === xs
 +++ OK, passed 100 tests.
-\f[R]
-.fi
+.EE
 .PP
 That property passes because the list element type defaults to
 \f[B]()\f[R].
 To avoid defaulting you may override the default class resolution in a
 \f[B]$setup\f[R] block
 .IP
-.nf
-\f[C]
--- $setup
--- >>> default (Integer, Double)
-\f[R]
-.fi
+.EX
+\f[I]\-\- $setup\f[R]
+\f[I]\-\- >>> default (Integer, Double)\f[R]
+.EE
 .PP
 Then the property above will fail:
 .IP
-.nf
-\f[C]
-quickCheck $ \[rs]xs -> reverse xs === xs
+.EX
+quickCheck $ \(rsxs \-> reverse xs === xs
 *** Failed! Falsified (after 4 tests and 4 shrinks):    
 [1,0]
 [0,1] /= [1,0]
-\f[R]
-.fi
+.EE
 .PP
 A complete example that uses setup code is below:
 .IP
-.nf
-\f[C]
-module Fib where
+.EX
+\f[B]module\f[R] Fib \f[B]where\f[R]
 
--- $setup
--- >>> import Control.Applicative
--- >>> import Test.QuickCheck
--- >>> newtype Small = Small Int deriving Show
--- >>> instance Arbitrary Small where arbitrary = Small . (\[ga]mod\[ga] 10) <$> arbitrary
+\f[I]\-\- $setup\f[R]
+\f[I]\-\- >>> import Control.Applicative\f[R]
+\f[I]\-\- >>> import Test.QuickCheck\f[R]
+\f[I]\-\- >>> newtype Small = Small Int deriving Show\f[R]
+\f[I]\-\- >>> instance Arbitrary Small where arbitrary = Small . (\(gamod\(ga 10) <$> arbitrary\f[R]
 
--- | Compute Fibonacci numbers
---
--- The following property holds:
---
--- prop> \[rs](Small n) -> fib n == fib (n + 2) - fib (n + 1)
-fib :: Int -> Int
+\f[I]\-\- | Compute Fibonacci numbers\f[R]
+\f[I]\-\-\f[R]
+\f[I]\-\- The following property holds:\f[R]
+\f[I]\-\-\f[R]
+\f[I]\-\- prop> \(rs(Small n) \-> fib n == fib (n + 2) \- fib (n + 1)\f[R]
+fib :: Int \-> Int
 fib 0 = 0
 fib 1 = 1
-fib n = fib (n - 1) + fib (n - 2)
-\f[R]
-.fi
+fib n = fib (n \- 1) + fib (n \- 2)
+.EE
 .SS Hiding examples from Haddock
-.PP
 You can put examples into named chunks, and not refer to them in the
 export list.
 That way they will not be part of the generated Haddock documentation,
-but cabal-docspec will still find them.
+but cabal\-docspec will still find them.
 .IP
-.nf
-\f[C]
--- $
--- >>> 1 + 1
--- 2
-\f[R]
-.fi
+.EX
+\f[I]\-\- $\f[R]
+\f[I]\-\- >>> 1 + 1\f[R]
+\f[I]\-\- 2\f[R]
+.EE
 .SS Using GHC extensions
-.PP
-There\[cq]s two sets of GHC extensions involved when running Doctest:
+There\(cqs two sets of GHC extensions involved when running Doctest:
 .IP "1." 3
 The set of GHC extensions that are active when compiling the module
 code.
@@ -592,188 +530,167 @@ The set of GHC extensions that are active when executing the Doctest
 examples.
 (These are not influenced by the LANGUAGE pragmas in the file.)
 .PP
-Unlike Doctest, cabal-docspec doesn\[cq]t compile libraries, therefore
-you don\[cq]t need to do anything special for the first point.
+Unlike Doctest, cabal\-docspec doesn\(cqt compile libraries, therefore
+you don\(cqt need to do anything special for the first point.
 .PP
-The recommended way to enable extensions for cabal-docspec examples is
-to specify them as \f[B]-X\f[R] flags.
+The recommended way to enable extensions for cabal\-docspec examples is
+to specify them as \f[B]\-X\f[R] flags.
 Because set of enabled extensions persist even after \f[B]:reload\f[R],
 it is better to embrace that fact and enable them globally.
 .PP
 Another way to enable extensions, which is compatible with Doctest, is
 to switch them on like this:
 .IP
-.nf
-\f[C]
--- |
--- >>> :set -XTupleSections
--- >>> fst\[aq] $ (1,) 2
--- 1
-fst\[aq] :: (a, b) -> a
-fst\[aq] = fst
-\f[R]
-.fi
+.EX
+\f[I]\-\- |\f[R]
+\f[I]\-\- >>> :set \-XTupleSections\f[R]
+\f[I]\-\- >>> fst\(aq $ (1,) 2\f[R]
+\f[I]\-\- 1\f[R]
+fst\(aq :: (a, b) \-> a
+fst\(aq = fst
+.EE
 .SH WARNINGS
-.PP
 All warnings are enabled by default.
 .TP
-\f[B]-Wmultiple-module-files\f[R]
+\f[B]\-Wmultiple\-module\-files\f[R]
 Found multiple files matching the exposed module.
 .TP
-\f[B]-Wmissing-module-file\f[R]
+\f[B]\-Wmissing\-module\-file\f[R]
 No files found matching a module.
 For example modules which are preprocessed (\f[I].hsc\f[R] etc).
 .TP
-\f[B]-Wtimeout\f[R]
+\f[B]\-Wtimeout\f[R]
 Evaluation of an expression timed out.
 .TP
-\f[B]-Wunknown-extension\f[R]
-Warn if extension passed via \f[B]-X\f[R] seems to be unknown.
+\f[B]\-Wunknown\-extension\f[R]
+Warn if extension passed via \f[B]\-X\f[R] seems to be unknown.
 The known extension list is from \f[I]Cabal\f[R] library.
 .TP
-\f[B]-Winvalid-field\f[R]
+\f[B]\-Winvalid\-field\f[R]
 Warn when parsing of cabal package file fields fails.
 .TP
-\f[B]-Wcpphs\f[R]
+\f[B]\-Wcpphs\f[R]
 C preprocessor (\f[I]cpphs\f[R]) warnings.
 .TP
-\f[B]-Werror-in-setup\f[R]
+\f[B]\-Werror\-in\-setup\f[R]
 There was an error in evaluting \f[B]$setup\f[R].
 .TP
-\f[B]-Wskipped-property\f[R]
-Warn about properties when \f[B]--skip-properties\f[R] (the default) is
-enabled.
+\f[B]\-Wskipped\-property\f[R]
+Warn about properties when \f[B]\-\-skip\-properties\f[R] (the default)
+is enabled.
 .SH KNOWN BUGS AND INFECILITIES
-.PP
 Properties (\f[B]prop>\f[R]) are recognized but not evaluated.
 .PP
 Literate Haskell is not supported.
 .PP
-Dependencies\[cq] \f[B]install-includes\f[R] folders are not added to C
+Dependencies\(cq \f[B]install\-includes\f[R] folders are not added to C
 preprocess search path.
 .PP
-GHC-7.0 relies that \f[I]Char\f[R] type is in scope.
+GHC\-7.0 relies that \f[I]Char\f[R] type is in scope.
 This is an implementation artifact.
 .SH Q&A
-.SS Q: Why cabal-docspec doesn\[cq]t import modules automatically?
-.PP
-cabal-docspec tests library documentation from the outside.
-It doesn\[cq]t even try to look into an implementation for some secret
+.SS Q: Why cabal\-docspec doesn\(cqt import modules automatically?
+cabal\-docspec tests library documentation from the outside.
+It doesn\(cqt even try to look into an implementation for some secret
 bits, only to find examples.
 In this sense it is more principled (than Doctest).
 Therefore you might need to repeat imports in a \f[B]$setup\f[R] block.
-OTOH, the implementation\[cq]s imports never interfere with doctests.
+OTOH, the implementation\(cqs imports never interfere with doctests.
 .PP
 Named documentaton chunks are the only possibly hidden part of source
-text, which cabal-docspec uses.
+text, which cabal\-docspec uses.
 .SS Q: How to hide some Prelude imports, e.g.\ null?
-.PP
 One way is to redefine the symbol in a \f[B]$setup\f[R] block using a
 qualified module name.
 .IP
-.nf
-\f[C]
-let null = Module.Under.Test.null
-\f[R]
-.fi
+.EX
+\f[B]let\f[R] null = Module.Under.Test.null
+.EE
 .PP
 This way it will shadow both \f[I]Prelude.null\f[R] and
-\f[I]Module.Under.Test.null\f[R], and ambiguous symbol errors won\[cq]t
+\f[I]Module.Under.Test.null\f[R], and ambiguous symbol errors won\(cqt
 appear.
 .PP
-Another option is to use \f[B]-XNoImplicitPrelude\f[R] and import
+Another option is to use \f[B]\-XNoImplicitPrelude\f[R] and import
 \f[I]Prelude\f[R] explicitly.
-.SS Q: How cabal-docspec works with pre-8.0 version of GHC?
-.PP
-cabal-docspec reads a \f[I]plan.json\f[R] file, which is generated by
-cabal-install.
-That file contains (almost) all required information for cabal-docspec
+.SS Q: How cabal\-docspec works with pre\-8.0 version of GHC?
+cabal\-docspec reads a \f[I]plan.json\f[R] file, which is generated by
+cabal\-install.
+That file contains (almost) all required information for cabal\-docspec
 to invoke ghci with the correct arguments.
 .SS Q: When does plan.json get generated?
-.PP
-It is generated by cabal-install as a side-effect of running the solver.
+It is generated by cabal\-install as a side\-effect of running the
+solver.
 For example even
 .IP
-.nf
-\f[C]
-cabal build --dry-run
-\f[R]
-.fi
+.EX
+cabal build \-\-dry\-run
+.EE
 .PP
 is enough.
-However, without libraries actually being built, cabal-docspec won\[cq]t
+However, without libraries actually being built, cabal\-docspec won\(cqt
 work.
-.SS Q: Does Doctest\[cq]s --fast have an equivalent in cabal-docspec?
-.PP
-No, cabal-doctest doesn\[cq]t need one.
-The library code is loaded as pre-compiled object code, not interpreted
+.SS Q: Does Doctest\(cqs \-\-fast have an equivalent in cabal\-docspec?
+No, cabal\-doctest doesn\(cqt need one.
+The library code is loaded as pre\-compiled object code, not interpreted
 code.
-As a result, the \f[V]:reload\f[R] command doesn\[cq]t force code to be
-re-interpreted each time, making to cheap to run.
-pre-compiled object, the \f[B]:reload\f[R] command is cheap.
-It doesn\[cq]t cause the re-interpretation of the sources.
-.SS Q: Are you envisioning making binary distributions of cabal-docspec available?
-.PP
+As a result, the \f[CR]:reload\f[R] command doesn\(cqt force code to be
+re\-interpreted each time, making to cheap to run.
+pre\-compiled object, the \f[B]:reload\f[R] command is cheap.
+It doesn\(cqt cause the re\-interpretation of the sources.
+.SS Q: Are you envisioning making binary distributions of cabal\-docspec available?
 Yes.
-.SS Q: In the lens example, is test-suite somehow related to doctests?
-.PP
-No.\ The test-suite is there to ensure that the extra dependencies are
-built by cabal-install.
-We can also use a dummy package for that purpose, but a test-suite is
+.SS Q: In the lens example, is test\-suite somehow related to doctests?
+No.\ The test\-suite is there to ensure that the extra dependencies are
+built by cabal\-install.
+We can also use a dummy package for that purpose, but a test\-suite is
 more lightweight.
 .PP
-As an alternative to this approach, with cabal-install-3.4 you may use
+As an alternative to this approach, with cabal\-install\-3.4 you may use
 .IP
-.nf
-\f[C]
-extra-packages: simple-reflect
-\f[R]
-.fi
+.EX
+extra\-packages: simple\-reflect
+.EE
 .PP
 in the \f[I]cabal.project\f[R] file.
-.SS Q: Are cabal build \[en]disable-tests and cabal-docspec incompatible?
-.PP
+.SS Q: Are cabal build \(endisable\-tests and cabal\-docspec incompatible?
 In general, no.
 As long as the library and extra dependencies used by doctests are
-built, cabal-docspec shold work fine.
-.SS Q: What advantages cabal-docspec have over Doctest and .ghc.environment files?
-.PP
+built, cabal\-docspec shold work fine.
+.SS Q: What advantages cabal\-docspec have over Doctest and .ghc.environment files?
 There are a few differences.
 .IP "1." 3
-The same cabal-docspec binary works with all GHC versions.
-Also with versions which don\[cq]t have .ghc.environment file feature.
+The same cabal\-docspec binary works with all GHC versions.
+Also with versions which don\(cqt have .ghc.environment file feature.
 .IP "2." 3
-cabal-docspec doesn\[cq]t interpret the source code.
+cabal\-docspec doesn\(cqt interpret the source code.
 Though, Doctest could have that mode too.
 .IP "3." 3
-Because cabal-docspec uses \f[I]plan.json\f[R] information, it
-doesn\[cq]t have problems with the visibility of packages.
-For example \f[I]Prelude.Compat\f[R] from \f[I]base-compat\f[R] and
-\f[I]base-compat-batteries\f[R] won\[cq]t cause ambiguous module
+Because cabal\-docspec uses \f[I]plan.json\f[R] information, it
+doesn\(cqt have problems with the visibility of packages.
+For example \f[I]Prelude.Compat\f[R] from \f[I]base\-compat\f[R] and
+\f[I]base\-compat\-batteries\f[R] won\(cqt cause ambiguous module
 problems, as long as the library being tested itself depends only on
 either one.
 .SS Q: How to run tests on internal modules?
-.PP
-cabal-docspec can only test the exported interfaces, so it\[cq]s not
-possible to test \f[B]other-modules\f[R].
-However, cabal-docspec does test \f[I]internal\f[R] libraries.
+cabal\-docspec can only test the exported interfaces, so it\(cqs not
+possible to test \f[B]other\-modules\f[R].
+However, cabal\-docspec does test \f[I]internal\f[R] libraries.
 Therefore you can put the internal modules into internal library and
-then cabal-docspec will be able to test them.
+then cabal\-docspec will be able to test them.
 .SH SEE ALSO
-.PP
 doctest(1) https://hackage.haskell.org/package/doctest
 .SH WWW (REPORTING BUGS)
-.PP
-https://github.com/phadej/cabal-extras
+https://github.com/phadej/cabal\-extras
 .SH COPYRIGHT
-.PP
-Copyright © 2020-2023 Oleg Grenrus.
-License GPLv2-or-later: GNU GPL version 2 or later
-<http://gnu.org/licenses/gpl.html>.
+Copyright © 2020\-2023 Oleg Grenrus.
+License GPLv2\-or\-later: GNU GPL version 2 or later \c
+.UR http://gnu.org/licenses/gpl.html
+.UE \c
+\&.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 .SH AUTHOR
-.PP
 Written by Oleg Grenrus.
 Doctest comment extraction and comparison functions are originally from
 \f[I]Doctest\f[R] by Simon Hengel.

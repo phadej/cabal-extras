@@ -1,5 +1,5 @@
-VERSION=0.0.0.20240703
-DATE="July 3nd, 2024"
+VERSION=0.0.0.20250606
+DATE="June 6th, 2025"
 EXETARGET=cabal-docspec
 
 cabal-docspec.1 : MANUAL.md
@@ -10,8 +10,8 @@ man : cabal-docspec.1
 	cat cabal-docspec.1 | man -l -
 
 ALPINEVERSION:=3.17.3
-GHCUPVERSION:=0.1.22.0
-GHCVERSION:=9.8.2
+GHCUPVERSION:=0.1.50.2
+GHCVERSION:=9.8.4
 CABALVERSION:=3.10.3.0
 
 CABALPLAN:=$(HOME)/.local/bin/cabal-plan
