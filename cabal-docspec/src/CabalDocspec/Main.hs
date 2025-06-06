@@ -13,6 +13,7 @@ import Control.Applicative ((<**>))
 
 import qualified Cabal.Config                                 as Cabal
 import qualified Cabal.Plan                                   as Plan
+import qualified Data.List                                    as L
 import qualified Data.Map.Strict                              as Map
 import qualified Data.Set                                     as Set
 import qualified Data.Text                                    as T
@@ -81,6 +82,15 @@ main = do
         -- gather info
         ghcInfo <- getGhcInfo tracer (optCompiler opts)
         cabalCfg  <- liftIO Cabal.readConfig
+        dbG <- readPackageDb tracer (ghcGlobalDb ghcInfo)
+        let pkgRoot = ghcLibDir ghcInfo
+
+        -- technically we should look for all component dependencies,
+        -- and combine their includeDirs,
+        -- However, for now we just look for `rts` package,
+        -- that provides commonly used HsFFI.h and MachDeps.h.
+        let rtsIncludeDirs = findRtsIncludeDirs pkgRoot dbG
+        putInfo tracer $ show rtsIncludeDirs
 
         res <- case optCabalPlan opts of
             CabalPlan -> do
@@ -130,14 +140,13 @@ main = do
                         ifor (Plan.uComps unit) $ \cn ci -> do
                             if checkComponent (C.packageName (pkgGpd pkg)) (toCabal cn)
                             then testComponent tracer0 tracer (optGhci opts)
-                                    ghcInfo buildDir cabalCfg plan env pkg unit cn ci
+                                    ghcInfo rtsIncludeDirs buildDir cabalCfg plan env pkg unit cn ci
                             else return mempty
 
                 -- summarize Summary's
                 return $ foldMap (foldMap (foldMap id)) res
 
             NoCabalPlan -> do
-                dbG <- readPackageDb tracer (ghcGlobalDb ghcInfo)
                 pkgs <- readDirectCabalFiles tracer
                     [ prettyShow pn
                     | Target pn _ <- optTargets opts
@@ -214,6 +223,7 @@ testComponent
     -> TracerPeu r Tr
     -> (DynOpts -> DynOpts)
     -> GhcInfo
+    -> [FsPath]
     -> Path Absolute -- ^ buildDir
     -> Cabal.Config Identity
     -> Plan.PlanJson
@@ -223,7 +233,7 @@ testComponent
     -> Plan.CompName
     -> Plan.CompInfo
     -> Peu r Summary
-testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pkg unit cn ci = do
+testComponent tracer0 tracerTop dynOptsCli ghcInfo rtsIncludeDirs buildDir cabalCfg plan env pkg unit cn ci = do
     case cn of
         Plan.CompNameLib -> do
             traceApp tracerTop $ TraceComponent (C.packageId (pkgGpd pkg)) cn
@@ -287,7 +297,7 @@ testComponent tracer0 tracerTop dynOptsCli ghcInfo buildDir cabalCfg plan env pk
                 extraUnitIds
 
         -- cpp include dirs
-        cppDirs <- traverse makeAbsolute (optCppIncludeDirs dynOpts)
+        cppDirs <- traverse makeAbsolute (rtsIncludeDirs ++ optCppIncludeDirs dynOpts)
 
         -- first phase: read modules and extract the comments
         let pkgVer = C.packageVersion (pkgGpd pkg)
@@ -427,6 +437,20 @@ findExtraPackages tracer plan = traverse $ \lib@(Library pn ln) -> do
         []  -> die tracer $ "Cannot find unit for " ++ prettyShow lib
         _   -> die tracer $ "Found multiple units for " ++ prettyShow lib ++ ": " ++
             unwords (map prettyShow units)
+
+-------------------------------------------------------------------------------
+-- Include directories
+-------------------------------------------------------------------------------
+
+findRtsIncludeDirs :: Path Absolute -> PackageDb -> [FsPath]
+findRtsIncludeDirs pkgRoot db =
+    [ case L.stripPrefix "${pkgroot}/" dir of
+        Nothing   -> fromFilePath dir
+        Just dir' -> FsPath (pkgRoot </> fromUnrootedFilePath dir')
+    | ipi <- toList db
+    , C.packageName (IPI.sourcePackageId ipi) == "rts"
+    , dir <- IPI.includeDirs ipi
+    ]
 
 -------------------------------------------------------------------------------
 -- Utilities

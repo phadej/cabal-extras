@@ -1,6 +1,10 @@
-# 0.0.0.2024mmdd
+# 0.0.0.20250606
 
-- Accecpt @pkgname:libname@ target syntax
+- Pass `rts` package include directories to C-preprocessor.
+
+# 0.0.0.20240720
+
+- Accept @pkgname:libname@ target syntax
 
 # 0.0.0.20240703
 

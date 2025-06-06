@@ -1,6 +1,6 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE Trustworthy               #-}
-
+{-# LANGUAGE StandaloneDeriving        #-}
 module System.Path.Internal (
     -- * Paths
     Path(..)
@@ -364,6 +364,7 @@ instance FsRoot HomeDir where
 -- 'FsPath' can be constructed directly or via 'fromFilePath' or 'System.Path.QQ.fspath'.
 data FsPath = forall root. FsRoot root => FsPath (Path root)
 
+deriving instance Show FsPath
 instance NFData FsPath where
     rnf (FsPath a) = rnf a
 
